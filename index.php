@@ -32,18 +32,18 @@
                 Enter your email and password to access your account
             </p>
         </div>
-        <form class="card-body">
+        <form class="card-body" action="..\capstone\authentication\login.php" method="post">
             <div class="form-control">
             <label class="label">
                 <span class="label-text">Email</span>
             </label>
-            <input type="email" placeholder="Email" class="input input-bordered" required />
+            <input type="email" name="email" placeholder="Email" class="input input-bordered" required />
             </div>
             <div class="form-control">
             <label class="label">
                 <span class="label-text">Password</span>
             </label>
-            <input type="password" placeholder="Password" class="input input-bordered" required />
+            <input type="password" name="password" placeholder="Password" class="input input-bordered" required />
             <label class="label">
                 <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
             </label>
@@ -52,7 +52,7 @@
             <button class="btn bg-red-600 hover:bg-red-700 text-white">Login</button>
             <div class="text-xs text-center">
                 <h1 class="text-base py-3 ">or</h1>
-                <a href="" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
+                <a href="page\register.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
             </div>
             </div>
         </form>
