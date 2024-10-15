@@ -2,14 +2,28 @@
     include '..\page\topnavbar.php';
     include '..\authentication\db.php';
 
+    $category = isset($_GET['category']) ? $_GET['category'] : 'All';
+    $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 
     $sql = "SELECT p.name AS product_name, p.description, p.image_url, c.name AS category_name 
-    FROM Product p 
-    JOIN Category c ON p.category_id = c.category_id";
+            FROM Product p 
+            JOIN Category c ON p.category_id = c.category_id 
+            WHERE 1=1";
+
+    if ($category !== 'All') {
+        $sql .= " AND LOWER(c.name) = LOWER('" . $conn->real_escape_string($category) . "')";
+    }
+
+    $sql .= " AND p.price <= " . (int)$priceRange;
+
+
     $result = $conn->query($sql);
 
-
+    if ($result === false) {
+        echo "Error: " . $conn->error; 
+    }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -31,37 +45,28 @@
 
         <div class="flex">
             <!-- Left Sidebar (Filters) with fixed height and scroll -->
-            <div class="w-1/4 p-4 bg-base-200 text-base-content mr-6 h-96 overflow-y-auto rounded-md shadow-lg">
+            <form action="" method="GET" class="w-1/4 p-4 bg-base-200 text-base-content mr-6 h-96 overflow-y-auto rounded-md shadow-lg">
                 <h3 class="font-bold text-xl mb-4">Filters</h3>
                 <div class="mb-4">
                     <label class="block">Category</label>
-                    <select class="mt-2 p-2 w-full border rounded-md">
-                        <option>All</option>
-                        <option>Motorcycle</option>
-                        <option>Car</option>
-                        <option>Accessories</option>
+                    <select name="category" class="mt-2 p-2 w-full border rounded-md">
+                        <option value="All" <?= $category === 'All' ? 'selected' : ''; ?>>All</option>
+                        <option value="Motorcycle" <?= $category === 'Motorcycle' ? 'selected' : ''; ?>>Motorcycle</option>
+                        <option value="Car" <?= $category === 'Car' ? 'selected' : ''; ?>>Car</option>
+                        <option value="Accessories" <?= $category === 'Accessories' ? 'selected' : ''; ?>>Accessories</option>
                     </select>
                 </div>
                 <div class="mb-4">
                     <label class="block">Price Range</label>
-                    <input type="range" min="0" max="100" class="w-full mt-2 accent-red-600" />
+                    <input type="range" name="price_range" min="500" max="10000" value="<?= $priceRange; ?>" class="w-full mt-2 accent-red-600" />
                 </div>
                 <div class="mb-4">
-                    <label class="block">Availability</label>
-                    <div class="mt-2">
-                        <input type="checkbox" id="new" class="mr-2">
-                        <label for="new">New</label>
-                    </div>
-                    <div class="mt-2">
-                        <input type="checkbox" id="sale" class="mr-2">
-                        <label for="sale">On Sale</label>
-                    </div>
+                    <!--OTHER FILTER-->
                 </div>
-                <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300 ease-in-out">
+                <button type="submit" class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300 ease-in-out">
                     Apply Filters
                 </button>
-            </div>
-
+            </form>
 
             <!-- Separation Line -->
             <div class="border-l-2 border-gray-300 mx-4"></div>
@@ -105,7 +110,7 @@
 
     <!-- Footer Section -->
     <?php
-        include '..\page\footer.php'
+        include '..\page\footer.php';
     ?>
 </body>
 </html>
