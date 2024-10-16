@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || empty($password)) {
         $_SESSION['error_message'] = "Email and password are required.";
     } else {
-        $stmt = $conn->prepare("SELECT id, password, firstName, lastName FROM admin WHERE email = ?");
+        $stmt = $conn->prepare("SELECT admin_id, password, firstName, lastName FROM admin WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['firstName'] = $first_name;
                 $_SESSION['lastName'] = $last_name;
 
-                header("Location: ..\page\shop.php");
+                header("Location: ..\admin\admin_dashboard.php");
                 exit;
             } else {
                 $_SESSION['error_message'] = "Invalid password.";
@@ -42,6 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $conn->close();
-header("Location: ..\admin\admin_dashboard.php");
+header("Location: ..\admin\admin_login.php");
 exit;
 ?>

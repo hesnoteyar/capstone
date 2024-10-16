@@ -37,7 +37,7 @@
         <div class="card bg-base-100 w-full max-w-2xl shrink-0 shadow-2xl">
             <div class="text-center lg:text-above">
                 <div class="flex justify-center py-6">
-                    <img src="media\small_logo.png" alt="">
+                    <img src="..\media\small_logo.png" alt="">
                 </div>
                 <h1 class="py-6 text-3xl font-bold">Hi!, ADMIN!</h1>
                 <p>Enter your email and password to access your account</p>
