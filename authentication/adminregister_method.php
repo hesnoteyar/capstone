@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Check if the email already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT admin_id FROM admin WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
@@ -46,11 +46,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Prepare an insert statement
-        $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO admin (firstName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
 
         if ($stmt->execute()) {
-            header("Location: ..\index.php");
+            header("Location: ..\authentication\adminlogin.php");
         } else {
             $_SESSION['error_message'] = "Error: " . $stmt->error;
             header("Location: " . $_SERVER['HTTP_REFERER']);

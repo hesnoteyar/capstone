@@ -51,11 +51,11 @@
                     <img src="..\media\small_logo.png" alt="">
                 </div>
                 <h1 class="py-6 text-3xl font-bold">
-                    Create an Account
+                    Create an Admin Account
                 </h1>
             </div>
 
-            <form action="..\authentication\register_method.php" method="post" class="card-body">
+            <form action="..\authentication\adminregister_method.php" method="post" class="card-body">
                 <!-- Name Section -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-control">
@@ -123,7 +123,7 @@
                     <button class="btn bg-red-600 hover:bg-red-700 text-white">Create Account</button>
                     <div class="text-xs text-center">
                         <h1 class="text-base py-3 ">or</h1>
-                        <a href="..\index.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Back to Login</a>
+                        <a href="..\admin\admin_login.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Back to Login</a>
                     </div>
                 </div>
             </form>

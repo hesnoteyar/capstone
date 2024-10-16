@@ -39,11 +39,11 @@
                 <div class="flex justify-center py-6">
                     <img src="media\small_logo.png" alt="">
                 </div>
-                <h1 class="py-6 text-3xl font-bold">Hi!, Welcome Back!</h1>
+                <h1 class="py-6 text-3xl font-bold">Hi!, ADMIN!</h1>
                 <p>Enter your email and password to access your account</p>
             </div>
 
-            <form class="card-body" action="..\capstone\authentication\login.php" method="post">
+            <form class="card-body" action="..\authentication\adminlogin.php" method="post">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Email</span>
@@ -63,7 +63,7 @@
                     <button class="btn bg-red-600 hover:bg-red-700 text-white">Login</button>
                     <div class="text-xs text-center">
                         <h1 class="text-base py-3">or</h1>
-                        <a href="page\register.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
+                        <a href="..\admin\admin_register.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
                     </div>
                 </div>
             </form>
