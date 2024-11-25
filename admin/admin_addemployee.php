@@ -53,82 +53,91 @@
 
 
     <!-- Form Section -->
-    <div class="hero bg-base-200 min-h-screen flex items-center justify-center py-6">
-        <div class="card bg-base-100 w-full max-w-4xl shrink-0 shadow-2xl">
-            <div class="text-center lg:text-above">
-                <h1 class="py-6 text-3xl font-bold">Add a New Employee</h1>
+<div class="bg-base-200 min-h-screen flex items-center justify-center py-6">
+    <div class="card bg-base-100 w-full max-w-3xl shrink-0 shadow-2xl">
+        <div class="text-center lg:text-above">
+            <h1 class="py-6 text-3xl font-bold">Add a New Employee</h1>
+        </div>
+
+        <form action="..\authentication\add_employee.php" method="post" class="card-body">
+            
+            <!-- Name Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">First Name</span>
+                    </label>
+                    <input type="text" name="firstName" placeholder="First Name" class="input input-bordered w-full" required />
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Middle Name</span>
+                    </label>
+                    <input type="text" name="middleName" placeholder="Middle Name" class="input input-bordered w-full" />
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Last Name</span>
+                    </label>
+                    <input type="text" name="lastName" placeholder="Last Name" class="input input-bordered w-full" required />
+                </div>
             </div>
 
-            <form action="..\authentication\add_employee.php" method="post" class="card-body">
-                <!-- Name Section -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">First Name</span>
-                        </label>
-                        <input type="text" name="firstName" placeholder="First Name" class="input input-bordered w-full" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Last Name</span>
-                        </label>
-                        <input type="text" name="lastName" placeholder="Last Name" class="input input-bordered w-full" required />
-                    </div>
-                </div>
 
-                <!-- Address Section -->
-                <div class="form-control mt-4">
+            <!-- Address Section -->
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Address</span>
+                </label>
+                <input type="text" name="address" placeholder="Street Address" class="input input-bordered w-full" required />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div class="form-control">
                     <label class="label">
-                        <span class="label-text">Address</span>
+                        <span class="label-text">City</span>
                     </label>
-                    <input type="text" name="address" placeholder="Street Address" class="input input-bordered w-full" required />
+                    <input type="text" name="city" placeholder="City" class="input input-bordered w-full" required />
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">City</span>
-                        </label>
-                        <input type="text" name="city" placeholder="City" class="input input-bordered w-full" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Postal Code</span>
-                        </label>
-                        <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" required />
-                    </div>
-                </div>
-
-                <!-- Email Field -->
-                <div class="form-control mt-4">
+                <div class="form-control">
                     <label class="label">
-                        <span class="label-text">Email</span>
+                        <span class="label-text">Postal Code</span>
                     </label>
-                    <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required />
+                    <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" required />
                 </div>
+            </div>
 
-                <!-- Password and Repeat Password Fields -->
-                <div class="form-control mt-4">
-                    <label class="label">
-                        <span class="label-text">Password</span>
-                    </label>
-                    <input type="password" name="password" placeholder="Password" class="input input-bordered w-full" required />
-                </div>
+            <!-- Email Field -->
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Email</span>
+                </label>
+                <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required />
+            </div>
 
-                <div class="form-control mt-4">
-                    <label class="label">
-                        <span class="label-text">Repeat Password</span>
-                    </label>
-                    <input type="password" name="repeat_password" placeholder="Repeat Password" class="input input-bordered w-full" required />
-                </div>
+            <!-- Password and Repeat Password Fields -->
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Password</span>
+                </label>
+                <input type="password" name="password" placeholder="Password" class="input input-bordered w-full" required />
+            </div>
 
-                <!-- Create Account Button -->
-                <div class="form-control mt-6">
-                    <button class="btn bg-red-500 hover:bg-red-700 text-white">Create Account</button>
-                </div>
-            </form>
-        </div>
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Repeat Password</span>
+                </label>
+                <input type="password" name="repeat_password" placeholder="Repeat Password" class="input input-bordered w-full" required />
+            </div>
+
+            <!-- Create Account Button -->
+            <div class="form-control mt-6">
+                <button class="btn bg-red-500 hover:bg-red-700 text-white">Create Account</button>
+            </div>
+        </form>
     </div>
+</div>
+
 </body>
 <?php
     include '..\admin\admin_footer.php';

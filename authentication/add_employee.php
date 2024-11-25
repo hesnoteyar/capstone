@@ -5,6 +5,7 @@ include '..\authentication\db.php'; // Include your database connection file
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize form inputs
     $first_name = trim($_POST['firstName']);
+    $middle_name = trim($_POST['middleName']);
     $last_name = trim($_POST['lastName']);
     $address = trim($_POST['address']);
     $city = trim($_POST['city']);
@@ -46,8 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Prepare an insert statement
-        $stmt = $conn->prepare("INSERT INTO employee (firstName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
+        $stmt = $conn->prepare("INSERT INTO employee (firstName, middleName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssss", $first_name, $middle_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
 
         if ($stmt->execute()) {
             $_SESSION['success_message'] = "Employee added successfully!";
