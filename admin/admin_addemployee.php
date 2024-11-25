@@ -1,4 +1,5 @@
 <?php
+    session_start(); // Start the session to access session variables
     include '..\admin\adminnavbar.php';
 ?>
 
@@ -17,11 +18,117 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
-
     </style>
-
 </head>
 <body>
+    <!-- Alert Section -->
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div id="success-alert" class="alert alert-success shadow-lg mb-4 fixed top-2 left-5 w-auto max-w-xs">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m0 0l2 2m-2-2l-2-2M6 6h12m0 6H6m0 6h12" /></svg>
+                <span><?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?></span>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div id="error-alert" class="alert alert-error shadow-lg mb-4 fixed top-2 left-5 w-auto max-w-xs">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <span><?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?></span>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(() => {
+            const successAlert = document.getElementById('success-alert');
+            const errorAlert = document.getElementById('error-alert');
+            if (successAlert) successAlert.style.display = 'none';
+            if (errorAlert) errorAlert.style.display = 'none';
+        }, 5000); // 5 seconds
+    </script>
+
+
+
+    <!-- Form Section -->
+    <div class="hero bg-base-200 min-h-screen flex items-center justify-center py-6">
+        <div class="card bg-base-100 w-full max-w-4xl shrink-0 shadow-2xl">
+            <div class="text-center lg:text-above">
+                <h1 class="py-6 text-3xl font-bold">Add a New Employee</h1>
+            </div>
+
+            <form action="..\authentication\add_employee.php" method="post" class="card-body">
+                <!-- Name Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">First Name</span>
+                        </label>
+                        <input type="text" name="firstName" placeholder="First Name" class="input input-bordered w-full" required />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Last Name</span>
+                        </label>
+                        <input type="text" name="lastName" placeholder="Last Name" class="input input-bordered w-full" required />
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Address</span>
+                    </label>
+                    <input type="text" name="address" placeholder="Street Address" class="input input-bordered w-full" required />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">City</span>
+                        </label>
+                        <input type="text" name="city" placeholder="City" class="input input-bordered w-full" required />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Postal Code</span>
+                        </label>
+                        <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" required />
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Email</span>
+                    </label>
+                    <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required />
+                </div>
+
+                <!-- Password and Repeat Password Fields -->
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Password</span>
+                    </label>
+                    <input type="password" name="password" placeholder="Password" class="input input-bordered w-full" required />
+                </div>
+
+                <div class="form-control mt-4">
+                    <label class="label">
+                        <span class="label-text">Repeat Password</span>
+                    </label>
+                    <input type="password" name="repeat_password" placeholder="Repeat Password" class="input input-bordered w-full" required />
+                </div>
+
+                <!-- Create Account Button -->
+                <div class="form-control mt-6">
+                    <button class="btn bg-red-500 hover:bg-red-700 text-white">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 <?php
     include '..\admin\admin_footer.php';
