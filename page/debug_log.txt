@@ -49,3 +49,12 @@ HTTP Status Code: 200
 Payload: {"data":{"attributes":{"amount":449700,"description":"3 x LED Headlight Bulbs","currency":"PHP"}}}
 Response: {"data":{"id":"link_SBdvVLugnkPEriHATzpUQwPh","type":"link","attributes":{"amount":449700,"archived":false,"currency":"PHP","description":"3 x LED Headlight Bulbs","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/zck3bzg","reference_number":"zck3bzg","created_at":1733226955,"updated_at":1733226955,"payments":[]}}}
 HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":149900,"description":"1 x LED Headlight Bulbs","currency":"PHP"}}}
+Response: {"data":{"id":"link_2R2La5bjYnp8nq4g6h7XDsQQ","type":"link","attributes":{"amount":149900,"archived":false,"currency":"PHP","description":"1 x LED Headlight Bulbs","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/jRgKFTC","reference_number":"jRgKFTC","created_at":1733294725,"updated_at":1733294725,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_PsHPwKTvd3rxVmz4YnhLoizg","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/FT58MQW","reference_number":"FT58MQW","created_at":1733295527,"updated_at":1733295527,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_6mNTVayuA2TUb1XMQuXYnGWp","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/VWBud9d","reference_number":"VWBud9d","created_at":1733298815,"updated_at":1733298815,"payments":[]}}}
+HTTP Status Code: 200
