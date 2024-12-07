@@ -1,6 +1,9 @@
 <?php
+session_start();
+print_r($_SESSION);
 include '..\page\topnavbar.php';
 include '..\authentication\db.php';
+
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
@@ -111,6 +114,11 @@ if ($result === false) {
 
 
 
+
+
+
+
+
     </script>
 </head>
 <body class="bg-base-100 text-base-content">
@@ -187,6 +195,7 @@ if ($result === false) {
                 <div class="card-actions justify-end">
                     <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300" onclick="closeModal()">Close</button>
                     <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300" onclick="checkout()">Checkout</button>
+                    <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300" onclick="addToCart()">Add to Cart</button>
                 </div>
             </div>
         </div>

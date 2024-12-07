@@ -58,3 +58,24 @@ HTTP Status Code: 200
 Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
 Response: {"data":{"id":"link_6mNTVayuA2TUb1XMQuXYnGWp","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/VWBud9d","reference_number":"VWBud9d","created_at":1733298815,"updated_at":1733298815,"payments":[]}}}
 HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_eAq312CcVa93Tqgm9KWaww7j","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/xGDxcG9","reference_number":"xGDxcG9","created_at":1733478477,"updated_at":1733478477,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_53rA51qgCs1hywGvvHKxCPij","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/tJsTope","reference_number":"tJsTope","created_at":1733478775,"updated_at":1733478775,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_ZdjuwSPbvVRwGMU5s4ZNLU4C","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/G2XmQdM","reference_number":"G2XmQdM","created_at":1733482259,"updated_at":1733482259,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_VfUt8GnyWQjGPbrnGUHs3CYi","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/d8gFXWk","reference_number":"d8gFXWk","created_at":1733483333,"updated_at":1733483333,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_8EpxhbA7GM3uCrF8WwGS4YUB","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/5eyhDDB","reference_number":"5eyhDDB","created_at":1733483505,"updated_at":1733483505,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":249900,"description":"1 x Motorcycle Brake Pads","currency":"PHP"}}}
+Response: {"data":{"id":"link_uH6WJYEpT6CR4ENePWikSBKD","type":"link","attributes":{"amount":249900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Brake Pads","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/rZ6CwMg","reference_number":"rZ6CwMg","created_at":1733483865,"updated_at":1733483865,"payments":[]}}}
+HTTP Status Code: 200
+Payload: {"data":{"attributes":{"amount":499900,"description":"1 x Motorcycle Helmet","currency":"PHP"}}}
+Response: {"data":{"id":"link_Dqgc2fRq9YfbgnfrYsBtC8pL","type":"link","attributes":{"amount":499900,"archived":false,"currency":"PHP","description":"1 x Motorcycle Helmet","livemode":false,"fee":0,"remarks":null,"status":"unpaid","tax_amount":null,"taxes":[],"checkout_url":"https://pm.link/org-MP4dYGKiku7tJagb5gMCL6Yu/test/i5y2ZcC","reference_number":"i5y2ZcC","created_at":1733488053,"updated_at":1733488053,"payments":[]}}}
+HTTP Status Code: 200

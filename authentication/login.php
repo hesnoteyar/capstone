@@ -1,17 +1,15 @@
 <?php
 session_start();
-include '..\authentication\db.php'; 
+include '..\authentication\db.php';
 
-// Initialize the error message
-$_SESSION['error_message'] = "";
+$error_message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect and sanitize form inputs
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
     if (empty($email) || empty($password)) {
-        $_SESSION['error_message'] = "Email and password are required.";
+        $error_message = "Email and password are required.";
     } else {
         $stmt = $conn->prepare("SELECT id, password, firstName, lastName FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -28,13 +26,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['firstName'] = $first_name;
                 $_SESSION['lastName'] = $last_name;
 
+                session_write_close(); // Ensure session data is written
+
                 header("Location: ..\page\shop.php");
                 exit;
             } else {
-                $_SESSION['error_message'] = "Invalid password.";
+                $error_message = "Invalid password.";
             }
         } else {
-            $_SESSION['error_message'] = "No account found with that email.";
+            $error_message = "No account found with that email.";
         }
 
         $stmt->close();
@@ -42,6 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $conn->close();
-header("Location: ..\index.php");
-exit;
+
+if (!empty($error_message)) {
+    $_SESSION['error_message'] = $error_message;
+    header("Location: ..\index.php");
+    exit;
+}
+
 ?>

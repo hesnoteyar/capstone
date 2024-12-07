@@ -50,8 +50,6 @@
         }, 5000); // 5 seconds
     </script>
 
-
-
     <!-- Form Section -->
 <div class="bg-base-200 min-h-screen flex items-center justify-center py-6">
     <div class="card bg-base-100 w-full max-w-3xl shrink-0 shadow-2xl">
@@ -82,7 +80,6 @@
                     <input type="text" name="lastName" placeholder="Last Name" class="input input-bordered w-full" required />
                 </div>
             </div>
-
 
             <!-- Address Section -->
             <div class="form-control mt-4">
@@ -128,6 +125,20 @@
                     <span class="label-text">Repeat Password</span>
                 </label>
                 <input type="password" name="repeat_password" placeholder="Repeat Password" class="input input-bordered w-full" required />
+            </div>
+
+            <!-- Role Field -->
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Role</span>
+                </label>
+                <select name="role" class="select select-bordered w-full" required>
+                    <option value="Cashier">Cashier</option>
+                    <option value="Mechanic">Mechanic</option>
+                    <option value="Head Mechanic">Head Mechanic</option>
+                    <option value="Cleaner">Cleaner</option>
+                    <option value="Maintenance">Maintenance</option>
+                </select>
             </div>
 
             <!-- Create Account Button -->

@@ -43,7 +43,7 @@
               <li><a href="..\employee\employee_workhours.php">Work Hours</a></li>
               <li><a href="..\employee\employee_leave.php">Leave Application</a></li>
               <li><a href="..\employee\employee_request.php">Request Schedule</a></li>
-              <li><a href="..\authentication\logout.php">Logout</a></li>
+              <li><a href="..\employee\employee_logout.php">Logout</a></li>
             </ul>
           </div>
         </div>
