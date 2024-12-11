@@ -2,8 +2,12 @@
 session_start();
 include '..\authentication\db.php'; // Include your database connection file
 
-// Firebase API Key (Replace with your actual API Key)
-$firebase_api_key = 'AIzaSyB39USZ0uO0LFqc3cYuGwidw1WfQsjFYxk';
+
+require '..\vendor\autoload.php';
+
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize form inputs
@@ -35,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Check if the email already exists in MySQL database
+    // Check if the email already exists
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -48,73 +52,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash the password before storing it
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Insert user into the MySQL database
-        $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
-        $stmt->execute();
+        // Generate OTP
+        $otp = rand(100000, 999999);
 
-        // Send request to Firebase Authentication API
-        $data = [
-            'email' => $email,
-            'password' => $password,
-            'returnSecureToken' => true
-        ];
+        // Store user data with OTP (user is inactive until OTP is verified)
+        $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password, otp, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)");
+        $stmt->bind_param("ssssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password, $otp);
 
-        $url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' . $firebase_api_key;
+        if ($stmt->execute()) {
+            // Send OTP email
+            try {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'racingaba@gmail.com'; 
+                $mail->Password = 'bvpp eodt xqmq hqcu'; // Replace with your email password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
 
-        $options = [
-            'http' => [
-                'header' => "Content-Type: application/json",
-                'method' => 'POST',
-                'content' => json_encode($data)
-            ]
-        ];
+                $mail->setFrom('racingaba@gmail.com', 'ABA RACING E COMMERCE'); // Replace with your email and name
+                $mail->addAddress($email); // Recipient's email
+                $mail->isHTML(true);
+                $mail->Subject = 'Your OTP for Registration';
+                $mail->Body = "<h1>Hello, $first_name $last_name!</h1>
+                               <p>Your OTP for registration is: <strong>$otp</strong></p>
+                               <p>Enter this OTP on the verification page to complete your registration.</p>";
 
-        $context = stream_context_create($options);
-        $response = file_get_contents($url, false, $context);
+                $mail->send();
 
-        if ($response === FALSE) {
-            $_SESSION['error_message'] = "Error with Firebase registration.";
+                // Redirect to OTP verification page
+                $_SESSION['email'] = $email;
+                header("Location: ..\index.php");
+            } catch (Exception $e) {
+                $_SESSION['error_message'] = "Registration succeeded, but OTP email could not be sent. Mailer Error: " . $mail->ErrorInfo;
+                header("Location: ..\index.php");
+            }
+        } else {
+            $_SESSION['error_message'] = "Error: " . $stmt->error;
             header("Location: " . $_SERVER['HTTP_REFERER']);
-            exit;
         }
-
-        // Parse the Firebase response
-        $response_data = json_decode($response, true);
-
-        if (isset($response_data['error'])) {
-            $_SESSION['error_message'] = "Firebase error: " . $response_data['error']['message'];
-            header("Location: " . $_SERVER['HTTP_REFERER']);
-            exit;
-        }
-
-        // Send verification email
-        $id_token = $response_data['idToken'];
-        $verify_url = 'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' . $firebase_api_key;
-        $verify_data = [
-            'requestType' => 'VERIFY_EMAIL',
-            'idToken' => $id_token
-        ];
-
-        $verify_options = [
-            'http' => [
-                'header' => "Content-Type: application/json",
-                'method' => 'POST',
-                'content' => json_encode($verify_data)
-            ]
-        ];
-
-        $verify_context = stream_context_create($verify_options);
-        $verify_response = file_get_contents($verify_url, false, $verify_context);
-
-        if ($verify_response === FALSE) {
-            $_SESSION['error_message'] = "Error sending verification email.";
-            header("Location: " . $_SERVER['HTTP_REFERER']);
-            exit;
-        }
-
-        // Redirect user to login page after successful registration
-        header("Location: ..\index.php");
     }
 
     $stmt->close();
