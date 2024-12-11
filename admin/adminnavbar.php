@@ -41,6 +41,7 @@
               <li><a href="..\admin\admin_dashboard.php">Dashboard</a></li>
               <li><a href="..\admin\admin_payroll.php">Payroll</a></li>
               <li><a href="..\admin\admin_manageemployee.php">Manage Employees</a></li>
+              <li><a href="..\admin\admin_logs.php">Audit Logs</a></li>
               <li><a href="..\admin\admin_addemployee.php">Add New Employee</a></li>
               <li><a href="..\authentication\adminlogout.php">Logout</a></li>
             </ul>

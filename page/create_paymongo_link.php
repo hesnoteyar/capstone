@@ -36,9 +36,6 @@ $payload = [
     ]
 ];
 
-// Log the payload for debugging
-file_put_contents('debug_log.txt', "Payload: " . json_encode($payload) . PHP_EOL, FILE_APPEND);
-
 // Send request to PayMongo API
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, 'https://api.paymongo.com/v1/links');
@@ -53,10 +50,6 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 $response = curl_exec($ch);
 $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-// Log the API response
-file_put_contents('debug_log.txt', "Response: " . $response . PHP_EOL, FILE_APPEND);
-file_put_contents('debug_log.txt', "HTTP Status Code: $statusCode" . PHP_EOL, FILE_APPEND);
-
 curl_close($ch);
 
 // Handle success (200 OK or 201 Created)
@@ -68,16 +61,12 @@ if ($statusCode === 200 || $statusCode === 201) {
         echo json_encode(['checkout_url' => $checkoutUrl]);
         exit;
     } else {
-        // Log missing checkout URL
-        file_put_contents('debug_log.txt', "Checkout URL not found in response" . PHP_EOL, FILE_APPEND);
         http_response_code(500);
         echo json_encode(['error' => 'Checkout URL not found']);
         exit;
     }
+} else {
+    http_response_code($statusCode);
+    echo json_encode(['error' => 'Failed to create checkout link']);
 }
-
-// Log errors for other status codes
-file_put_contents('debug_log.txt', "Error Info: " . curl_error($ch) . PHP_EOL, FILE_APPEND);
-http_response_code($statusCode);
-echo json_encode(['error' => 'Failed to create payment link', 'details' => $response]);
 ?>

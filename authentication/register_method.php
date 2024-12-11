@@ -2,6 +2,9 @@
 session_start();
 include '..\authentication\db.php'; // Include your database connection file
 
+// Firebase API Key (Replace with your actual API Key)
+$firebase_api_key = 'AIzaSyB39USZ0uO0LFqc3cYuGwidw1WfQsjFYxk';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize form inputs
     $first_name = trim($_POST['firstName']);
@@ -32,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Check if the email already exists
+    // Check if the email already exists in MySQL database
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -45,16 +48,73 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash the password before storing it
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Prepare an insert statement
+        // Insert user into the MySQL database
         $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("sssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
+        $stmt->execute();
 
-        if ($stmt->execute()) {
-            header("Location: ..\index.php");
-        } else {
-            $_SESSION['error_message'] = "Error: " . $stmt->error;
+        // Send request to Firebase Authentication API
+        $data = [
+            'email' => $email,
+            'password' => $password,
+            'returnSecureToken' => true
+        ];
+
+        $url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' . $firebase_api_key;
+
+        $options = [
+            'http' => [
+                'header' => "Content-Type: application/json",
+                'method' => 'POST',
+                'content' => json_encode($data)
+            ]
+        ];
+
+        $context = stream_context_create($options);
+        $response = file_get_contents($url, false, $context);
+
+        if ($response === FALSE) {
+            $_SESSION['error_message'] = "Error with Firebase registration.";
             header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit;
         }
+
+        // Parse the Firebase response
+        $response_data = json_decode($response, true);
+
+        if (isset($response_data['error'])) {
+            $_SESSION['error_message'] = "Firebase error: " . $response_data['error']['message'];
+            header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        // Send verification email
+        $id_token = $response_data['idToken'];
+        $verify_url = 'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' . $firebase_api_key;
+        $verify_data = [
+            'requestType' => 'VERIFY_EMAIL',
+            'idToken' => $id_token
+        ];
+
+        $verify_options = [
+            'http' => [
+                'header' => "Content-Type: application/json",
+                'method' => 'POST',
+                'content' => json_encode($verify_data)
+            ]
+        ];
+
+        $verify_context = stream_context_create($verify_options);
+        $verify_response = file_get_contents($verify_url, false, $verify_context);
+
+        if ($verify_response === FALSE) {
+            $_SESSION['error_message'] = "Error sending verification email.";
+            header("Location: " . $_SERVER['HTTP_REFERER']);
+            exit;
+        }
+
+        // Redirect user to login page after successful registration
+        header("Location: ..\index.php");
     }
 
     $stmt->close();
