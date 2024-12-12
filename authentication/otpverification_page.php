@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->execute();
 
         $_SESSION['success_message'] = "Account successfully activated!";
-        header("Location: ..\index.php");
+        header("Location: ..\page\shop.php");
     } else {
         $_SESSION['error_message'] = "Invalid OTP.";
         header("Location: " . $_SERVER['HTTP_REFERER']);

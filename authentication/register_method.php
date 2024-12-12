@@ -1,13 +1,7 @@
 <?php
 session_start();
-include '..\authentication\db.php'; // Include your database connection file
-
-
-require '..\vendor\autoload.php';
-
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+include '../authentication/db.php'; // Include your database connection file
+require '../vendor/autoload.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize form inputs
@@ -52,42 +46,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Hash the password before storing it
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Generate OTP
-        $otp = rand(100000, 999999);
-
-        // Store user data with OTP (user is inactive until OTP is verified)
-        $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password, otp, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)");
-        $stmt->bind_param("ssssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password, $otp);
+        // Store user data with placeholder OTP (e.g., NULL)
+        $stmt = $conn->prepare("INSERT INTO users (firstName, lastName, address, city, postalCode, email, password, otp, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0)");
+        $stmt->bind_param("sssssss", $first_name, $last_name, $address, $city, $postal_code, $email, $hashed_password);
 
         if ($stmt->execute()) {
-            // Send OTP email
-            try {
-                $mail = new PHPMailer(true);
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
-                $mail->SMTPAuth = true;
-                $mail->Username = 'racingaba@gmail.com'; 
-                $mail->Password = 'bvpp eodt xqmq hqcu'; // Replace with your email password
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                $mail->setFrom('racingaba@gmail.com', 'ABA RACING E COMMERCE'); // Replace with your email and name
-                $mail->addAddress($email); // Recipient's email
-                $mail->isHTML(true);
-                $mail->Subject = 'Your OTP for Registration';
-                $mail->Body = "<h1>Hello, $first_name $last_name!</h1>
-                               <p>Your OTP for registration is: <strong>$otp</strong></p>
-                               <p>Enter this OTP on the verification page to complete your registration.</p>";
-
-                $mail->send();
-
-                // Redirect to OTP verification page
-                $_SESSION['email'] = $email;
-                header("Location: ..\index.php");
-            } catch (Exception $e) {
-                $_SESSION['error_message'] = "Registration succeeded, but OTP email could not be sent. Mailer Error: " . $mail->ErrorInfo;
-                header("Location: ..\index.php");
-            }
+            $_SESSION['email'] = $email; // Store email in session
+            $_SESSION['success_message'] = "Registration successful. Please verify your account.";
+            header("Location: ../index.php");
         } else {
             $_SESSION['error_message'] = "Error: " . $stmt->error;
             header("Location: " . $_SERVER['HTTP_REFERER']);

@@ -11,24 +11,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || empty($password)) {
         $error_message = "Email and password are required.";
     } else {
-        $stmt = $conn->prepare("SELECT id, password, firstName, lastName, is_active FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, password, firstName, lastName FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
 
         if ($stmt->num_rows == 1) {
-            $stmt->bind_result($id, $hashed_password, $first_name, $last_name, $is_active);
+            $stmt->bind_result($id, $hashed_password, $first_name, $last_name);
             $stmt->fetch();
 
             if (password_verify($password, $hashed_password)) {
-                if ($is_active == 0) {
-                    // Redirect to OTP input if not verified
-                    $_SESSION['email'] = $email;
-                    $_SESSION['user_id'] = $id; // Store the user ID in the session
-                    header("Location: ..\authentication\otp_input.php");
-                    exit;
-                }
-
                 // Log in the user
                 $_SESSION['loggedin'] = true;
                 $_SESSION['id'] = $id;

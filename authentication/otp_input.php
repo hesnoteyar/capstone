@@ -1,6 +1,5 @@
 <?php 
 session_start();
-
 ?>
 
 <!DOCTYPE html>
@@ -18,7 +17,7 @@ session_start();
     <div class="flex items-center justify-center min-h-screen">
         <div class="p-8 bg-white shadow-md rounded-lg w-full max-w-sm">
             <h2 class="text-2xl font-bold text-center mb-6">OTP Verification</h2>
-            <form action="otp_verification_handler.php" method="POST" class="space-y-4">
+            <form action="otpverification_page.php" method="POST" class="space-y-4">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Enter OTP</span>

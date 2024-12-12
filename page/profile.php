@@ -13,13 +13,14 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 // Retrieve user data from the database
 $id = $_SESSION['id'];
-$query = "SELECT firstName, lastName, address, city, postalCode, email, profile_image FROM users WHERE id = ?";
+$query = "SELECT firstName, lastName, address, city, postalCode, email, profile_image, is_active FROM users WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id);
 $stmt->execute();
-$stmt->bind_result($firstName, $lastName, $address, $city, $postalCode, $email, $profileImage);
+$stmt->bind_result($firstName, $lastName, $address, $city, $postalCode, $email, $profileImage, $isActive);
 $stmt->fetch();
 $stmt->close();
+
 
 // Handle form submission to save edited data
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_changes'])) {
@@ -157,6 +158,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
             <button type="button" onclick="document.getElementById('imageInput').click()" class="btn btn-outline mt-4">Select Photo</button>
             <button type="submit" name="saveImage" class="btn btn-error mt-4">Save Photo</button>
           </form>
+
+          <div class="mt-4 flex flex-col items-center justify-center">
+    <h2 class="text-lg font-semibold">
+        Verification Status:
+        <span class="<?php echo $isActive ? 'text-green-600' : 'text-red-600'; ?>">
+            <?php echo $isActive ? 'Verified' : 'Not Verified'; ?>
+        </span>
+    </h2>
+    <?php if (!$isActive): ?>
+        <form method="POST" action="..\authentication\generate_otp.php" class="mt-2">
+            <button type="submit" class="btn btn-error">
+                Verify Now
+            </button>
+        </form>
+    <?php endif; ?>
+</div>
+
         </div>
 
         <script>
@@ -235,6 +253,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
       </div>
     </div>
   </div>
+
+  
 
   <br>
   <br>

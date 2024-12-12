@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,15 @@
         <!-- Alert Section -->
         <?php
         session_start();
+        if (isset($_SESSION['success_message']) && !empty($_SESSION['success_message'])) {
+            echo '<div class="alert alert-success shadow-lg absolute top-4 left-4 max-w-sm">';
+            echo '<div>';
+            echo '<span>' . $_SESSION['success_message'] . '</span>';
+            echo '</div>';
+            echo '</div>';
+            unset($_SESSION['success_message']); // Clear the message after displaying it
+        }
+        
         if (isset($_SESSION['error_message']) && !empty($_SESSION['error_message'])) {
             echo '<div class="alert alert-error shadow-lg absolute top-4 left-4 max-w-sm">';
             echo '<div>';
