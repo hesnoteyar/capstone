@@ -104,10 +104,10 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         <?php else: ?>
             <!-- Empty Cart -->
             <div class="text-center">
-                <img src="../media/cart 1.png" alt="Empty Cart" class="w-40 h-40 mx-auto mb-6">
+                <img src="../media/cart 1.png" alt="Empty Cart" class="w-50 h-40 mx-auto mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">Your Cart is Empty</h1>
                 <p class="text-gray-500 mt-2">Looks like you haven’t added anything to your cart yet.</p>
-                <a href="../page/shop.php" class="btn btn-primary mt-6">Go to Shop</a>
+                <a href="../page/shop.php" class="btn btn-error mt-6">Go to Shop</a>
             </div>
         <?php endif; ?>
     </div>
@@ -139,25 +139,64 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             document.getElementById('deleteModal').classList.remove('modal-open');
         }
 
-        async function proceedToCheckout() {
-            try {
-                const response = await fetch('create_checkout.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                });
+async function proceedToCheckout() {
+    try {
+        const response = await fetch('create_checkout.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
 
-                const data = await response.json();
+        const data = await response.json();
 
-                if (data.checkout_url) {
-                    window.open(data.checkout_url, '_blank');
-                } else {
-                    alert('Error: ' + (data.error || 'Unable to generate checkout link.'));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An unexpected error occurred.');
-            }
+        if (data.checkout_url) {
+            window.open(data.checkout_url, '_blank');
+        } else if (data.error) {
+            // Display error using DaisyUI banner
+            showBanner('error', data.error);
+        } else {
+            alert('An unexpected error occurred.');
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An unexpected error occurred.');
+    }
+}
+
+// Function to display DaisyUI banner
+function showBanner(type, message) {
+    const banner = document.createElement('div');
+    banner.className = `alert alert-${type} shadow-lg fixed top-5 left-0 transform p-4 text-md z-50`; // Positioning and styling
+    banner.style.width = '50%'; // Set width to 50%
+    banner.style.maxWidth = '600px'; // Optional: set a max width for larger screens
+    banner.style.marginLeft = '0'; // Align to the left
+
+    // Create content for the banner
+    const bannerContent = document.createElement('div');
+    bannerContent.classList.add('flex', 'items-center');
+
+    const icon = document.createElement('span');
+    icon.classList.add('material-icons', 'mr-2');
+    icon.textContent = type === '' ? 'error' : ''; // Adjust icon based on type
+
+    const text = document.createElement('span');
+    text.textContent = message;
+
+    // Append elements to the banner
+    bannerContent.appendChild(icon);
+    bannerContent.appendChild(text);
+    banner.appendChild(bannerContent);
+
+    // Append to body
+    document.body.appendChild(banner);
+
+    // Optionally remove the banner after a few seconds
+    setTimeout(() => {
+        banner.remove();
+    }, 5000); // Remove after 5 seconds
+}
+
+
+
     </script>
 
 </body>

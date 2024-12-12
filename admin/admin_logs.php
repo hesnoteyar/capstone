@@ -83,7 +83,8 @@ $auditLogs = $conn->query($auditQuery);
             <?php endif; ?>
         </div>
     </div>
-
+<br>
+<br>
     <!-- Footer Section -->
     <?php include '..\admin\admin_footer.php'; ?>
 </body>

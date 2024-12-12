@@ -52,12 +52,41 @@ if ($result === false) {
             document.getElementById('product-modal').classList.add('hidden');
         }
 
-        function checkout() {
+function checkout() {
+    fetch('check_user_status.php', {
+        method: 'POST',
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.status === 'success') {
             const quantity = document.getElementById('quantity').value;
             const productName = document.getElementById('modal-product-name').textContent;
             const price = parseFloat(document.getElementById('modal-price-hidden').value);
             const totalPrice = Math.round(price * quantity * 100); // PayMongo expects amount in centavos
 
+            // Log the checkout action to the audit_logs table
+            fetch('log_checkout.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: data.id,  // Assuming user_id is in the response
+                    action: 'CHECKOUT',
+                    item: `${quantity} x ${productName}`,
+                    total_price: totalPrice
+                }),
+            })
+            .then((logResponse) => {
+                if (!logResponse.ok) {
+                    console.error('Error logging checkout action:', logResponse.status, logResponse.statusText);
+                }
+            })
+            .catch((error) => {
+                console.error('Error logging checkout action:', error.message);
+            });
+
+            // Proceed with the checkout
             fetch('create_paymongo_link.php', {
                 method: 'POST',
                 headers: {
@@ -81,14 +110,57 @@ if ($result === false) {
                     window.open(data.checkout_url, '_blank');
                 } else {
                     console.error('Missing checkout URL in response:', data);
-                    throw new Error('Failed to retrieve checkout URL');
+                    showBanner('error', 'Failed to retrieve checkout URL');
                 }
             })
             .catch((error) => {
                 console.error('Checkout Error:', error.message);
-                alert('An error occurred during checkout. Please try again.');
+                showBanner('error', 'An error occurred during checkout. Please try again.');
             });
+        } else {
+            showBanner('error', data.message); // Show error message in banner if user is not active
         }
+    })
+    .catch((error) => {
+        console.error('Validation Error:', error);
+        showBanner('error', 'An error occurred while validating your account status.');
+    });
+}
+
+
+
+        function showBanner(type, message) {
+            const banner = document.createElement('div');
+            banner.classList.add('alert', 'w-full', type === 'error' ? 'alert-error' : 'alert-success', 'fixed', 'top-5', 'left-0', 'z-50', 'p-2', 'text-m');
+
+            // Set a specific width for the banner, e.g., 80% of the screen width or a fixed pixel width
+            banner.style.width = '40%';  // Adjust this value to change the banner width
+            banner.style.margin = '0 auto';  // Centers the banner
+
+            const bannerContent = document.createElement('div');
+            bannerContent.classList.add('flex', 'items-center');
+            
+            const icon = document.createElement('span');
+            icon.classList.add('material-icons', 'mr-2');
+            icon.textContent = type === '' ? 'error' : '';
+
+            const text = document.createElement('span');
+            text.textContent = message;
+            
+            bannerContent.appendChild(icon);
+            bannerContent.appendChild(text);
+            banner.appendChild(bannerContent);
+
+            // Append to body
+            document.body.appendChild(banner);
+
+            // Optionally remove the banner after a few seconds
+            setTimeout(() => {
+                banner.remove();
+            }, 5000); // Remove after 5 seconds
+        }
+
+
 
         function addToCart() {
             const productName = document.getElementById('modal-product-name').textContent; // Get product name from modal
@@ -119,6 +191,7 @@ if ($result === false) {
     </script>
 </head>
 <body class="bg-base-100 text-base-content">
+    
 <div class="flex min-h-screen">
     <form action="" method="GET" class="w-1/4 bg-base-200 p-6 shadow-lg h-screen sticky top-0">
         <h3 class="font-bold text-2xl mb-6">Filters</h3>

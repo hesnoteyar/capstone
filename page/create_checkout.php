@@ -5,6 +5,26 @@ include '..\authentication\db.php';
 // Assuming user_id is stored in the session
 $user_id = $_SESSION['id'];
 
+// Validate if the user's account is active
+$sql_user = "SELECT is_active FROM users WHERE id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param("i", $user_id);
+$stmt_user->execute();
+$result_user = $stmt_user->get_result();
+
+if ($result_user->num_rows > 0) {
+    $user = $result_user->fetch_assoc();
+    
+    // Check if user is inactive
+    if ($user['is_active'] == 0) {
+        echo json_encode(['error' => 'Please verify your email before proceeding to checkout.']);
+        exit;
+    }
+} else {
+    echo json_encode(['error' => 'Invalid user.']);
+    exit;
+}
+
 // Fetch cart items for the user
 $sql = "SELECT product_name AS name, price, quantity FROM cart WHERE user_id = ?";
 $stmt = $conn->prepare($sql);
@@ -77,13 +97,12 @@ curl_close($ch);
 // Decode and handle PayMongo response
 $response_data = json_decode($response, true);
 
-
 if ($http_code === 200 && isset($response_data['data']['attributes']['checkout_url'])) {
     $checkout_url = $response_data['data']['attributes']['checkout_url'];
     // Return the checkout URL as JSON
     echo json_encode(['checkout_url' => $checkout_url]);
 } else {
     // Log error details for debugging
- 
+    echo json_encode(['error' => 'Failed to create checkout session.']);
 }
 ?>
