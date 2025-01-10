@@ -62,7 +62,7 @@ $checkout_data = [
             'currency' => 'PHP',
             'description' => 'Cart Checkout',
             'redirect' => [
-                'success' => 'http://localhost/capstone/page/checkout_success.php', // Replace with your success URL
+                'success' => 'https://www.messenger.com/t/61550100155472', // Replace with your success URL
                 'failed' => 'https://yourwebsite.com/failed',   // Replace with your failure URL
             ],
             'metadata' => ['user_id' => $user_id]

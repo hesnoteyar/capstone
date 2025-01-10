@@ -24,7 +24,7 @@ if (isset($_SESSION['email'])) {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'racingaba@gmail.com';
-            $mail->Password = 'bvpp eodt xqmq hqcu'; // Replace with your email password
+            $mail->Password = 'rbwc tfbr qvvs tslh'; // Replace with your email password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
@@ -33,8 +33,11 @@ if (isset($_SESSION['email'])) {
             $mail->isHTML(true);
             $mail->Subject = 'Your OTP for Registration';
             $mail->Body = "<h1>Hello!</h1>
-                           <p>Your OTP for registration is: <strong>$otp</strong></p>
-                           <p>Enter this OTP on the verification page to complete your registration.</p>";
+                           <p>Your OTP for registration is: <h1>$otp</h1></p>
+                           <p>Enter this OTP on the verification page to complete your registration.</p>
+                           <p>This message is intended for the owner of the email address and contains confidential information</p>
+                           <p><strong>--THIS IS AN ELECTRONICALLY GENERATED MESSAGE, PLEASE DO NOT REPLY--</strong></p>";
+                        
 
             $mail->send();
 
