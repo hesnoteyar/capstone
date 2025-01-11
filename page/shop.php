@@ -82,72 +82,79 @@ if ($result === false) {
             document.getElementById('product-modal').classList.add('hidden');
             document.body.classList.remove('no-scroll'); // Enable background scrolling
         }
+        function fetchReviews(productId, page = 1) {
+    fetch('fetch_reviews.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ product_id: productId, page: page, limit: 5 }) // Limit to 5 reviews per page
+    })
+    .then(response => response.json())
+    .then(data => {
+        const reviewsContainer = document.getElementById('reviews-container');
+        reviewsContainer.innerHTML = ''; // Clear existing reviews
 
-        function fetchReviews(productId) {
-            fetch('fetch_reviews.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ product_id: productId })
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                return response.json(); // Read the response as JSON
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                const reviewsContainer = document.getElementById('reviews-container');
-                reviewsContainer.innerHTML = ''; // Clear existing reviews
+        if (data.status === 'success') {
+            data.reviews.forEach(review => {
+                const reviewElement = document.createElement('div');
+                reviewElement.classList.add('p-4', 'border', 'rounded-md', 'mb-4');
 
-                if (data.status === 'success') {
-                    data.reviews.forEach(review => {
-                        const reviewElement = document.createElement('div');
-                        reviewElement.classList.add('p-4', 'border', 'rounded-md');
+                const ratingElement = document.createElement('div');
+                ratingElement.classList.add('flex', 'items-center', 'mb-2');
 
-                        const ratingElement = document.createElement('div');
-                        ratingElement.classList.add('flex', 'items-center', 'mb-2');
-
-                        const ratingStars = document.createElement('div');
-                        ratingStars.classList.add('rating', 'mr-2');
-                        for (let i = 1; i <= 5; i++) {
-                            const star = document.createElement('input');
-                            star.type = 'radio';
-                            star.classList.add('mask', 'mask-star-2', 'bg-warning');
-                            star.disabled = true;
-                            if (i <= review.rating) {
-                                star.checked = true;
-                            }
-                            ratingStars.appendChild(star);
-                        }
-
-                        const username = document.createElement('span');
-                        username.classList.add('text-gray-600');
-                        username.textContent = review.username;
-
-                        ratingElement.appendChild(ratingStars);
-                        ratingElement.appendChild(username);
-
-                        const reviewText = document.createElement('p');
-                        reviewText.classList.add('text-gray-700');
-                        reviewText.textContent = review.review_text;
-
-                        reviewElement.appendChild(ratingElement);
-                        reviewElement.appendChild(reviewText);
-
-                        reviewsContainer.appendChild(reviewElement);
-                    });
-                } else {
-                    const noReviews = document.createElement('p');
-                    noReviews.textContent = 'No reviews found.';
-                    reviewsContainer.appendChild(noReviews);
+                // Dynamically render stars based on rating
+                const ratingStars = document.createElement('div');
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement('span');
+                    star.classList.add('inline-block', 'text-yellow-500', 'text-xl', 'mr-1');
+                    star.innerHTML = i <= review.rating ? '★' : '☆'; // Fill the star based on rating
+                    ratingStars.appendChild(star);
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching reviews:', error);
+
+                const username = document.createElement('span');
+                username.classList.add('text-gray-600', 'ml-2');
+                username.textContent = review.username;
+
+                ratingElement.appendChild(ratingStars);
+                ratingElement.appendChild(username);
+
+                const reviewText = document.createElement('p');
+                reviewText.classList.add('text-gray-700');
+                reviewText.textContent = review.review_text;
+
+                reviewElement.appendChild(ratingElement);
+                reviewElement.appendChild(reviewText);
+
+                reviewsContainer.appendChild(reviewElement);
             });
+
+            // Add pagination if there are multiple pages
+            if (data.total_pages > 1) {
+                const paginationContainer = document.createElement('div');
+                paginationContainer.classList.add('join', 'mt-4');
+
+                for (let i = 1; i <= data.total_pages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.classList.add('join-item', 'btn', i === page ? 'btn-active' : '');
+                    pageButton.textContent = i;
+                    pageButton.onclick = () => fetchReviews(productId, i);
+                    paginationContainer.appendChild(pageButton);
+                }
+
+                reviewsContainer.appendChild(paginationContainer);
+            }
+        } else {
+            const noReviews = document.createElement('p');
+            noReviews.textContent = 'No reviews found.';
+            reviewsContainer.appendChild(noReviews);
         }
+    })
+    .catch(error => {
+        console.error('Error fetching reviews:', error);
+    });
+}
+
 
         function checkout() {
             fetch('check_user_status.php', {
@@ -390,8 +397,8 @@ if ($result === false) {
     <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6 modal-content">
         <div class="modal-header">
             <h2 id="modal-product-name" class="text-3xl font-bold"></h2>
-            <button class="text-red-700 hover:text-red-00" onclick="closeModal()">
-                <span class="material-icons">Close</span>
+            <button class="text-red-700 hover:text-red-800" onclick="closeModal()">
+                <span class="material-icons">close</span>
             </button>
         </div>
         <div class="modal-body">
@@ -425,17 +432,19 @@ if ($result === false) {
 
             <!-- Review and Rating Section -->
             <div class="review-section">
+                <br>
+                <br>
                 <h3 class="text-xl font-bold mb-4">Leave a Review</h3>
                 
                 <!-- Star Rating -->
                 <div class="flex items-center mb-4">
                     <span class="text-gray-600 mr-3">Your Rating:</span>
                     <div class="rating">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-warning" value="1">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-warning" value="2">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-warning" value="3">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-warning" value="4">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-warning" value="5">
+                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1">
+                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2">
+                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3">
+                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4">
+                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5">
                     </div>
                 </div>
 
@@ -450,9 +459,12 @@ if ($result === false) {
             </div>
 
             <div class="review-section">
+                <br>
+                <br>
                 <h3 class="text-xl font-bold mb-4">Reviews</h3>
                 <div id="reviews-container" class="space-y-4">
                     <!-- Reviews will be dynamically inserted here -->
+                    <p>No product reviews</p>
                 </div>
             </div>
         </div>

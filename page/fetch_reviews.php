@@ -28,5 +28,5 @@ if (isset($data['product_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Missing product ID.']);
 }
 
-$conn->close();
+$conn->close(); 
 ?>
