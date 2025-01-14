@@ -4,7 +4,7 @@ session_start();
 
 // Ensure the user is logged in
 if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
-    echo "Please log in to record attendance.";
+    echo json_encode(['success' => false, 'message' => 'Please log in to record attendance.']);
     exit;
 }
 
@@ -14,7 +14,7 @@ $employee_id = $_POST['employee_id'];
 $date = $_POST['date'];
 
 if (empty($employee_id) || empty($date)) {
-    echo "Employee ID or Date is missing.";
+    echo json_encode(['success' => false, 'message' => 'Employee ID or Date is missing.']);
     exit;
 }
 
@@ -22,7 +22,7 @@ if ($action == 'clock_in') {
     $check_in_time = $_POST['check_in_time'];
 
     if (empty($check_in_time)) {
-        echo "Clock-In time is missing.";
+        echo json_encode(['success' => false, 'message' => 'Clock-In time is missing.']);
         exit;
     }
 
@@ -34,10 +34,10 @@ if ($action == 'clock_in') {
     $stmt->bind_param("iss", $employee_id, $check_in_datetime, $date);
 
     if ($stmt->execute()) {
-        echo "Clock-In recorded successfully!";
+        echo json_encode(['success' => true, 'message' => 'Clock-In recorded successfully!']);
     } else {
         error_log("Error recording clock-in: " . $stmt->error);
-        echo "Error recording clock-in: " . $stmt->error;
+        echo json_encode(['success' => false, 'message' => 'Error recording clock-in: ' . $stmt->error]);
     }
     $stmt->close();
 }
@@ -46,7 +46,7 @@ if ($action == 'clock_out') {
     $check_out_time = $_POST['check_out_time'];
 
     if (empty($check_out_time)) {
-        echo "Clock-Out time is missing.";
+        echo json_encode(['success' => false, 'message' => 'Clock-Out time is missing.']);
         exit;
     }
 
@@ -67,13 +67,13 @@ if ($action == 'clock_out') {
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
-            echo "Clock-Out recorded successfully!";
+            echo json_encode(['success' => true, 'message' => 'Clock-Out recorded successfully!']);
         } else {
-            echo "No matching record found for clock-out.";
+            echo json_encode(['success' => false, 'message' => 'No matching record found for clock-out.']);
         }
     } else {
         error_log("Error recording clock-out: " . $stmt->error);
-        echo "Error recording clock-out: " . $stmt->error;
+        echo json_encode(['success' => false, 'message' => 'Error recording clock-out: ' . $stmt->error]);
     }
     $stmt->close();
 }
