@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,7 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
-
+    <title>Customer Login</title>
 </head>
 <body>
     <div class="hero bg-base-200 min-h-screen flex items-center justify-center relative">
@@ -49,7 +48,7 @@
                 <div class="flex justify-center py-6">
                     <img src="media\small_logo.png" alt="">
                 </div>
-                <h1 class="py-6 text-3xl font-bold">Hi!, Welcome Back!</h1>
+                <h1 class="py-6 text-3xl font-bold">Hi Customer!</h1>
                 <p>Enter your email and password to access your account</p>
             </div>
 

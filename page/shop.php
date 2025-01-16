@@ -62,6 +62,17 @@ if ($result === false) {
         .review-section {
             width: 100%;
         }
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Hide scrollbar for the modal but keep it scrollable */
+        .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+        .modal-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
     </style>
     <script>
         function openModal(productName, description, categoryName, imageUrl, price, productId) {
@@ -71,6 +82,7 @@ if ($result === false) {
             document.getElementById('modal-image').src = imageUrl;
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
+            document.getElementById('modal-product-id').value = productId; // Set the product ID
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
 
@@ -334,6 +346,37 @@ if ($result === false) {
                 showBanner('error', 'An error occurred while submitting your review.');
             });
         }
+
+        function addToFavorites() {
+            const productId = document.getElementById('modal-product-id').value; // Ensure this hidden input exists and has the correct value
+
+            fetch('add_to_favorites.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: productId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    showBanner('success', 'Product added to favorites successfully!');
+                } else {
+                    showBanner('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showBanner('error', 'An error occurred while adding to favorites.');
+            });
+        }
     </script>
 </head>
 <body class="bg-base-100 text-base-content">
@@ -394,11 +437,11 @@ if ($result === false) {
 </div>
 
 <div id="product-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6 modal-content">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6 modal-content" style="max-height: 80vh; overflow-y: scroll;"> <!-- Changed overflow-y to scroll -->
         <div class="modal-header">
             <h2 id="modal-product-name" class="text-3xl font-bold"></h2>
             <button class="text-red-700 hover:text-red-800" onclick="closeModal()">
-                <span class="material-icons">close</span>
+                <span class="material-icons">Close</span>
             </button>
         </div>
         <div class="modal-body">
@@ -411,6 +454,7 @@ if ($result === false) {
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
                     <p class="text-lg font-semibold mb-4">Price: <span id="modal-price"></span></p>
                     <input type="hidden" id="modal-price-hidden">
+                    <input type="hidden" id="modal-product-id"> <!-- Add this hidden input for product ID -->
                     
                     <div class="mb-6">
                         <label for="quantity" class="block text-lg mb-2 font-medium">Quantity</label>
@@ -426,6 +470,10 @@ if ($result === false) {
                         <button class="bg-red-700 text-white px-6 py-2 rounded-md hover:bg-red-800 transition duration-300"
                                 onclick="addToCart()">Add to Cart
                         </button>
+                        <button class="bg-red-700 text-white px-6 py-2 rounded-md hover:bg-red-800 transition duration-300" 
+                        onclick="addToFavorites()">Add to Favorites
+                        </button>
+
                     </div>
                 </div>
             </div>

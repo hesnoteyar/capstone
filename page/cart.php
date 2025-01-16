@@ -63,6 +63,15 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Hide scrollbar for the entire page */
+        }
+        /* Hide scrollbar for the modal but keep it scrollable */
+        .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+        .modal-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
 </head>
@@ -114,7 +123,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="modal">
-        <div class="modal-box">
+        <div class="modal-box modal-content" style="max-height: 80vh; overflow-y: scroll;"> <!-- Changed overflow-y to scroll -->
             <h2 class="text-lg font-bold">Are you sure you want to delete this item?</h2>
             <div class="modal-action">
                 <form method="POST" id="deleteForm">

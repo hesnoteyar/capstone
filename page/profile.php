@@ -1,13 +1,13 @@
 <?php
 ob_start();  // Start output buffering
 session_start();
-include '..\authentication\db.php'; // Include your database connection
-include '..\page\topnavbar.php'; // Include the navbar
+include '../authentication/db.php'; // Include your database connection
+include '../page/topnavbar.php'; // Include the navbar
 
 // Check if the user is logged in
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     // Redirect to login page if not logged in
-    header("Location: ..\index.php");
+    header("Location: ../index.php");
     exit;
 }
 
@@ -20,7 +20,6 @@ $stmt->execute();
 $stmt->bind_result($firstName, $lastName, $address, $city, $postalCode, $email, $profileImage, $isActive);
 $stmt->fetch();
 $stmt->close();
-
 
 // Handle form submission to save edited data
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_changes'])) {
@@ -41,13 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_changes'])) {
     $_SESSION['success_message'] = "Profile Edited Successfully!";
 
     // Reload the page to reflect changes
-    header("Location: ..\page\profile.php");
+    header("Location: ../page/profile.php");
     exit;
 }
 
 // Handle profile image upload
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
-    $targetDirectory = "..\media/";
+    $targetDirectory = "../media/";
     $targetFile = $targetDirectory . basename($_FILES["profileImage"]["name"]);
     $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
@@ -70,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         $_SESSION['error_message'] = "File is not an image.";
     }
 
-    header("Location: ..\page\profile.php");
+    header("Location: ../page/profile.php");
     exit;
 }
 ?>
@@ -87,8 +86,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Hide scrollbar for the entire page */
         }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        .content {
+            height: 100%;
+            overflow-y: scroll; /* Allow scrolling within the content */
+        }
+        /* Hide scrollbar for the modal but keep it scrollable */
+        .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scroll {
+            overflow: hidden;
+        }
+        .modal-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
     </style>
+    
 <script>
     // JavaScript function to toggle between editable and non-editable modes
     function toggleEdit() {
@@ -112,11 +133,86 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         saveButton.classList.toggle('hidden');
         editButton.classList.toggle('hidden');
     }
+
+    // JavaScript function to open the favorites modal
+    function openFavoritesModal() {
+        document.getElementById('favorites-modal').classList.remove('hidden');
+        document.body.classList.add('no-scroll'); // Disable background scrolling
+    }
+
+    // JavaScript function to close the favorites modal
+    function closeFavoritesModal() {
+        document.getElementById('favorites-modal').classList.add('hidden');
+        document.body.classList.remove('no-scroll'); // Enable background scrolling
+    }
+
+    function deleteFavorite(productId) {
+        fetch('delete_favorite.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ product_id: productId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showBanner('success', 'Favorite item deleted successfully!');
+                // Remove the deleted item from the DOM
+                document.querySelector(`button[onclick="deleteFavorite(${productId})"]`).closest('.card').remove();
+            } else {
+                showBanner('error', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showBanner('error', 'An error occurred while deleting the favorite item.');
+        });
+    }
+
+    function showBanner(type, message) {
+        const banner = document.createElement('div');
+        banner.classList.add('alert', 'w-full', type === 'error' ? 'alert-error' : 'alert-success', 'fixed', 'top-5', 'left-0', 'z-50', 'p-2', 'text-m');
+
+        // Set a specific width for the banner, e.g., 80% of the screen width or a fixed pixel width
+        banner.style.width = '40%';  // Adjust this value to change the banner width
+        banner.style.margin = '0 auto';  // Centers the banner
+
+        const bannerContent = document.createElement('div');
+        bannerContent.classList.add('flex', 'items-center');
+        
+        const icon = document.createElement('span');
+        icon.classList.add('material-icons', 'mr-2');
+        icon.textContent = type === '' ? '' : '';
+
+        const text = document.createElement('span');
+        text.textContent = message;
+        
+        bannerContent.appendChild(icon);
+        bannerContent.appendChild(text);
+        banner.appendChild(bannerContent);
+
+        // Append to body
+        document.body.appendChild(banner);
+
+        // Optionally remove the banner after a few seconds
+        setTimeout(() => {
+            banner.remove();
+        }, 5000); // Remove after 5 seconds
+    }
+
+    // Check if the modal should be open after page reload
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('favoritesModalOpen')) {
+            openFavoritesModal();
+        }
+    });
 </script>
 
 </head>
 <body class="bg-base-200 flex flex-col min-h-screen">
-
+<div class="content">
   <!-- Success Banner -->
   <div class="flex-grow">
     <?php if (isset($_SESSION['success_message'])): ?>
@@ -143,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         <div class="text-center">
           <div class="avatar relative w-32 h-32 mx-auto">
             <!-- Profile picture with preview -->
-            <img id="profileImage" src="<?php echo htmlspecialchars($profileImage ?: '..\media\defaultpfp.jpg'); ?>" class="w-full h-full rounded-full ring ring-error ring-offset-base-100 ring-offset-2 shadow-lg">
+            <img id="profileImage" src="<?php echo htmlspecialchars($profileImage ?: '../media/defaultpfp.jpg'); ?>" class="w-full h-full rounded-full ring ring-error ring-offset-base-100 ring-offset-2 shadow-lg">
             <button class="absolute bottom-0 right-0 btn btn-circle btn-sm bg-base-300 text-base-content">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-1.5A2.5 2.5 0 1112.5 7.5M16.5 12H7.5M9 15h6" />
@@ -167,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         </span>
     </h2>
     <?php if (!$isActive): ?>
-        <form method="POST" action="..\authentication\generate_otp.php" class="mt-2">
+        <form method="POST" action="../authentication/generate_otp.php" class="mt-2">
             <button type="submit" class="btn btn-error">
                 Verify Now
             </button>
@@ -245,6 +341,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
 
                 <button type="submit" name="save_changes" id="saveButton" class="btn btn-success bg-gray-400 hover:bg-red-500 text-white hidden">Save Changes</button>
 
+                <button type="button" onclick="openFavoritesModal()" class="btn btn-error bg-gray-400 hover:bg-red-500 text-white">Favorites</button> <!-- New Favorites Button -->
+
                 </div>
               </form>
             </div>
@@ -254,15 +352,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
     </div>
   </div>
 
-  
+  <!-- Favorites Modal -->
+  <div id="favorites-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-6xl p-8 modal-content" style="max-height: 80vh; overflow-y: scroll;"> <!-- Changed overflow-y to scroll -->
+        <div class="modal-header flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Favorites</h2>
+            <button class="btn btn-sm btn-circle btn-error" onclick="closeFavoritesModal()">✕</button>
+        </div>
+        <div class="modal-body mt-4">
+            <!-- Fetch and display favorite items here -->
+            <?php
+            $favoritesQuery = "SELECT product.product_id, product.name, product.description, product.price, product.image_url FROM favorites JOIN product ON favorites.productid = product.product_id WHERE favorites.userid = ?";
+            $favoritesStmt = $conn->prepare($favoritesQuery);
+            $favoritesStmt->bind_param("i", $id);
+            $favoritesStmt->execute();
+            $favoritesResult = $favoritesStmt->get_result();
+
+            if ($favoritesResult->num_rows > 0): ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <?php while ($favorite = $favoritesResult->fetch_assoc()): ?>
+                        <div class="card bg-base-100 shadow-lg">
+                            <figure>
+                                <img src="<?= htmlspecialchars($favorite['image_url']) ?>" alt="<?= htmlspecialchars($favorite['name']) ?>" class="card-image object-cover w-full h-48"> <!-- Fixed image size -->
+                            </figure>
+                            <div class="card-body">
+                                <h2 class="card-title"><?= htmlspecialchars($favorite['name']) ?></h2>
+                                <p><?= htmlspecialchars($favorite['description']) ?></p>
+                                <p>Price: ₱<?= number_format($favorite['price'], 2) ?></p>
+                                <button class="btn btn-error mt-4" onclick="deleteFavorite(<?= $favorite['product_id'] ?>)">Delete</button> <!-- Delete button -->
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+            <?php else: ?>
+                <p>There is no favorite item.</p> <!-- Updated message -->
+            <?php endif; ?>
+            <?php $favoritesStmt->close(); ?>
+        </div>
+    </div>
+</div>
+
+<?php
+if (isset($_SESSION['success_message'])) {
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            showBanner('success', '" . $_SESSION['success_message'] . "');
+        });
+    </script>";
+    unset($_SESSION['success_message']);
+}
+?>
 
   <br>
   <br>
 
   <!-- Footer -->
-  <?php include '..\page\footer.php'; ?>
+  <?php include '../page/footer.php'; ?>
 
   <?php ob_end_flush(); ?>
+</div>
 </body>
 
 </html>

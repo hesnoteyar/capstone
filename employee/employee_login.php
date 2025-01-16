@@ -14,7 +14,7 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
-
+    <title>Employee Login</title>
 </head>
 <body>
     <div class="hero bg-base-200 min-h-screen flex items-center justify-center relative">
@@ -61,10 +61,6 @@
                 </div>
                 <div class="form-control mt-6">
                     <button class="btn bg-red-600 hover:bg-red-700 text-white">Login</button>
-                    <div class="text-xs text-center">
-                        <h1 class="text-base py-3">or</h1>
-                        <a href="page\register.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
-                    </div>
                 </div>
             </form>
         </div>

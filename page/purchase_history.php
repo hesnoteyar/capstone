@@ -8,6 +8,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            overflow: hidden; /* Hide scrollbar for the entire page */
+        }
+    </style>
 </head>
 <body>
 <h1 class="flex justify-center">THIS IS PURCHASE HISTORY SCREEN</h1>
