@@ -37,13 +37,17 @@
             </div>
             <ul
               tabindex="0"
-              class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-              <li><a href="..\admin\admin_dashboard.php">Dashboard</a></li>
-              <li><a href="..\admin\admin_payroll.php">Payroll</a></li>
-              <li><a href="..\admin\admin_manageemployee.php">Manage Employees</a></li>
-              <li><a href="..\admin\admin_logs.php">Audit Logs</a></li>
-              <li><a href="..\admin\admin_addemployee.php">Add New Employee</a></li>
-              <li><a href="..\authentication\adminlogout.php">Logout</a></li>
+                class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                <li><a href="..\admin\admin_dashboard.php">Dashboard</a></li>
+                <li class="menu-title"><span style="color: red;">Product</span></li>
+                <li><a href="..\admin\admin_addproduct.php">Add a product</a></li>
+                <li class="menu-title"><span style="color: red;">Employee</span></li>
+                <li><a href="..\admin\admin_manageemployee.php">Manage Employees</a></li>
+                <li><a href="..\admin\admin_addemployee.php">Add New Employee</a></li>
+                <li><a href="..\admin\admin_payroll.php">Payroll</a></li>
+                <li class="menu-title"><span style="color: red;">Security</span></li>
+                <li><a href="..\admin\admin_logs.php">Audit Logs</a></li>
+                <li><a href="..\authentication\adminlogout.php">Logout</a></li>
             </ul>
           </div>
         </div>

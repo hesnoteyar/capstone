@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\admin\adminnavbar.php';
+include '../admin/adminnavbar.php';
 include '../authentication/db.php'; // Database connection
 
 // Initialize an array for new employees count per month
@@ -21,6 +21,22 @@ if ($result_new_employees->num_rows > 0) {
     }
 }
 
+// Initialize an array for attendance count per month
+$attendance_data = array_fill(0, 12, 0); // 12 months initialized to 0
+
+// Fetch attendance data from the database
+$sql_attendance = "SELECT MONTH(date) AS month, COUNT(DISTINCT employee_id) AS count 
+                   FROM attendance 
+                   WHERE YEAR(date) = YEAR(CURDATE()) 
+                   GROUP BY month 
+                   ORDER BY month";
+$result_attendance = $conn->query($sql_attendance);
+
+if ($result_attendance->num_rows > 0) {
+    while ($row = $result_attendance->fetch_assoc()) {
+        $attendance_data[$row['month'] - 1] = (int)$row['count']; // Adjust index for zero-based array
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +61,7 @@ if ($result_new_employees->num_rows > 0) {
     
     <!-- Flex container for charts -->
     <div class="flex justify-between space-x-1 px-4">
-        <!-- Card for Attendance Chart -->
+        <!-- Card for Employee Attendance Chart -->
         <div class="card w-full shadow-lg px-4">
             <div class="card-body">
                 <h2 class="card-title">Employee Attendance</h2>
@@ -126,13 +142,17 @@ if ($result_new_employees->num_rows > 0) {
     <script>
         // Attendance Chart Options
         var attendanceOptions = {
-            series: [{ name: 'Attendance', data: [10, 41, 35, 51, 49, 62, 69, 91, 148] }],
+            series: [{ name: 'Attendance', data: <?php echo json_encode($attendance_data); ?> }],
             chart: { height: 400, type: 'line', zoom: { enabled: true } },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2, colors: ['#dc2626'] },
             title: { text: 'Employee Attendance', align: 'left' },
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
-            xaxis: { categories:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'] }
+            xaxis: { categories: <?php echo json_encode($months); ?> },
+            yaxis: {
+                min: 0,
+                max: 50,
+            }
         };
 
         // Render Attendance Chart
@@ -161,5 +181,5 @@ if ($result_new_employees->num_rows > 0) {
 
 </body>
 
-<?php include '..\admin\admin_footer.php'; ?>
+<?php include '../admin/admin_footer.php'; ?>
 </html>
