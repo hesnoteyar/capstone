@@ -212,6 +212,7 @@ if ($result === false) {
                             amount: totalPrice,
                             description: `${quantity} x ${productName}`,
                             currency: 'PHP',
+                            products: [{ product_id: document.getElementById('modal-product-id').value, product_name: productName, quantity: quantity, price: price }]
                         }),
                     })
                     .then((response) => {
@@ -223,6 +224,7 @@ if ($result === false) {
                     })
                     .then((data) => {
                         if (data.checkout_url) {
+                            console.log('Opening checkout URL:', data.checkout_url);
                             window.open(data.checkout_url, '_blank');
                         } else {
                             console.error('Missing checkout URL in response:', data);

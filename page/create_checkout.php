@@ -26,7 +26,10 @@ if ($result_user->num_rows > 0) {
 }
 
 // Fetch cart items for the user
-$sql = "SELECT product_name AS name, price, quantity FROM cart WHERE user_id = ?";
+$sql = "SELECT p.product_id, c.product_name AS name, c.price, c.quantity 
+        FROM cart c 
+        JOIN product p ON c.product_name = p.name 
+        WHERE c.user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -87,7 +90,6 @@ $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 if (curl_errno($ch)) {
     $error_message = curl_error($ch);
-    file_put_contents('log.txt', date('Y-m-d H:i:s') . " - cURL Error: " . $error_message . "\n", FILE_APPEND);
     echo json_encode(['error' => $error_message]);
     exit;
 }
@@ -99,10 +101,28 @@ $response_data = json_decode($response, true);
 
 if ($http_code === 200 && isset($response_data['data']['attributes']['checkout_url'])) {
     $checkout_url = $response_data['data']['attributes']['checkout_url'];
+
+    // Insert purchase details into the purchase_history table
+    $stmt_purchase = $conn->prepare("INSERT INTO purchase_history (user_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+    
+    foreach ($cart_items as $item) {
+        $product_id = $item['product_id'];
+        $product_name = $item['name'];
+        $quantity = $item['quantity'];
+        $price = $item['price'];
+        $stmt_purchase->bind_param("iisid", $user_id, $product_id, $product_name, $quantity, $price);
+        
+        // Execute and log any errors
+        if (!$stmt_purchase->execute()) {
+            echo json_encode(['error' => 'Failed to insert purchase details']);
+            exit;
+        }
+    }
+    $stmt_purchase->close();
+
     // Return the checkout URL as JSON
     echo json_encode(['checkout_url' => $checkout_url]);
 } else {
-    // Log error details for debugging
     echo json_encode(['error' => 'Failed to create checkout session.']);
 }
 ?>

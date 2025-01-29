@@ -63,7 +63,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            overflow: hidden; /* Hide scrollbar for the entire page */
         }
         /* Hide scrollbar for the modal but keep it scrollable */
         .modal-content::-webkit-scrollbar {
@@ -155,14 +154,27 @@ async function proceedToCheckout() {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        console.log('Response text:', text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            showBanner('error', 'An error occurred during checkout. Please try again.');
+            return;
+        }
 
         if (data.checkout_url) {
+            console.log('Opening checkout URL:', data.checkout_url);
             window.open(data.checkout_url, '_blank');
         } else if (data.error) {
+            console.error('Checkout Error:', data.error);
             // Display error using DaisyUI banner
             showBanner('error', data.error);
         } else {
+            console.error('Unexpected response:', data);
             alert('An unexpected error occurred.');
         }
     } catch (error) {
@@ -185,7 +197,7 @@ function showBanner(type, message) {
 
     const icon = document.createElement('span');
     icon.classList.add('material-icons', 'mr-2');
-    icon.textContent = type === '' ? 'error' : ''; // Adjust icon based on type
+    icon.textContent = type === 'error' ? 'error' : 'check_circle'; // Adjust icon based on type
 
     const text = document.createElement('span');
     text.textContent = message;

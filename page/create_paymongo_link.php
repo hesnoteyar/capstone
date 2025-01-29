@@ -1,5 +1,7 @@
 <?php
 header('Content-Type: application/json');
+session_start();
+include '..\authentication\db.php';
 
 // Enable error reporting for debugging
 ini_set('display_errors', 1);
@@ -18,6 +20,9 @@ $requestData = json_decode(file_get_contents('php://input'), true);
 $amount = $requestData['amount'] ?? null;
 $description = $requestData['description'] ?? null;
 $currency = $requestData['currency'] ?? 'PHP';
+
+// Assuming user_id is stored in the session
+$user_id = $_SESSION['id'];
 
 if (!$amount || !$description) {
     http_response_code(400); // Bad Request
@@ -50,14 +55,40 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 $response = curl_exec($ch);
 $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+if (curl_errno($ch)) {
+    $error_message = curl_error($ch);
+    echo json_encode(['error' => 'An error occurred during checkout. Please try again.']);
+    exit;
+}
+
 curl_close($ch);
 
-// Handle success (200 OK or 201 Created)
+// Decode and handle PayMongo response
+$response_data = json_decode($response, true);
+
 if ($statusCode === 200 || $statusCode === 201) {
-    $responseData = json_decode($response, true);
-    $checkoutUrl = $responseData['data']['attributes']['checkout_url'] ?? null;
+    $checkoutUrl = $response_data['data']['attributes']['checkout_url'] ?? null;
 
     if ($checkoutUrl) {
+        // Insert purchase details into the purchase_history table
+        $stmt_purchase = $conn->prepare("INSERT INTO purchase_history (user_id, product_id, product_name, quantity, price) VALUES (?, ?, ?, ?, ?)");
+        
+        // Assuming you have product details in the request data
+        foreach ($requestData['products'] as $product) {
+            $product_id = $product['product_id'];
+            $product_name = $product['product_name'];
+            $quantity = $product['quantity'];
+            $price = $product['price'];
+            $stmt_purchase->bind_param("iisid", $user_id, $product_id, $product_name, $quantity, $price);
+            
+            // Execute and log any errors
+            if (!$stmt_purchase->execute()) {
+                echo json_encode(['error' => 'Failed to insert purchase details']);
+                exit;
+            }
+        }
+        $stmt_purchase->close();
+
         echo json_encode(['checkout_url' => $checkoutUrl]);
         exit;
     } else {
@@ -66,7 +97,7 @@ if ($statusCode === 200 || $statusCode === 201) {
         exit;
     }
 } else {
-    http_response_code($statusCode);
-    echo json_encode(['error' => 'Failed to create checkout link']);
+    echo json_encode(['error' => 'Failed to create checkout session']);
+    exit;
 }
 ?>
