@@ -1,68 +1,12 @@
 <?php
 // filepath: /d:/XAMPP/htdocs/capstone/admin/admin_addproduct.php
 session_start(); // Start the session to access session variables
-ob_start();
 include '../authentication/db.php'; // Include your database connection
 include '../admin/adminnavbar.php'; // Include the navbar
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $productName = $_POST['product_name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $stock = $_POST['stock'];
-    $category = $_POST['category'];
-
-    // Map category names to category IDs
-    $categoryMap = [
-        'Car' => 1,
-        'Motorcycle' => 2,
-        'Accessories' => 3
-    ];
-    $categoryId = $categoryMap[$category];
-
-    // Handle the image upload
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $targetDirectory = "../productimage/";
-        // Ensure the target directory exists
-        if (!is_dir($targetDirectory)) {
-            mkdir($targetDirectory, 0777, true);
-        }
-        $targetFile = $targetDirectory . basename($_FILES["image"]["name"]);
-        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-
-        // Check if file is an image
-        if (getimagesize($_FILES["image"]["tmp_name"]) !== false) {
-            // Move uploaded image to the target directory
-            if (move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                // Insert the product into the database
-                $query = "INSERT INTO product (name, description, price, stock_quantity, category_id, image_url) VALUES (?, ?, ?, ?, ?, ?)";
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param("ssdiis", $productName, $description, $price, $stock, $categoryId, $targetFile);
-
-                if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "Product added successfully!";
-                } else {
-                    $_SESSION['error_message'] = "Error adding product.";
-                }
-
-                $stmt->close();
-                $conn->close();
-
-                header("Location: admin_addproduct.php");
-                exit;
-            } else {
-                $_SESSION['error_message'] = "Sorry, there was an error uploading your file.";
-            }
-        } else {
-            $_SESSION['error_message'] = "File is not an image.";
-        }
-    } else {
-        $_SESSION['error_message'] = "Error uploading image.";
-    }
-
-    header("Location: admin_addproduct.php");
-    exit;
-}
+// Fetch products from the database
+$sql = "SELECT product_id, name, description, price, stock_quantity, image FROM product";
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -79,94 +23,301 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+        .alert {
+            transition: opacity 0.5s ease-out;
         }
     </style>
 </head>
-<body class="bg-base-200">
-    <div class="container mx-auto p-6">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">Add New Product</h2>
-                <?php if (isset($_SESSION['success_message'])): ?>
-                    <div id="successBanner" class="alert alert-success shadow-lg mb-4">
-                        <div>
-                            <span><?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?></span>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <?php if (isset($_SESSION['error_message'])): ?>
-                    <div id="errorBanner" class="alert alert-error shadow-lg mb-4">
-                        <div>
-                            <span><?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?></span>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <form action="admin_addproduct.php" method="POST" enctype="multipart/form-data">
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Name of the Product</span>
-                        </label>
-                        <input type="text" name="product_name" placeholder="Product Name" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Description</span>
-                        </label>
-                        <textarea name="description" placeholder="Product Description" class="textarea textarea-bordered" required></textarea>
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Price</span>
-                        </label>
-                        <input type="number" name="price" placeholder="Price" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Stock</span>
-                        </label>
-                        <input type="number" name="stock" placeholder="Stock" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Category</span>
-                        </label>
-                        <select name="category" class="select select-bordered" required>
-                            <option value="Car">Car</option>
-                            <option value="Motorcycle">Motorcycle</option>
-                            <option value="Accessories">Accessories</option>
-                        </select>
-                    </div>
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text">Attach Image</span>
-                        </label>
-                        <input type="file" name="image" class="file-input file-input-bordered" accept="image/*" required />
-                    </div>
-                    <div class="form-control mt-6">
-                        <button type="submit" class="btn btn-error">Add Product</button>
-                    </div>
-                </form>
+<body class="bg-base-100 text-base-content">
+    <div id="alert-container" class="fixed top-20 right-4 z-50 w-1/3"></div>
+    <main class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Inventory Management</h1>
+
+        <!-- Add Product Button -->
+        <button class="btn btn-error text-white mb-6" onclick="openAddProductModal()">Add Product</button>
+
+        <!-- Product List -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <?php
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $imageData = base64_encode($row['image']);
+                    $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+                    echo "<div class='card bg-white shadow-md rounded-lg p-4'>
+                            <img src='" . $imageSrc . "' alt='" . htmlspecialchars($row['name']) . "' class='w-full h-48 object-cover mb-4'>
+                            <h2 class='text-xl font-bold mb-2'>" . htmlspecialchars($row['name']) . "</h2>
+                            <p class='text-gray-700'>Description: " . htmlspecialchars($row['description']) . "</p>
+                            <p class='text-gray-700'>Price: ₱" . number_format($row['price'], 2) . "</p>
+                            <p class='text-gray-700'>Quantity: " . htmlspecialchars($row['stock_quantity']) . "</p>
+                            <div class='card-actions mt-4'>
+                                <button class='btn btn-error' onclick='openEditProductModal(" . $row['product_id'] . ")'>Edit</button>
+                                <button class='btn btn-error' onclick='openDeleteProductModal(" . $row['product_id'] . ")'>Delete</button>
+                            </div>
+                          </div>";
+                }
+            } else {
+                echo "<p>No products found.</p>";
+            }
+            ?>
+        </div>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl font-bold mb-4">Add Product</h2>
+            <form id="addProductForm" enctype="multipart/form-data">
+                <div class="form-control mb-4">
+                    <label class="label">Name</label>
+                    <input type="text" name="name" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Description</label>
+                    <textarea name="description" class="textarea textarea-bordered" required></textarea>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Price</label>
+                    <input type="number" name="price" class="input input-bordered" step="0.01" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Quantity</label>
+                    <input type="number" name="quantity" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Category</label>
+                    <select name="category" class="select select-bordered" required>
+                        <option value="Car">Car</option>
+                        <option value="Motorcycle">Motorcycle</option>
+                        <option value="Accessories">Accessories</option>
+                    </select>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Image</label>
+                    <input type="file" name="image" class="input input-bordered" required>
+                </div>
+                <div class="modal-action">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                    <button type="button" class="btn" onclick="closeAddProductModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl font-bold mb-4">Edit Product</h2>
+            <form id="editProductForm" enctype="multipart/form-data">
+                <input type="hidden" name="product_id">
+                <div class="form-control mb-4">
+                    <label class="label">Name</label>
+                    <input type="text" name="name" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Description</label>
+                    <textarea name="description" class="textarea textarea-bordered" required></textarea>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Price</label>
+                    <input type="number" name="price" class="input input-bordered" step="0.01" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Quantity</label>
+                    <input type="number" name="quantity" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Category</label>
+                    <select name="category" class="select select-bordered" required>
+                        <option value="Car">Car</option>
+                        <option value="Motorcycle">Motorcycle</option>
+                        <option value="Accessories">Accessories</option>
+                    </select>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Image</label>
+                    <input type="file" name="image" class="input input-bordered">
+                </div>
+                <div class="modal-action">
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn" onclick="closeEditProductModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Product Modal -->
+    <div id="deleteProductModal" class="modal">
+        <div class="modal-box">
+            <h2 class="text-xl font-bold mb-4">Delete Product</h2>
+            <p>Are you sure you want to delete this product?</p>
+            <div class="modal-action">
+                <button id="confirmDeleteButton" class="btn btn-error">Delete</button>
+                <button type="button" class="btn" onclick="closeDeleteProductModal()">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
-        // JavaScript to make the banners disappear after 5 seconds
-        setTimeout(function() {
-            const successBanner = document.getElementById('successBanner');
-            const errorBanner = document.getElementById('errorBanner');
-            if (successBanner) {
-                successBanner.style.display = 'none';
+        let productIdToDelete = null;
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} shadow-lg`;
+            alert.innerHTML = `
+                <div>
+                    <span>${message}</span>
+                </div>
+            `;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.remove();
+                }, 500);
+            }, 5000);
+        }
+
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.add('modal-open');
+        }
+
+        function closeAddProductModal() {
+            document.getElementById('addProductModal').classList.remove('modal-open');
+        }
+
+        function openEditProductModal(productId) {
+            fetch('get_product_details.php?id=' + productId)
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('#editProductForm [name="product_id"]').value = data.product_id;
+                    document.querySelector('#editProductForm [name="name"]').value = data.name;
+                    document.querySelector('#editProductForm [name="description"]').value = data.description;
+                    document.querySelector('#editProductForm [name="price"]').value = data.price;
+                    document.querySelector('#editProductForm [name="quantity"]').value = data.stock_quantity;
+                    document.querySelector('#editProductForm [name="category"]').value = data.category_id;
+                    document.getElementById('editProductModal').classList.add('modal-open');
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+        }
+
+        function closeEditProductModal() {
+            document.getElementById('editProductModal').classList.remove('modal-open');
+        }
+
+        function openDeleteProductModal(productId) {
+            productIdToDelete = productId;
+            document.getElementById('deleteProductModal').classList.add('modal-open');
+        }
+
+        function closeDeleteProductModal() {
+            productIdToDelete = null;
+            document.getElementById('deleteProductModal').classList.remove('modal-open');
+        }
+
+        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+            if (productIdToDelete) {
+                fetch('delete_product.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${productIdToDelete}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        localStorage.setItem('alertMessage', 'Product deleted successfully');
+                        localStorage.setItem('alertType', 'success');
+                    } else {
+                        localStorage.setItem('alertMessage', 'Error deleting product: ' + data.error);
+                        localStorage.setItem('alertType', 'error');
+                    }
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error deleting product:', error);
+                    localStorage.setItem('alertMessage', 'Error deleting product');
+                    localStorage.setItem('alertType', 'error');
+                    location.reload();
+                })
+                .finally(() => {
+                    closeDeleteProductModal();
+                });
             }
-            if (errorBanner) {
-                errorBanner.style.display = 'none';
+        });
+
+        document.getElementById('addProductForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('add_product.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('alertMessage', 'Product added successfully');
+                    localStorage.setItem('alertType', 'success');
+                } else {
+                    localStorage.setItem('alertMessage', 'Error adding product: ' + data.error);
+                    localStorage.setItem('alertType', 'error');
+                }
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error adding product:', error);
+                localStorage.setItem('alertMessage', 'Error adding product');
+                localStorage.setItem('alertType', 'error');
+                location.reload();
+            });
+        });
+
+        document.getElementById('editProductForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('edit_product.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('alertMessage', 'Product updated successfully');
+                    localStorage.setItem('alertType', 'success');
+                } else {
+                    localStorage.setItem('alertMessage', 'Error updating product: ' + data.error);
+                    localStorage.setItem('alertType', 'error');
+                }
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error updating product:', error);
+                localStorage.setItem('alertMessage', 'Error updating product');
+                localStorage.setItem('alertType', 'error');
+                location.reload();
+            });
+        });
+
+        // Display alert message if exists in localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertMessage = localStorage.getItem('alertMessage');
+            const alertType = localStorage.getItem('alertType');
+            if (alertMessage && alertType) {
+                showAlert(alertMessage, alertType);
+                localStorage.removeItem('alertMessage');
+                localStorage.removeItem('alertType');
             }
-        }, 5000);
+        });
     </script>
+    <?php include '../admin/admin_footer.php'; ?>
 </body>
-    
-<?php
-    include '../admin/admin_footer.php';
-    ob_end_flush();
-?>
 </html>

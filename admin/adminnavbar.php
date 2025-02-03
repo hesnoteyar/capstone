@@ -40,7 +40,7 @@
                 class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                 <li><a href="..\admin\admin_dashboard.php">Dashboard</a></li>
                 <li class="menu-title"><span style="color: red;">Product</span></li>
-                <li><a href="..\admin\admin_addproduct.php">Add a product</a></li>
+                <li><a href="..\admin\admin_addproduct.php">Inventory</a></li>
                 <li class="menu-title"><span style="color: red;">Employee</span></li>
                 <li><a href="..\admin\admin_manageemployee.php">Manage Employees</a></li>
                 <li><a href="..\admin\admin_addemployee.php">Add New Employee</a></li>

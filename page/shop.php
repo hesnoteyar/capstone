@@ -7,7 +7,7 @@ include '..\authentication\db.php';
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 
-$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image_url, p.price, c.name AS category_name 
+$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name 
         FROM Product p 
         JOIN Category c ON p.category_id = c.category_id 
         WHERE 1=1";
@@ -73,9 +73,35 @@ if ($result === false) {
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
+        .zoom {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zoom img {
+            display: block;
+            transition: transform 0.2s; /* Animation */
+        }
+
+        .zoom:hover img {
+            transform: scale(1.5); /* (150% zoom) */
+        }
+
+        .zoom::after {
+            content: '';
+            display: block;
+            width: 100px; /* Adjust the size of the magnifying glass */
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying glass image */
+            pointer-events: none;
+        }
     </style>
     <script>
         function openModal(productName, description, categoryName, imageUrl, price, productId) {
+            console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId); // Debug log
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-category').textContent = categoryName;
             document.getElementById('modal-description').textContent = description;
@@ -88,9 +114,19 @@ if ($result === false) {
 
             // Fetch and display reviews
             fetchReviews(productId);
+            // Add event listener for zoom effect
+            const zoomElement = document.querySelector('.zoom');
+            const zoomImage = document.querySelector('.zoom img');
+            zoomElement.addEventListener('mousemove', function(e) {
+                const rect = zoomElement.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                zoomImage.style.transformOrigin = `${x}px ${y}px`;
+            });
         }
 
         function closeModal() {
+            console.log('closeModal called'); // Debug log
             document.getElementById('product-modal').classList.add('hidden');
             document.body.classList.remove('no-scroll'); // Enable background scrolling
         }
@@ -410,20 +446,20 @@ if ($result === false) {
                     $productName = htmlspecialchars($row['product_name']);
                     $description = htmlspecialchars($row['description']);
                     $categoryName = htmlspecialchars($row['category_name']);
-                    $imageUrl = htmlspecialchars($row['image_url']);
+                    $imageUrl = 'data:image/jpeg;base64,' . base64_encode($row['image']);
                     $price = (float)$row['price'];
                     ?>
                 
                 <div class="card bg-base-100 w-80 shadow-lg">
                     <figure>
-                        <img src="<?= $imageUrl ?>" alt="<?= $productName ?>" class="card-image">
+                        <img src="<?= $imageUrl ?>" alt="<?= htmlspecialchars($productName, ENT_QUOTES) ?>" class="card-image">
                     </figure>
                     <div class="card-body">
-                        <h2 class="card-title"><?= $productName ?></h2>
-                        <div class="badge badge-error text-white"><?= $categoryName ?></div>
+                        <h2 class="card-title"><?= htmlspecialchars($productName, ENT_QUOTES) ?></h2>
+                        <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                                onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= addslashes($imageUrl) ?>', <?= $price ?>, <?= $productId ?>)">
+                                onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>)">
                             View Details
                         </button>
                     </div>
@@ -448,7 +484,7 @@ if ($result === false) {
         </div>
         <div class="modal-body">
             <div class="flex flex-col lg:flex-row">
-                <figure class="w-full lg:w-1/2">
+                <figure class="w-full lg:w-1/2 zoom">
                     <img id="modal-image" src="" alt="Product" class="modal-image rounded-lg object-cover">
                 </figure>
                 <div class="w-full lg:w-1/2 lg:pl-6">

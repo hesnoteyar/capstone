@@ -1,0 +1,58 @@
+<?php
+// filepath: /d:/XAMPP/htdocs/capstone/admin/add_product.php
+session_start();
+include '../authentication/db.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = $_POST['name'];
+    $description = $_POST['description'];
+    $price = $_POST['price'];
+    $quantity = $_POST['quantity'];
+    $category = $_POST['category'];
+
+    // Map category names to category IDs
+    $categoryMap = [
+        'Car' => 1,
+        'Motorcycle' => 2,
+        'Accessories' => 3
+    ];
+    $categoryId = $categoryMap[$category];
+
+    // Handle the image upload
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        // Validate image size and type
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        if (in_array($_FILES['image']['type'], $allowedTypes) && $_FILES['image']['size'] <= $maxFileSize) {
+            $image = file_get_contents($_FILES['image']['tmp_name']);
+
+            // Insert the product into the database
+            $query = "INSERT INTO product (name, description, price, stock_quantity, category_id, image) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($query);
+
+            if ($stmt) {
+                $null = NULL; // Placeholder for sending BLOB data
+                $stmt->bind_param("ssdiib", $name, $description, $price, $quantity, $categoryId, $null);
+                $stmt->send_long_data(5, $image); // Send the BLOB data in chunks
+
+                if ($stmt->execute()) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => $stmt->error]);
+                }
+
+                $stmt->close();
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Failed to prepare the SQL statement.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Invalid image type or size.']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'No image uploaded or error uploading image.']);
+    }
+
+    $conn->close();
+}
+?>
