@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
 
     <style>
         body {
@@ -129,5 +130,27 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            gsap.from('.card', { duration: 0.5, y: -50, opacity: 0, ease: 'power1.out' });
+            gsap.from('.hero img', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)', delay: 0.25 });
+            gsap.from('.hero h1', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.5 });
+            gsap.from('.form-control', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.75, stagger: 0.1 });
+            gsap.from('.form-control input', { duration: 0.5, x: -50, opacity: 0, ease: 'power1.out', delay: 1, stagger: 0.1 });
+            gsap.from('.btn', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)', delay: 1.5 });
+            gsap.from('.text-xs', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 1.75 });
+
+            // Button hover effect
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    gsap.to(button, { scale: 1.1, duration: 0.2, ease: 'power1.out' });
+                });
+                button.addEventListener('mouseleave', () => {
+                    gsap.to(button, { scale: 1, duration: 0.2, ease: 'power1.out' });
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
 
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -138,6 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
     function openFavoritesModal() {
         document.getElementById('favorites-modal').classList.remove('hidden');
         document.body.classList.add('no-scroll'); // Disable background scrolling
+
+        // GSAP animations for favorites modal elements
+        gsap.from('.modal-header', { duration: 0.5, y: -50, opacity: 0, ease: 'power1.out' });
+        gsap.from('.modal-body', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.25 });
+        gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.5, stagger: 0.1 });
     }
 
     // JavaScript function to close the favorites modal
@@ -207,6 +213,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         if (urlParams.has('favoritesModalOpen')) {
             openFavoritesModal();
         }
+
+        // GSAP animations
+        gsap.from('.avatar', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)' });
+        gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', stagger: 0.1 });
+        gsap.from('.btn', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)', delay: 0.5 });
     });
 </script>
 
@@ -362,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         <div class="modal-body mt-4">
             <!-- Fetch and display favorite items here -->
             <?php
-            $favoritesQuery = "SELECT product.product_id, product.name, product.description, product.price, product.image_url FROM favorites JOIN product ON favorites.productid = product.product_id WHERE favorites.userid = ?";
+            $favoritesQuery = "SELECT product.product_id, product.name, product.description, product.price, product.image FROM favorites JOIN product ON favorites.productid = product.product_id WHERE favorites.userid = ?";
             $favoritesStmt = $conn->prepare($favoritesQuery);
             $favoritesStmt->bind_param("i", $id);
             $favoritesStmt->execute();
@@ -370,10 +381,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
 
             if ($favoritesResult->num_rows > 0): ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <?php while ($favorite = $favoritesResult->fetch_assoc()): ?>
+                    <?php while ($favorite = $favoritesResult->fetch_assoc()): 
+                        $imageData = base64_encode($favorite['image']);
+                        $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+                    ?>
                         <div class="card bg-base-100 shadow-lg">
                             <figure>
-                                <img src="<?= htmlspecialchars($favorite['image_url']) ?>" alt="<?= htmlspecialchars($favorite['name']) ?>" class="card-image object-cover w-full h-48"> <!-- Fixed image size -->
+                                <img src="<?= $imageSrc ?>" alt="<?= htmlspecialchars($favorite['name']) ?>" class="card-image object-cover w-full h-48"> <!-- Fixed image size -->
                             </figure>
                             <div class="card-body">
                                 <h2 class="card-title"><?= htmlspecialchars($favorite['name']) ?></h2>

@@ -1,13 +1,13 @@
 <?php
 session_start();
-include '..\authentication\db.php';
-include '..\page\topnavbar.php';
+include '../authentication/db.php';
+include '../page/topnavbar.php';
 
 // Assuming user_id is stored in the session
 $user_id = $_SESSION['id'];
 
 // Fetch purchase history for the user
-$sql = "SELECT ph.product_name, ph.quantity, ph.price, ph.purchase_date, p.image_url, p.description 
+$sql = "SELECT ph.product_name, ph.quantity, ph.price, ph.purchase_date, p.image, p.description 
         FROM purchase_history ph 
         JOIN product p ON ph.product_id = p.product_id 
         WHERE ph.user_id = ? 
@@ -25,6 +25,7 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@1.1.4/dist/full.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <title>Purchase History</title>
     <style>
         body {
@@ -36,23 +37,43 @@ $result = $stmt->get_result();
         main {
             flex: 1;
         }
+        .modal-content::-webkit-scrollbar {
+            display: none;
+        }
+        .modal-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .card:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
     </style>
     <script>
-        function openModal(productName, description, imageUrl, price, quantity, purchaseDate) {
+        function openModal(productName, description, imageSrc, price, quantity, purchaseDate) {
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-description').textContent = description;
-            document.getElementById('modal-image').src = imageUrl;
+            document.getElementById('modal-image').src = imageSrc;
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-quantity').textContent = quantity;
             document.getElementById('modal-purchase-date').textContent = purchaseDate;
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
+
+            // GSAP animations for modal elements
+            gsap.from('.modal-header', { duration: 0.5, y: -50, opacity: 0, ease: 'power1.out' });
+            gsap.from('.modal-body', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.25 });
         }
 
         function closeModal() {
             document.getElementById('product-modal').classList.add('hidden');
             document.body.classList.remove('no-scroll'); // Enable background scrolling
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // GSAP animations for purchase history items
+            gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', stagger: 0.1 });
+        });
     </script>
 </head>
 <body class="bg-base-100 text-base-content">
@@ -64,21 +85,22 @@ $result = $stmt->get_result();
                 while ($row = $result->fetch_assoc()) {
                     $productName = htmlspecialchars($row['product_name']);
                     $description = htmlspecialchars($row['description']);
-                    $imageUrl = htmlspecialchars($row['image_url']);
+                    $imageData = base64_encode($row['image']);
+                    $imageSrc = 'data:image/jpeg;base64,' . $imageData;
                     $price = (float)$row['price'];
                     $quantity = (int)$row['quantity'];
                     $purchaseDate = htmlspecialchars($row['purchase_date']);
                     ?>
                     <div class="card bg-white shadow-xl">
                         <figure>
-                            <img src="<?= $imageUrl ?>" alt="<?= $productName ?>" class="w-full h-48 object-cover">
+                            <img src="<?= $imageSrc ?>" alt="<?= $productName ?>" class="w-full h-48 object-cover">
                         </figure>
                         <div class="card-body">
                             <h2 class="card-title"><?= $productName ?></h2>
                             <p>Price: ₱<?= number_format($price, 2) ?></p>
                             <p>Quantity: <?= $quantity ?></p>
                             <p>Purchase Date: <?= $purchaseDate ?></p>
-                            <button class="btn btn-error" onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($imageUrl) ?>', <?= $price ?>, <?= $quantity ?>, '<?= $purchaseDate ?>')">View Details</button>
+                            <button class="btn btn-error" onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= $imageSrc ?>', <?= $price ?>, <?= $quantity ?>, '<?= $purchaseDate ?>')">View Details</button>
                         </div>
                     </div>
                     <?php
@@ -111,6 +133,6 @@ $result = $stmt->get_result();
         </div>
     </div>
 
-    <?php include '..\page\footer.php'; ?>
+    <?php include '../page/footer.php'; ?>
 </body>
 </html>

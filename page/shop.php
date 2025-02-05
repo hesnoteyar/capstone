@@ -98,7 +98,13 @@ if ($result === false) {
             background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying glass image */
             pointer-events: none;
         }
+
+        .card:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script>
         function openModal(productName, description, categoryName, imageUrl, price, productId) {
             console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId); // Debug log
@@ -123,6 +129,11 @@ if ($result === false) {
                 const y = e.clientY - rect.top;
                 zoomImage.style.transformOrigin = `${x}px ${y}px`;
             });
+
+            // GSAP animations for modal elements
+            gsap.from('.modal-header', { duration: 0.5, y: -50, opacity: 0, ease: 'power1.out' });
+            gsap.from('.modal-body', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.25 });
+            gsap.from('.modal-footer', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.5 });
         }
 
         function closeModal() {
@@ -326,9 +337,14 @@ if ($result === false) {
                     quantity: quantity
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                showBanner(data.status === 'success' ? 'success' : 'error', data.message); // Show success or error message
+                showBanner(data.success ? 'success' : 'error', data.message); // Show success or error message
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -415,6 +431,21 @@ if ($result === false) {
                 showBanner('error', 'An error occurred while adding to favorites.');
             });
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Button hover effect
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    gsap.to(button, { scale: 1.1, duration: 0.2, ease: 'power1.out' });
+                });
+                button.addEventListener('mouseleave', () => {
+                    gsap.to(button, { scale: 1, duration: 0.2, ease: 'power1.out' });
+                });
+            });
+
+            // GSAP animations for shop items
+            gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', stagger: 0.1 });
+        });
     </script>
 </head>
 <body class="bg-base-100 text-base-content">

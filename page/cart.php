@@ -54,10 +54,11 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@1.1.4/dist/full.css" rel="stylesheet">    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <title>Your Cart</title>
 
     <style>
@@ -85,10 +86,12 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 while ($row = $cart_items->fetch_assoc()):
                     $product_total = $row['quantity'] * $row['price'];
                     $total_price += $product_total;
+                    $imageData = base64_encode($row['image']);
+                    $imageSrc = 'data:image/jpeg;base64,' . $imageData;
                 ?>
                 <div class="card lg:card-side bg-white shadow-xl p-4">
                     <figure>
-                        <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['product_name']) ?>" class="w-32 h-32 rounded-lg object-cover">
+                        <img src="<?= $imageSrc ?>" alt="<?= htmlspecialchars($row['product_name']) ?>" class="w-32 h-32 rounded-lg object-cover">
                     </figure>
                     <div class="card-body">
                         <h2 class="card-title"><?= htmlspecialchars($row['product_name']) ?></h2>
@@ -216,7 +219,11 @@ function showBanner(type, message) {
     }, 5000); // Remove after 5 seconds
 }
 
-
+document.addEventListener('DOMContentLoaded', function() {
+    // GSAP animations for cart items
+    gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', stagger: 0.1 });
+    gsap.from('.btn', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)', delay: 0.5 });
+});
 
     </script>
 
