@@ -69,6 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profileImage'])) {
 
 // Escape the role to prevent XSS attacks
 $role = htmlspecialchars($role ?: "No Role Assigned");
+
+// Fetch leave request details
+$leaveRequestQuery = "SELECT leave_type, leave_reason, leave_start_date, leave_end_date, leave_start_time, leave_end_time, approval_status FROM leave_request WHERE employee_id = ? ORDER BY id DESC LIMIT 1";
+$leaveRequestStmt = $conn->prepare($leaveRequestQuery);
+$leaveRequestStmt->bind_param("i", $employee_id);
+$leaveRequestStmt->execute();
+$leaveRequestStmt->bind_result($leave_type, $leave_reason, $leave_start_date, $leave_end_date, $leave_start_time, $leave_end_time, $approval_status);
+$leaveRequestExists = $leaveRequestStmt->fetch();
+$leaveRequestStmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -86,6 +95,29 @@ $role = htmlspecialchars($role ?: "No Role Assigned");
         }
         .card {
             margin-bottom: 1.5rem;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -161,6 +193,24 @@ $role = htmlspecialchars($role ?: "No Role Assigned");
                         <button class="btn btn-success w-1/2 mr-2" onclick="clockIn()">Clock-In</button>
                         <button class="btn btn-error w-1/2 ml-2" onclick="clockOut()">Clock-Out</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Leave Request Card -->
+            <div class="card bg-base-100 shadow-xl md:col-span-2">
+                <div class="card-body">
+                    <h2 class="text-2xl font-bold mb-4">Leave Request</h2>
+                    <?php if ($leaveRequestExists): ?>
+                        <p><strong>Type of Leave:</strong> <?= htmlspecialchars($leave_type) ?></p>
+                        <p><strong>Reason:</strong> <?= htmlspecialchars($leave_reason) ?></p>
+                        <p><strong>Start:</strong> <?= htmlspecialchars($leave_start_date) ?> <?= date("g:i A", strtotime($leave_start_time)) ?></p>
+                        <p><strong>End:</strong> <?= htmlspecialchars($leave_end_date) ?> <?= date("g:i A", strtotime($leave_end_time)) ?></p>
+                        <div class="badge <?= $approval_status === 'Approved' ? 'badge-success' : ($approval_status === 'Not Approved' ? 'badge-error' : 'badge-warning') ?>">
+                            <?= htmlspecialchars($approval_status) ?>
+                        </div>
+                    <?php else: ?>
+                        <p>You have no pending leave requests.</p>
+                    <?php endif; ?>
                 </div>
             </div>
 
