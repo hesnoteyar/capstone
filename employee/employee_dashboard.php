@@ -78,6 +78,15 @@ $leaveRequestStmt->execute();
 $leaveRequestStmt->bind_result($leave_type, $leave_reason, $leave_start_date, $leave_end_date, $leave_start_time, $leave_end_time, $approval_status);
 $leaveRequestExists = $leaveRequestStmt->fetch();
 $leaveRequestStmt->close();
+
+// Fetch schedule request details
+$scheduleRequestQuery = "SELECT requested_date, start_time, notes, status FROM schedule_requests WHERE employee_id = ? ORDER BY request_id DESC LIMIT 1";
+$scheduleRequestStmt = $conn->prepare($scheduleRequestQuery);
+$scheduleRequestStmt->bind_param("i", $employee_id);
+$scheduleRequestStmt->execute();
+$scheduleRequestStmt->bind_result($schedule_date, $schedule_time, $schedule_reason, $schedule_approval_status);
+$scheduleRequestExists = $scheduleRequestStmt->fetch();
+$scheduleRequestStmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -197,7 +206,7 @@ $leaveRequestStmt->close();
             </div>
 
             <!-- Leave Request Card -->
-            <div class="card bg-base-100 shadow-xl md:col-span-2">
+            <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="text-2xl font-bold mb-4">Leave Request</h2>
                     <?php if ($leaveRequestExists): ?>
@@ -210,6 +219,23 @@ $leaveRequestStmt->close();
                         </div>
                     <?php else: ?>
                         <p>You have no pending leave requests.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Schedule Request Card -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="text-2xl font-bold mb-4">Schedule Request</h2>
+                    <?php if ($scheduleRequestExists): ?>
+                        <p><strong>Schedule Date:</strong> <?= htmlspecialchars($schedule_date) ?></p>
+                        <p><strong>Schedule Time:</strong> <?= date("g:i A", strtotime($schedule_time)) ?></p>
+                        <p><strong>Reason:</strong> <?= htmlspecialchars($schedule_reason) ?></p>
+                        <div class="badge <?= $schedule_approval_status === 'Approved' ? 'badge-success' : ($schedule_approval_status === 'Not Approved' ? 'badge-error' : 'badge-warning') ?>">
+                            <?= htmlspecialchars($schedule_approval_status) ?>
+                        </div>
+                    <?php else: ?>
+                        <p>You have no pending schedule requests.</p>
                     <?php endif; ?>
                 </div>
             </div>
