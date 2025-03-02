@@ -1,6 +1,19 @@
 <?php
+// filepath: /d:/XAMPP/htdocs/capstone/employee/employee_leave.php
 session_start();
 include '..\employee\employee_topnavbar.php';
+include '../authentication/db.php'; // Include your database connection
+
+$employee_id = $_SESSION['id']; // Assuming the employee ID is stored in the session
+
+// Fetch the total number of leaves taken by the employee from the employee table
+$leave_count_query = "SELECT leaves FROM employee WHERE employee_id = ?";
+$leave_count_stmt = $conn->prepare($leave_count_query);
+$leave_count_stmt->bind_param("i", $employee_id);
+$leave_count_stmt->execute();
+$leave_count_stmt->bind_result($total_leaves);
+$leave_count_stmt->fetch();
+$leave_count_stmt->close();
 ?>
 
 <!DOCTYPE html>
@@ -50,6 +63,13 @@ include '..\employee\employee_topnavbar.php';
             <?php unset($_SESSION['error_message']); ?>
         <?php endif; ?>
 
+        <div class="card bg-base-100 shadow-xl mb-4">
+            <div class="card-body">
+                <h2 class="card-title text-2xl font-bold mb-4">Leave Counter</h2>
+                <p class="text-lg">You have     <strong><?php echo $total_leaves; ?></strong> leaves.</p>
+            </div>
+        </div>
+
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
                 <h2 class="card-title text-2xl font-bold mb-4">Leave Application</h2>
@@ -80,16 +100,6 @@ include '..\employee\employee_topnavbar.php';
                         <div class="calendar">
                             <label class="label text-sm text-error">Leave End Date</label>
                             <input type="date" name="leave_end_date" class="input input-bordered w-full" required>
-                        </div>
-                    </div>
-                    <div class="calendar-container mb-4">
-                        <div class="calendar">
-                            <label class="label text-sm text-error">Leave Start Time</label>
-                            <input type="time" name="leave_start_time" class="input input-bordered w-full" required>
-                        </div>
-                        <div class="calendar">
-                            <label class="label text-sm text-error">Leave End Time</label>
-                            <input type="time" name="leave_end_time" class="input input-bordered w-full" required>
                         </div>
                     </div>
                     <div class="form-control mt-6">

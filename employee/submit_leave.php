@@ -8,15 +8,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $leave_type = $_POST['leave_type'];
     $reason = $_POST['reason'];
     $leave_start_date = $_POST['leave_start_date'];
-    $leave_start_time = $_POST['leave_start_time'];
     $leave_end_date = $_POST['leave_end_date'];
-    $leave_end_time = $_POST['leave_end_time'];
 
     // Insert the leave request into the database
-    $sql = "INSERT INTO leave_request (employee_id, employee_name, leave_type, leave_reason, leave_start_date, leave_end_date, leave_start_time, leave_end_time, approval_status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending')";
+    $sql = "INSERT INTO leave_request (employee_id, employee_name, leave_type, leave_reason, leave_start_date, leave_end_date, approval_status) 
+            VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isssssss", $employee_id, $name, $leave_type, $reason, $leave_start_date, $leave_end_date, $leave_start_time, $leave_end_time);
+    $stmt->bind_param("isssss", $employee_id, $name, $leave_type, $reason, $leave_start_date, $leave_end_date);
 
     if ($stmt->execute()) {
         $_SESSION['success_message'] = "Leave request submitted successfully.";

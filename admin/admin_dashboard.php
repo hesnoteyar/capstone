@@ -1,4 +1,5 @@
 <?php
+// filepath: /d:/XAMPP/htdocs/capstone/admin/admin_dashboard.php
 session_start();
 include '../admin/adminnavbar.php';
 include '../authentication/db.php'; // Database connection
@@ -97,7 +98,7 @@ if ($result_attendance->num_rows > 0) {
                     <tbody>
                         <?php
                             // Fetch employees from the database
-                            $sql = "SELECT employee_id, firstName, middleName, lastName, role, address, city, postalCode, profile_picture 
+                            $sql = "SELECT employee_id, firstName, middleName, lastName, role, address, city, postalCode, profile_picture, email, date_hired 
                                     FROM employee";
                             $result = $conn->query($sql);
 
@@ -108,7 +109,11 @@ if ($result_attendance->num_rows > 0) {
                                     $role = htmlspecialchars($row['role']);
                                     $address = htmlspecialchars($row['address'] . ', ' . $row['postalCode']);
                                     $city = htmlspecialchars($row['city']);
-                                    $profilePicture = htmlspecialchars($row['profile_picture'] ?: '../media/defaultpfp.jpg');
+                                    $email = htmlspecialchars($row['email']);
+                                    $dateHired = htmlspecialchars($row['date_hired']);
+                                    $profilePicture = !empty($row['profile_picture']) 
+                                        ? 'data:image/jpeg;base64,' . base64_encode($row['profile_picture']) 
+                                        : 'media\defaultpfp.jpg';
 
                                     echo "
                                     <tr>
@@ -123,7 +128,7 @@ if ($result_attendance->num_rows > 0) {
                                         <td>{$role}</td>
                                         <td>{$address}</td>
                                         <td>{$city}</td>
-                                        <th><button class='btn btn-error btn-xs'>Details</button></th></tr>";
+                                        <th><button class='btn btn-error btn-xs' onclick='openModal(\"{$fullName}\", \"{$role}\", \"{$address}\", \"{$city}\", \"{$profilePicture}\", \"{$email}\", \"{$dateHired}\")'>Details</button></th></tr>";
                                 }
                             } else {
                                 echo "<tr><td colspan='6' class='text-center'>No employees found.</td></tr>";
@@ -137,9 +142,39 @@ if ($result_attendance->num_rows > 0) {
         </div>
     </div>
 
-    <br>
+    <!-- Modal -->
+    <input type="checkbox" id="detailsModal" class="modal-toggle" />
+    <div class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg" id="modalFullName"></h3>
+            <div class="flex items-center mb-4">
+                <img id="modalProfilePicture" src="" alt="Profile Picture" class="w-24 h-24 rounded-full mr-4">
+                <div>
+                    <p class="py-2 mt-2"><strong>Role:</strong> <span id="modalRole"></span></p>
+                    <p class="py-2"><strong>Address:</strong> <span id="modalAddress"></span></p>
+                    <p class="py-2"><strong>City:</strong> <span id="modalCity"></span></p>
+                    <p class="py-2"><strong>Email:</strong> <span id="modalEmail"></span></p>
+                    <p class="py-2"><strong>Date Hired:</strong> <span id="modalDateHired"></span></p>
+                </div>
+            </div>
+            <div class="modal-action">
+                <label for="detailsModal" class="btn btn-error">Close</label>
+            </div>
+        </div>
+    </div>
 
     <script>
+        function openModal(fullName, role, address, city, profilePicture, email, dateHired) {
+            document.getElementById('modalFullName').innerText = fullName;
+            document.getElementById('modalRole').innerText = role;
+            document.getElementById('modalAddress').innerText = address;
+            document.getElementById('modalCity').innerText = city;
+            document.getElementById('modalProfilePicture').src = profilePicture;
+            document.getElementById('modalEmail').innerText = email;
+            document.getElementById('modalDateHired').innerText = new Date(dateHired).toLocaleDateString();
+            document.getElementById('detailsModal').checked = true;
+        }
+
         // Attendance Chart Options
         var attendanceOptions = {
             series: [{ name: 'Attendance', data: <?php echo json_encode($attendance_data); ?> }],

@@ -402,7 +402,7 @@ if ($result === false) {
         }
 
         function addToFavorites() {
-            const productId = document.getElementById('modal-product-id').value; // Ensure this hidden input exists and has the correct value
+            const productId = document.getElementById('modal-product-id').value; 
 
             fetch('add_to_favorites.php', {
                 method: 'POST',

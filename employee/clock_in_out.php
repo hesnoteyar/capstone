@@ -57,13 +57,14 @@ if ($action == 'clock_out') {
     $stmt = $conn->prepare("
         UPDATE attendance 
         SET check_out_time = ?, 
-            total_hours = TIMESTAMPDIFF(SECOND, check_in_time, ?) / 3600.0
+            total_hours = LEAST(TIMESTAMPDIFF(SECOND, check_in_time, ?) / 3600.0, 8),
+            overtime_hours = GREATEST(TIMESTAMPDIFF(SECOND, check_in_time, ?) / 3600.0 - 8, 0)
         WHERE employee_id = ? 
         AND date = ? 
         AND check_out_time IS NULL
     ");
 
-    $stmt->bind_param("ssis", $check_out_datetime, $check_out_datetime, $employee_id, $date);
+    $stmt->bind_param("sssis", $check_out_datetime, $check_out_datetime, $check_out_datetime, $employee_id, $date);
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {

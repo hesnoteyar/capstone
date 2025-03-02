@@ -22,22 +22,24 @@ if (isset($_SESSION['id'])) {
     $stmt = $conn->prepare("SELECT role, profile_picture FROM employee WHERE employee_id = ?");
     $stmt->bind_param("i", $employee_id);
     $stmt->execute();
-    $stmt->bind_result($role, $profileImage);
+    $stmt->bind_result($role, $profileImageBlob);
     $stmt->fetch();
     $stmt->close();
+
+    // Encode the binary data as a base64 string
+    if ($profileImageBlob) {
+        $profileImage = 'data:image/jpeg;base64,' . base64_encode($profileImageBlob);
+    } else {
+        $profileImage = "../media/defaultpfp.jpg";
+    }
 } else {
     header("Location: ../employee/employee_login.php");
     exit;
 }
 
-// Set a default profile image if none exists
-$profileImage = $profileImage ?: "../media/defaultpfp.jpg";
-
 // Handle profile picture upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profileImage'])) {
-    $targetDirectory = "../media/";
-    $targetFile = $targetDirectory . basename($_FILES["profileImage"]["name"]);
-    $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+    $imageFileType = strtolower(pathinfo($_FILES["profileImage"]["name"], PATHINFO_EXTENSION));
 
     // Validate uploaded file
     if ($_FILES["profileImage"]["size"] > 500000) {
@@ -45,37 +47,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profileImage'])) {
     } elseif (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
         $_SESSION['error_message'] = "Only JPG, JPEG, PNG, and GIF files are allowed.";
     } elseif (getimagesize($_FILES["profileImage"]["tmp_name"]) !== false) {
-        // Move uploaded file
-        if (move_uploaded_file($_FILES["profileImage"]["tmp_name"], $targetFile)) {
-            // Update profile picture path in the database
-            $updateQuery = "UPDATE employee SET profile_picture = ? WHERE employee_id = ?";
-            $updateStmt = $conn->prepare($updateQuery);
-            $updateStmt->bind_param("si", $targetFile, $employee_id);
-            $updateStmt->execute();
-            $updateStmt->close();
+        // Read the file content
+        $profileImageBlob = file_get_contents($_FILES["profileImage"]["tmp_name"]);
 
-            $_SESSION['success_message'] = "Profile picture updated successfully!";
-        } else {
-            $_SESSION['error_message'] = "Error uploading your file.";
-        }
+        // Update profile picture in the database
+        $updateQuery = "UPDATE employee SET profile_picture = ? WHERE employee_id = ?";
+        $updateStmt = $conn->prepare($updateQuery);
+        $updateStmt->bind_param("bi", $profileImageBlob, $employee_id);
+        $updateStmt->send_long_data(0, $profileImageBlob);
+        $updateStmt->execute();
+        $updateStmt->close();
+
+        $_SESSION['success_message'] = "Profile picture updated successfully!";
     } else {
         $_SESSION['error_message'] = "Uploaded file is not a valid image.";
     }
 
     header("Location: ../employee/employee_dashboard.php");
     exit;
-
 }
 
 // Escape the role to prevent XSS attacks
 $role = htmlspecialchars($role ?: "No Role Assigned");
 
 // Fetch leave request details
-$leaveRequestQuery = "SELECT leave_type, leave_reason, leave_start_date, leave_end_date, leave_start_time, leave_end_time, approval_status FROM leave_request WHERE employee_id = ? ORDER BY id DESC LIMIT 1";
+$leaveRequestQuery = "SELECT leave_type, leave_reason, leave_start_date, leave_end_date, approval_status FROM leave_request WHERE employee_id = ? ORDER BY id DESC LIMIT 1";
 $leaveRequestStmt = $conn->prepare($leaveRequestQuery);
 $leaveRequestStmt->bind_param("i", $employee_id);
 $leaveRequestStmt->execute();
-$leaveRequestStmt->bind_result($leave_type, $leave_reason, $leave_start_date, $leave_end_date, $leave_start_time, $leave_end_time, $approval_status);
+$leaveRequestStmt->bind_result($leave_type, $leave_reason, $leave_start_date, $leave_end_date, $approval_status);
 $leaveRequestExists = $leaveRequestStmt->fetch();
 $leaveRequestStmt->close();
 
@@ -212,8 +212,8 @@ $scheduleRequestStmt->close();
                     <?php if ($leaveRequestExists): ?>
                         <p><strong>Type of Leave:</strong> <?= htmlspecialchars($leave_type) ?></p>
                         <p><strong>Reason:</strong> <?= htmlspecialchars($leave_reason) ?></p>
-                        <p><strong>Start:</strong> <?= htmlspecialchars($leave_start_date) ?> <?= date("g:i A", strtotime($leave_start_time)) ?></p>
-                        <p><strong>End:</strong> <?= htmlspecialchars($leave_end_date) ?> <?= date("g:i A", strtotime($leave_end_time)) ?></p>
+                        <p><strong>Start:</strong> <?= htmlspecialchars($leave_start_date) ?></p>
+                        <p><strong>End:</strong> <?= htmlspecialchars($leave_end_date) ?></p>
                         <div class="badge <?= $approval_status === 'Approved' ? 'badge-success' : ($approval_status === 'Not Approved' ? 'badge-error' : 'badge-warning') ?>">
                             <?= htmlspecialchars($approval_status) ?>
                         </div>
