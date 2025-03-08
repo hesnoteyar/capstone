@@ -6,9 +6,20 @@ include '../authentication/db.php';
 // Assuming admin_id is stored in session
 $admin_id = $_SESSION['id'];
 
+// Get the filter status from the query string, default to 'All'
+$status = isset($_GET['status']) ? $_GET['status'] : 'All';
+
 // Fetch payroll data from the database
 $sql = "SELECT p.*, e.firstName, e.middleName, e.lastName, e.profile_picture FROM payroll p JOIN employee e ON p.employee_id = e.employee_id";
-$result = $conn->query($sql);
+if ($status != 'All') {
+    $sql .= " WHERE p.status = ?";
+}
+$stmt = $conn->prepare($sql);
+if ($status != 'All') {
+    $stmt->bind_param("s", $status);
+}
+$stmt->execute();
+$result = $stmt->get_result();
 
 // Function to map status to badge class
 function getStatusBadgeClass($status) {
@@ -44,6 +55,23 @@ function getStatusBadgeClass($status) {
       border-radius: 8px;
       z-index: 1000;
     }
+    
+    .modal {
+      overflow-y: auto !important;
+    }
+    
+    .modal::backdrop {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    body:has(dialog[open]) {
+      overflow: hidden;
+    }
+    
+    dialog[open] {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body class="min-h-screen bg-base-200 flex flex-col">
@@ -53,8 +81,16 @@ function getStatusBadgeClass($status) {
       <button class="btn btn-primary" onclick="window.location.href='?compute=1'">Compute Payroll</button>
       <button class="btn btn-secondary" onclick="window.location.href='admin_payroll.php'">Refresh</button>
     </div>
-    
-    <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 w-full">
+
+    <!-- New filter design -->
+    <div class="mb-4">
+      <a href="?status=All" class="btn <?= $status == 'All' ? 'btn-primary' : 'btn-outline' ?>">All</a>
+      <a href="?status=Pending" class="btn <?= $status == 'Pending' ? 'btn-warning' : 'btn-outline' ?>">Pending</a>
+      <a href="?status=Approved" class="btn <?= $status == 'Approved' ? 'btn-success' : 'btn-outline' ?>">Approved</a>
+      <a href="?status=Rejected" class="btn <?= $status == 'Rejected' ? 'btn-error' : 'btn-outline' ?>">Rejected</a>
+    </div>
+
+    <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 w-full mt-16">
       <table class="table w-full">
         <thead>
           <tr>
@@ -84,9 +120,11 @@ function getStatusBadgeClass($status) {
                   </span>
                 </td>
                 <td class="flex gap-2">
-                  <button class="btn btn-sm btn-success" onclick="approvePayroll(<?php echo $row['payroll_id']; ?>, <?php echo $admin_id; ?>)">Approve</button>
-                  <button class="btn btn-sm btn-error" onclick="denyPayroll(<?php echo $row['payroll_id']; ?>, <?php echo $admin_id; ?>)">Deny</button>
-                  <button class="btn btn-sm btn-info" onclick="viewPayrollDetails('<?php echo addslashes(json_encode($row)); ?>')">View</button>
+                  <?php if ($row['status'] === 'Pending'): ?>
+                    <button class="btn btn-sm btn-success" onclick="approvePayroll(<?php echo $row['payroll_id']; ?>)">Approve</button>
+                    <button class="btn btn-sm btn-error" onclick="denyPayroll(<?php echo $row['payroll_id']; ?>)">Deny</button>
+                  <?php endif; ?>
+                  <button class="btn btn-sm btn-info" onclick="viewPayrollDetails(<?php echo $row['payroll_id']; ?>)">View</button>
                 </td>
               </tr>
             <?php endwhile; ?>
@@ -101,34 +139,81 @@ function getStatusBadgeClass($status) {
   </div>
 
   <!-- Modal -->
-  <input type="checkbox" id="payrollModal" class="hidden" />
-  <div class="modal" id="payrollModalContainer">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg" id="modalPayrollID"></h3>
-      <div class="flex items-center mb-4">
-        <div class="avatar">
-          <div class="mask mask-squircle w-12 h-12">
-            <img id="modalProfilePicture" src="" alt="Profile Picture" />
+  <dialog id="payrollModal" class="modal">
+    <div class="modal-box w-11/12 max-w-2xl">
+      <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+        <h3 class="font-bold text-2xl">Payroll Details</h3>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+
+      <div class="py-6 space-y-6">
+        <!-- Employee Info Section -->
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h4 class="font-semibold text-lg mb-3">Employee Information</h4>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-1">
+              <img id="modal-profile-picture" class="w-32 h-32 object-cover rounded-full mx-auto" 
+                   src="data:image/jpeg;base64,/9j/4AAQSkZJRg==" alt="Profile Picture">
+            </div>
+            <div class="col-span-2">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-gray-500">Payroll ID</p>
+                  <p class="font-medium" id="modal-payroll-id"></p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Employee Name</p>
+                  <p class="font-medium" id="modal-employee-name"></p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="ml-4">
-          <p><strong>Employee Name:</strong> <span id="modalEmployeeName"></span></p>
+
+        <!-- Salary Details Section -->
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h4 class="font-semibold text-lg mb-3">Salary Details</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Basic Salary</p>
+              <p class="font-medium" id="modal-salary"></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Overtime Pay</p>
+              <p class="font-medium" id="modal-overtime"></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Deductions</p>
+              <p class="font-medium" id="modal-deductions"></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Net Salary</p>
+              <p class="font-medium text-lg text-success" id="modal-net-salary"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Section -->
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h4 class="font-semibold text-lg mb-3">Payment Status</h4>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <p class="text-sm text-gray-500">Status</p>
+              <p class="font-medium" id="modal-status"></p>
+            </div>
+          </div>
         </div>
       </div>
-      <p><strong>Employee ID:</strong> <span id="modalEmployeeID"></span></p>
-      <p><strong>Payroll Date:</strong> <span id="modalPayrollDate"></span></p>
-      <p><strong>Salary:</strong> <span id="modalSalary"></span></p>
-      <p><strong>Overtime Pay:</strong> <span id="modalOvertimePay"></span></p>
-      <p><strong>Net Salary:</strong> <span id="modalNetSalary"></span></p>
-      <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+
       <div class="modal-action">
-        <label for="payrollModal" class="btn">Close</label>
+        <form method="dialog">
+          <button class="btn btn-primary">Close</button>
+        </form>
       </div>
     </div>
-  </div>
-
-  <!-- Hidden Label for Modal Trigger -->
-  <label for="payrollModal" id="modalTrigger" class="hidden"></label>
+  </dialog>
 
   <!-- Notification Banner -->
   <div id="notificationBanner" class="notification-banner"></div>
@@ -138,13 +223,29 @@ function getStatusBadgeClass($status) {
   </footer>
 
   <script>
-    function approvePayroll(payrollID, adminID) {
+    // Add this new function at the top of your script section
+    function filterPayroll(status) {
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const statusCell = row.querySelector('[id^="status-"]');
+        if (!statusCell) return;
+        
+        const statusText = statusCell.textContent.trim();
+        if (status === 'all') {
+          row.style.display = '';
+        } else {
+          row.style.display = statusText === status ? '' : 'none';
+        }
+      });
+    }
+
+    function approvePayroll(payrollID) {
       fetch('approve_payroll.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ payroll_id: payrollID, admin_id: adminID })
+        body: JSON.stringify({ payroll_id: payrollID })
       })
       .then(response => response.json())
       .then(data => {
@@ -162,13 +263,13 @@ function getStatusBadgeClass($status) {
       });
     }
 
-    function denyPayroll(payrollID, adminID) {
+    function denyPayroll(payrollID) {
       fetch('deny_payroll.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ payroll_id: payrollID, admin_id: adminID })
+        body: JSON.stringify({ payroll_id: payrollID })
       })
       .then(response => response.json())
       .then(data => {
@@ -186,33 +287,38 @@ function getStatusBadgeClass($status) {
       });
     }
 
-    function viewPayrollDetails(payroll) {
-      console.log("viewPayrollDetails fired, raw payroll data:", payroll);
-      try {
-        payroll = JSON.parse(payroll);
-        console.log("Parsed payroll data:", payroll);
+    function viewPayrollDetails(payrollID) {
+      fetch('fetch_payroll_details.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ payroll_id: payrollID })
+      })
+      .then(response => response.json())
+      .then(response => {
+        if (response.success) {
+          const data = response.data;
+          document.getElementById('modal-payroll-id').textContent = data.payroll_id;
+          document.getElementById('modal-employee-name').textContent = 
+            `${data.emp_firstName} ${data.emp_middleName} ${data.emp_lastName}`;
+          document.getElementById('modal-salary').textContent = data.salary;
+          document.getElementById('modal-overtime').textContent = data.overtime_pay;
+          document.getElementById('modal-deductions').textContent = data.deductions;
+          document.getElementById('modal-net-salary').textContent = data.net_salary;
+          document.getElementById('modal-status').textContent = data.status;
+          
+          // Set profile picture
+          const profilePic = document.getElementById('modal-profile-picture');
+          if (data.profile_picture) {
+            profilePic.src = 'data:image/jpeg;base64,' + data.profile_picture;
+          } else {
+            profilePic.src = '../img/default-profile.jpg'; // Set a default image path
+          }
 
-        document.getElementById('modalPayrollID').innerText = 'Payroll ID: ' + payroll.payroll_id;
-        document.getElementById('modalEmployeeID').innerText = payroll.employee_id;
-        document.getElementById('modalPayrollDate').innerText = payroll.payroll_date;
-        document.getElementById('modalSalary').innerText = payroll.salary;
-        document.getElementById('modalOvertimePay').innerText = payroll.overtime_pay;
-        document.getElementById('modalNetSalary').innerText = payroll.net_salary;
-        document.getElementById('modalStatus').innerText = payroll.status;
-        document.getElementById('modalEmployeeName').innerText = payroll.firstName + ' ' + payroll.middleName + ' ' + payroll.lastName;
-
-        if (payroll.profile_picture) {
-          console.log("Profile Picture Found");
-          document.getElementById('modalProfilePicture').src = 'data:image/jpeg;base64,' + payroll.profile_picture;
-        } else {
-          document.getElementById('modalProfilePicture').src = 'media/defaultpfp.jpg';
+          document.getElementById('payrollModal').showModal();
         }
-
-        // Click the hidden label to trigger modal
-        document.getElementById('modalTrigger').click();
-      } catch (error) {
-        console.error("Error in viewPayrollDetails:", error);
-      }
+      });
     }
 
     function showNotification(message, type) {

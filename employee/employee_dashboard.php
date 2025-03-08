@@ -37,36 +37,6 @@ if (isset($_SESSION['id'])) {
     exit;
 }
 
-// Handle profile picture upload
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profileImage'])) {
-    $imageFileType = strtolower(pathinfo($_FILES["profileImage"]["name"], PATHINFO_EXTENSION));
-
-    // Validate uploaded file
-    if ($_FILES["profileImage"]["size"] > 500000) {
-        $_SESSION['error_message'] = "File is too large. Maximum allowed size is 500KB.";
-    } elseif (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
-        $_SESSION['error_message'] = "Only JPG, JPEG, PNG, and GIF files are allowed.";
-    } elseif (getimagesize($_FILES["profileImage"]["tmp_name"]) !== false) {
-        // Read the file content
-        $profileImageBlob = file_get_contents($_FILES["profileImage"]["tmp_name"]);
-
-        // Update profile picture in the database
-        $updateQuery = "UPDATE employee SET profile_picture = ? WHERE employee_id = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("bi", $profileImageBlob, $employee_id);
-        $updateStmt->send_long_data(0, $profileImageBlob);
-        $updateStmt->execute();
-        $updateStmt->close();
-
-        $_SESSION['success_message'] = "Profile picture updated successfully!";
-    } else {
-        $_SESSION['error_message'] = "Uploaded file is not a valid image.";
-    }
-
-    header("Location: ../employee/employee_dashboard.php");
-    exit;
-}
-
 // Escape the role to prevent XSS attacks
 $role = htmlspecialchars($role ?: "No Role Assigned");
 
@@ -173,23 +143,11 @@ $scheduleRequestStmt->close();
                                 class="w-full h-full rounded-full ring ring-error ring-offset-base-100 ring-offset-2 shadow-lg" 
                                 alt="Profile Picture">
                         </div>
-                        <button onclick="document.getElementById('imageInput').click()" 
-                                class="absolute bottom-0 right-0 btn btn-circle btn-sm bg-error text-white shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                    d="M15.232 5.232l3.536 3.536m-2.036-1.5A2.5 2.5 0 1112.5 7.5M16.5 12H7.5M9 15h6" />
-                            </svg>
-                        </button>
                     </div>
                     <div class="mb-4">
                         <h3 class="text-lg font-medium">Name: <?php echo $first_name . ' ' . $last_name; ?></h3>
                         <h4 class="text-md font-medium">Designation: <?php echo $role; ?></h4>
                     </div>
-                    <form method="POST" enctype="multipart/form-data" class="w-full">
-                        <input type="file" name="profileImage" accept="image/*" id="imageInput" class="hidden" onchange="previewImage(event)">
-                        <button type="button" onclick="document.getElementById('imageInput').click()" class="btn btn-outline mt-2 w-full">Select Photo</button>
-                        <button type="submit" name="saveImage" class="btn btn-error mt-2 w-full">Save Photo</button>
-                    </form>
                 </div>
             </div>
 
@@ -337,18 +295,6 @@ $scheduleRequestStmt->close();
     <?php ob_end_flush(); ?>
 
     <script>
-        // Profile Picture Preview
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('profileImage').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
         let timerInterval;
         let startTime;
 

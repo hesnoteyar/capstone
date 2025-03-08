@@ -51,9 +51,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Get the current date for date_hired
         $date_hired = date('Y-m-d'); // Format: YYYY-MM-DD
 
-        // Prepare an insert statement, including the role and date_hired fields
-        $stmt = $conn->prepare("INSERT INTO employee (firstName, middleName, lastName, address, city, postalCode, email, password, role, date_hired) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssssss", $first_name, $middle_name, $last_name, $address, $city, $postal_code, $email, $hashed_password, $role, $date_hired);
+        // Handle profile picture upload
+        $profileImageBlob = null;
+        if (isset($_FILES['profileImage']) && $_FILES['profileImage']['size'] > 0) {
+            $imageFileType = strtolower(pathinfo($_FILES["profileImage"]["name"], PATHINFO_EXTENSION));
+
+            // Validate uploaded file
+            if ($_FILES["profileImage"]["size"] > 500000) {
+                $_SESSION['error_message'] = "File is too large. Maximum allowed size is 500KB.";
+                header("Location: " . $_SERVER['HTTP_REFERER']);
+                exit;
+            } elseif (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
+                $_SESSION['error_message'] = "Only JPG, JPEG, PNG, and GIF files are allowed.";
+                header("Location: " . $_SERVER['HTTP_REFERER']);
+                exit;
+            } elseif (getimagesize($_FILES["profileImage"]["tmp_name"]) !== false) {
+                // Read the file content
+                $profileImageBlob = file_get_contents($_FILES["profileImage"]["tmp_name"]);
+            } else {
+                $_SESSION['error_message'] = "Uploaded file is not a valid image.";
+                header("Location: " . $_SERVER['HTTP_REFERER']);
+                exit;
+            }
+        }
+
+        // Prepare an insert statement, including the role, date_hired, and profile_picture fields
+        $stmt = $conn->prepare("INSERT INTO employee (firstName, middleName, lastName, address, city, postalCode, email, password, role, date_hired, profile_picture) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssssssb", $first_name, $middle_name, $last_name, $address, $city, $postal_code, $email, $hashed_password, $role, $date_hired, $profileImageBlob);
+        $stmt->send_long_data(10, $profileImageBlob);
 
         if ($stmt->execute()) {
             $_SESSION['success_message'] = "Employee added successfully!";

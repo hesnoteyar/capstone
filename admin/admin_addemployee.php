@@ -57,7 +57,7 @@
             <h1 class="py-6 text-3xl font-bold">Add a New Employee</h1>
         </div>
 
-        <form action="..\authentication\add_employee.php" method="post" class="card-body">
+        <form action="..\authentication\add_employee.php" method="post" class="card-body" enctype="multipart/form-data">
             
             <!-- Name Section -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -139,6 +139,14 @@
                     <option value="Cleaner">Cleaner</option>
                     <option value="Maintenance">Maintenance</option>
                 </select>
+            </div>
+
+            <!-- Profile Picture Upload -->
+            <div class="form-control mt-4">
+                <label class="label">
+                    <span class="label-text">Profile Picture</span>
+                </label>
+                <input type="file" name="profileImage" accept="image/*" class="input input-bordered w-full" />
             </div>
 
             <!-- Create Account Button -->

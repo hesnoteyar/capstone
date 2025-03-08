@@ -122,7 +122,17 @@ $conn->close();
                 </tr>
                 <tr>
                   <td class="font-bold">Status:</td>
-                  <td><?= htmlspecialchars($payroll['status']) ?></td>
+                  <td>
+                  <?php if ($payroll['status'] == 'Approved'): ?>
+                    <span class="badge badge-success text-white"><?= htmlspecialchars($payroll['status']) ?></span>
+                  <?php elseif ($payroll['status'] == 'Pending'): ?>
+                    <span class="badge badge-warning text-white"><?= htmlspecialchars($payroll['status']) ?></span>
+                  <?php elseif ($payroll['status'] == 'Rejected'): ?>
+                    <span class="badge badge-error text-white"><?= htmlspecialchars($payroll['status']) ?></span>
+                  <?php else: ?>
+                    <span class="badge text-white"><?= htmlspecialchars($payroll['status']) ?></span>
+                  <?php endif; ?>
+                  </td>
                 </tr>
                 <tr>
                   <td class="font-bold">Total Hours Worked:</td>
