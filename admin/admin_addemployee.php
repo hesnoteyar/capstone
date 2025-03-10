@@ -146,7 +146,8 @@
                 <label class="label">
                     <span class="label-text">Profile Picture</span>
                 </label>
-                <input type="file" name="profileImage" accept="image/*" class="input input-bordered w-full" />
+                <input type="file" name="profileImage" accept="image/*" class="file-input file-input-bordered w-full" />
+                <label class="text-xs text-gray-500 mt-1">Max size 2MB</label>
             </div>
 
             <!-- Create Account Button -->

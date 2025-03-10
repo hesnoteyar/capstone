@@ -65,7 +65,7 @@ $leave_count_stmt->close();
 
         <div class="card bg-base-100 shadow-xl mb-4">
             <div class="card-body">
-                <h2 class="card-title text-2xl font-bold mb-4">Leave Counter</h2>
+                <h2 class="card-title text-2xl font-bold mb-4">Available Leaves:</h2>
                 <p class="text-lg">You have     <strong><?php echo $total_leaves; ?></strong> leaves.</p>
             </div>
         </div>
