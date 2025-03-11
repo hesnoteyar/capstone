@@ -11,7 +11,7 @@ include '../authentication/db.php';
 // Fetch employee data from the database
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $role = isset($_GET['role']) ? $_GET['role'] : '';
-$sql = "SELECT employee_id, firstName, middleName, lastName, role, email, profile_picture FROM employee WHERE 1=1";
+$sql = "SELECT employee_id, firstName, middleName, lastName, role, email, profile_picture, address, city, postalCode, leaves FROM employee WHERE 1=1";
 $params = [];
 $types = '';
 
@@ -62,6 +62,25 @@ $result = $stmt->get_result();
             padding: 16px;
             border-radius: 8px;
             z-index: 1000;
+        }
+        /* Add custom modal styles */
+        .modal-box {
+            max-width: 80vw !important;
+            width: 900px !important;
+            max-height: 90vh !important;
+            padding: 2rem !important;
+        }
+        .modal-box::-webkit-scrollbar {
+            display: none;
+        }
+        .modal-box {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
         }
     </style>
 </head>
@@ -124,19 +143,20 @@ $result = $stmt->get_result();
                                 <td>
                                     <div class="flex gap-2">
                                         <?php
-                                            $employeeJson = json_encode($row);
-                                            // Escape quotes and make it safe for HTML attribute
+                                            // Remove profile_picture from JSON to avoid large data
+                                            $employeeData = array_diff_key($row, ['profile_picture' => '']);
+                                            $employeeJson = json_encode($employeeData, JSON_HEX_APOS | JSON_HEX_QUOT);
+                                            // Double encode to prevent JSON breaking
                                             $employeeJsonAttr = htmlspecialchars($employeeJson, ENT_QUOTES, 'UTF-8');
                                         ?>
                                         <button class="btn btn-sm btn-info" 
-                                            data-employee="<?php echo $employeeJsonAttr; ?>"
+                                            data-employee='<?php echo $employeeJsonAttr; ?>'
                                             onclick="editEmployee(this)">
                                             Edit
                                         </button>
                                         <button class="btn btn-sm btn-error" onclick="confirmDelete(<?php echo $row['employee_id']; ?>)">Delete</button>
                                     </div>
                                 </td>
-                            </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
@@ -162,53 +182,128 @@ $result = $stmt->get_result();
     <!-- Delete Confirmation Modal -->
     <input type="checkbox" id="deleteModal" class="modal-toggle" />
     <div class="modal">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">Confirm Delete</h3>
-            <p class="py-4">Are you sure you want to delete this employee?</p>
-            <div class="modal-action">
-                <label for="deleteModal" class="btn">Cancel</label>
-                <button class="btn btn-error" onclick="deleteEmployee()">Delete</button>
+        <div class="modal-box relative bg-base-100 shadow-lg">
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-3 border-b border-base-200 pb-4">
+                    <div class="text-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-lg">Confirm Delete</h3>
+                </div>
+                <p class="py-2 text-neutral-content">This action cannot be undone. Are you sure you want to delete this employee?</p>
+                <div class="modal-action gap-2">
+                    <label for="deleteModal" class="btn btn-ghost">Cancel</label>
+                    <button class="btn btn-error" onclick="deleteEmployee()">Delete</button>
+                </div>
             </div>
         </div>
+        <label class="modal-backdrop" for="deleteModal">Close</label>
     </div>
 
     <!-- Edit Employee Modal -->
     <input type="checkbox" id="editModal" class="modal-toggle" />
     <div class="modal">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">Edit Employee</h3>
+        <div class="modal-box relative bg-base-100 shadow-xl">
+            <div class="flex items-center gap-3 border-b border-base-200 pb-4 mb-6">
+                <div class="text-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="red">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold">Edit Employee Information</h3>
+            </div>
             <form id="editEmployeeForm" onsubmit="updateEmployee(event)">
                 <input type="hidden" id="editEmployeeID" name="employee_id" />
-                <div class="form-control mb-4">
-                    <label class="label">First Name</label>
-                    <input type="text" id="editFirstName" name="firstName" class="input input-bordered" required />
+                
+                <div class="form-grid">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">First Name</span>
+                        </label>
+                        <input type="text" id="editFirstName" name="firstName" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Middle Name</span>
+                        </label>
+                        <input type="text" id="editMiddleName" name="middleName" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Last Name</span>
+                        </label>
+                        <input type="text" id="editLastName" name="lastName" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Role</span>
+                        </label>
+                        <select id="editRole" name="role" class="select select-bordered focus:select-primary" required>
+                            <option value="Cashier">Cashier</option>
+                            <option value="Mechanic">Mechanic</option>
+                            <option value="Head Mechanic">Head Mechanic</option>
+                            <option value="Cleaner">Cleaner</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Email</span>
+                        </label>
+                        <input type="email" id="editEmail" name="email" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Leaves</span>
+                        </label>
+                        <input type="number" id="editLeaves" name="leaves" class="input input-bordered focus:input-primary" required min="0" />
+                    </div>
+
+                    <div class="form-control col-span-3">
+                        <label class="label">
+                            <span class="label-text font-medium">Address</span>
+                        </label>
+                        <input type="text" id="editAddress" name="address" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">City</span>
+                        </label>
+                        <input type="text" id="editCity" name="city" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Postal Code</span>
+                        </label>
+                        <input type="text" id="editPostalCode" name="postalCode" class="input input-bordered focus:input-primary" required />
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Profile Picture</span>
+                        </label>
+                        <input type="file" id="editProfilePicture" name="profile_picture" 
+                               class="file-input file-input-bordered file-input-error w-full" 
+                               accept="image/*" />
+                    </div>
                 </div>
-                <div class="form-control mb-4">
-                    <label class="label">Middle Name</label>
-                    <input type="text" id="editMiddleName" name="middleName" class="input input-bordered" required />
-                </div>
-                <div class="form-control mb-4">
-                    <label class="label">Last Name</label>
-                    <input type="text" id="editLastName" name="lastName" class="input input-bordered" required />
-                </div>
-                <div class="form-control mb-4">
-                    <label class="label">Role</label>
-                    <input type="text" id="editRole" name="role" class="input input-bordered" required />
-                </div>
-                <div class="form-control mb-4">
-                    <label class="label">Email</label>
-                    <input type="email" id="editEmail" name="email" class="input input-bordered" required />
-                </div>
-                <div class="form-control mb-4">
-                    <label class="label">Profile Picture</label>
-                    <input type="file" id="editProfilePicture" name="profile_picture" class="input input-bordered" />
-                </div>
-                <div class="modal-action">
-                    <label for="editModal" class="btn">Cancel</label>
-                    <button type="submit" class="btn btn-primary">Save</button>
+
+                <div class="modal-action gap-2 mt-8 pt-4 border-t border-base-200">
+                    <label for="editModal" class="btn btn-ghost">Cancel</label>
+                    <button type="submit" class="btn btn-error">Save Changes</button>
                 </div>
             </form>
         </div>
+        <label class="modal-backdrop" for="editModal">Close</label>
     </div>
 
     <!-- Notification Banner -->
@@ -281,27 +376,43 @@ $result = $stmt->get_result();
         function editEmployee(button) {
             try {
                 const employeeDataStr = button.getAttribute('data-employee');
+                console.log('Button element:', button);
+                console.log('Raw employee data string:', employeeDataStr);
+
                 if (!employeeDataStr) {
                     throw new Error('No employee data attribute found');
                 }
-                
-                console.log('Raw employee data:', employeeDataStr); // Debug log
+
                 const employeeData = JSON.parse(employeeDataStr);
-                
+                console.log('Parsed employee data:', employeeData);
+
                 if (!employeeData || typeof employeeData !== 'object') {
                     throw new Error('Invalid employee data format');
                 }
 
-                document.getElementById('editEmployeeID').value = employeeData.employee_id || '';
-                document.getElementById('editFirstName').value = employeeData.firstName || '';
-                document.getElementById('editMiddleName').value = employeeData.middleName || '';
-                document.getElementById('editLastName').value = employeeData.lastName || '';
-                document.getElementById('editRole').value = employeeData.role || '';
-                document.getElementById('editEmail').value = employeeData.email || '';
+                // Fill in form fields
+                Object.entries({
+                    'editEmployeeID': 'employee_id',
+                    'editFirstName': 'firstName',
+                    'editMiddleName': 'middleName',
+                    'editLastName': 'lastName',
+                    'editRole': 'role',
+                    'editEmail': 'email',
+                    'editAddress': 'address',
+                    'editCity': 'city',
+                    'editPostalCode': 'postalCode',
+                    'editLeaves': 'leaves'
+                }).forEach(([elementId, dataKey]) => {
+                    const element = document.getElementById(elementId);
+                    if (element && employeeData[dataKey] !== undefined) {
+                        element.value = employeeData[dataKey];
+                    }
+                });
+
                 document.getElementById('editModal').checked = true;
             } catch (error) {
-                console.error('Error parsing employee data:', error);
-                console.error('Attempted to parse:', button.getAttribute('data-employee'));
+                console.error('Error in editEmployee:', error);
+                console.error('Button attributes:', Array.from(button.attributes));
                 showNotification('Error loading employee data', 'error');
             }
         }
