@@ -47,42 +47,46 @@ $result = $stmt->get_result();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
-        .notification-banner {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #4caf50;
-            color: white;
-            padding: 16px;
-            border-radius: 8px;
-            z-index: 1000;
-        }
-        /* Add custom modal styles */
-        .modal-box {
-            max-width: 80vw !important;
-            width: 900px !important;
-            max-height: 90vh !important;
-            padding: 2rem !important;
-        }
-        .modal-box::-webkit-scrollbar {
-            display: none;
-        }
-        .modal-box {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-        }
-    </style>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+    .notification-banner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #4caf50;
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        z-index: 1000;
+    }
+    /* Add custom modal styles */
+    .modal-box {
+        max-width: 80vw !important;
+        width: 900px !important;
+        max-height: 90vh !important;
+        padding: 2rem !important;
+    }
+    .modal-box::-webkit-scrollbar {
+        display: none;
+    }
+    .modal-box {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+    /* Ensure button text color is white */
+    .btn-info, .btn-error {
+        color: white !important;
+    }
+</style>
 </head>
 <body class="bg-base-200 min-h-screen">
     <div class="p-8 flex flex-col h-[calc(100vh-4rem)]">
@@ -149,12 +153,12 @@ $result = $stmt->get_result();
                                             // Double encode to prevent JSON breaking
                                             $employeeJsonAttr = htmlspecialchars($employeeJson, ENT_QUOTES, 'UTF-8');
                                         ?>
-                                        <button class="btn btn-sm btn-info" 
+                                        <button class="btn btn-sm btn-info text-white" 
                                             data-employee='<?php echo $employeeJsonAttr; ?>'
                                             onclick="editEmployee(this)">
                                             Edit
                                         </button>
-                                        <button class="btn btn-sm btn-error" onclick="confirmDelete(<?php echo $row['employee_id']; ?>)">Delete</button>
+                                        <button class="btn btn-sm btn-error text-white" onclick="confirmDelete(<?php echo $row['employee_id']; ?>)">Delete</button>
                                     </div>
                                 </td>
                         <?php endwhile; ?>

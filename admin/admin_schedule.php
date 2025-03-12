@@ -2,6 +2,9 @@
 // filepath: /d:/XAMPP/htdocs/capstone/admin/admin_schedule.php
 include '..\admin\adminnavbar.php';
 include '../authentication/db.php'; // Include your database connection
+
+// Get the filter status from the query string, default to 'All'
+$filter_status = isset($_GET['status']) ? $_GET['status'] : 'All';
 ?>
 
 <!DOCTYPE html>
@@ -37,24 +40,59 @@ include '../authentication/db.php'; // Include your database connection
 <body class="bg-base-200">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Schedule Requests</h1>
+        
+        <!-- Replace dropdown with filter buttons -->
+        <div class="mb-4">
+            <a href="?status=All" class="btn <?= $filter_status == 'All' ? 'btn-primary' : 'btn-outline' ?>">All</a>
+            <a href="?status=Pending" class="btn <?= $filter_status == 'Pending' ? 'btn-warning' : 'btn-outline' ?>">Pending</a>
+            <a href="?status=Approved" class="btn <?= $filter_status == 'Approved' ? 'btn-success' : 'btn-outline' ?>">Approved</a>
+            <a href="?status=Rejected" class="btn <?= $filter_status == 'Rejected' ? 'btn-error' : 'btn-outline' ?>">Denied</a>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php
-            $query = "SELECT * FROM schedule_requests";
-            $result = $conn->query($query);
+            // Modify query to use filter
+            $sql = "SELECT * FROM schedule_requests";
+            if ($filter_status != 'All') {
+                $sql .= " WHERE status = ?";
+            }
+            $sql .= " ORDER BY requested_date DESC";
+            
+            $stmt = $conn->prepare($sql);
+            if ($filter_status != 'All') {
+                $stmt->bind_param("s", $filter_status);
+            }
+            $stmt->execute();
+            $result = $stmt->get_result();
 
             if ($result->num_rows > 0) {
                 while ($row = $result->fetch_assoc()) {
-                    echo "<div class='card bg-base-100 shadow-xl'>";
+                    $statusClass = '';
+                    switch($row['status']) {
+                        case 'Approved':
+                            $statusClass = 'badge-success';
+                            break;
+                        case 'Rejected':
+                            $statusClass = 'badge-error';
+                            break;
+                        case 'Pending':
+                            $statusClass = 'badge-warning';
+                            break;
+                    }
+                    
+                    echo "<div class='card bg-base-100 shadow-xl' data-status='" . htmlspecialchars($row['status']) . "'>";
                     echo "<div class='card-body'>";
                     echo "<h2 class='card-title'>" . htmlspecialchars($row['employee_name']) . "</h2>";
                     echo "<p>Requested Date: " . htmlspecialchars($row['requested_date']) . "</p>";
                     echo "<p>Start Time: " . htmlspecialchars($row['start_time']) . "</p>";
                     echo "<p>End Time: " . htmlspecialchars($row['end_time']) . "</p>";
                     echo "<p>Notes: " . htmlspecialchars($row['notes']) . "</p>";
-                    echo "<p>Status: " . htmlspecialchars($row['status']) . "</p>";
+                    echo "<p>Status: <span class='badge " . $statusClass . "'>" . htmlspecialchars($row['status']) . "</span></p>";
                     echo "<div class='card-actions mt-4'>";
-                    echo "<button class='btn btn-success' onclick='updateStatus(" . $row['request_id'] . ", \"Approved\")'>Approve</button>";
-                    echo "<button class='btn btn-error' onclick='updateStatus(" . $row['request_id'] . ", \"Rejected\")'>Deny</button>";
+                    if ($row['status'] === 'Pending') {
+                        echo "<button class='btn btn-success' onclick='updateStatus(" . $row['request_id'] . ", \"Approved\")'>Approve</button>";
+                        echo "<button class='btn btn-error' onclick='updateStatus(" . $row['request_id'] . ", \"Rejected\")'>Deny</button>";
+                    }
                     echo "</div>";
                     echo "</div>";
                     echo "</div>";
@@ -63,6 +101,7 @@ include '../authentication/db.php'; // Include your database connection
                 echo "<p>No schedule requests found.</p>";
             }
 
+            $stmt->close();
             $conn->close();
             ?>
         </div>
@@ -80,8 +119,18 @@ include '../authentication/db.php'; // Include your database connection
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Update the UI immediately
+                    const card = document.querySelector(`[data-status="${data.previous_status}"]`);
+                    if (card) {
+                        const statusBadge = card.querySelector('.badge');
+                        statusBadge.className = `badge badge-${status === 'Approved' ? 'success' : 'error'}`;
+                        statusBadge.textContent = status;
+                        card.setAttribute('data-status', status);
+                        // Remove the action buttons
+                        const actionButtons = card.querySelector('.card-actions');
+                        actionButtons.innerHTML = '';
+                    }
                     showBanner('success', 'Status updated successfully.');
-                    setTimeout(() => location.reload(), 5000); // Reload after 5 seconds
                 } else {
                     showBanner('error', 'Error updating status: ' + data.message);
                 }

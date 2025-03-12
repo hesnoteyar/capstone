@@ -32,7 +32,7 @@ $result = $conn->query($sql);
         <h1 class="text-3xl font-bold mb-6">Inventory Management</h1>
 
         <!-- Add Product Button -->
-        <button class="btn btn-primary mb-6" onclick="openAddProductModal()">Add Product</button>
+        <button class="btn btn-error mb-6" onclick="openAddProductModal()">Add Product</button>
 
         <!-- Product List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -61,10 +61,16 @@ $result = $conn->query($sql);
     <div id="addProductModal" class="modal">
         <div class="modal-box">
             <h2 class="text-xl font-bold mb-4">Add Product</h2>
-            <form id="addProductForm">
+            <form id="addProductForm" enctype="multipart/form-data">
                 <div class="form-control mb-4">
                     <label class="label">Name</label>
                     <input type="text" name="name" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Image</label>
+                    <input type="file" name="profile_picture" 
+                           class="file-input file-input-bordered file-input-error w-full" 
+                           accept="image/*" />
                 </div>
                 <div class="form-control mb-4">
                     <label class="label">Description</label>
@@ -90,11 +96,17 @@ $result = $conn->query($sql);
     <div id="editProductModal" class="modal">
         <div class="modal-box">
             <h2 class="text-xl font-bold mb-4">Edit Product</h2>
-            <form id="editProductForm">
+            <form id="editProductForm" enctype="multipart/form-data">
                 <input type="hidden" name="product_id">
                 <div class="form-control mb-4">
                     <label class="label">Name</label>
                     <input type="text" name="name" class="input input-bordered" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label">Image</label>
+                    <input type="file" name="profile_picture" 
+                           class="file-input file-input-bordered file-input-error w-full" 
+                           accept="image/*" />
                 </div>
                 <div class="form-control mb-4">
                     <label class="label">Description</label>

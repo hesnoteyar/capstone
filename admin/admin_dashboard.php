@@ -55,6 +55,10 @@ if ($result_attendance->num_rows > 0) {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            .btn.btn-error {
+                background-color: #dc2626;
+                color: white;
+            }
         }
     </style>
 </head>

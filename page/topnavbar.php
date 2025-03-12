@@ -40,6 +40,7 @@
               class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
               <li><a href="..\page\profile.php">Profile</a></li>
               <li><a href="..\page\shop.php">Shop</a></li>
+              <li><a href="..\page\inquiry.php">Inquire</a></li>
               <li><a href="..\page\cart.php">Cart</a></li>
               <li><a href="..\page\purchase_history.php">Purchase History</a></li>
               <li><a href="..\authentication\logout.php">Logout</a></li>
