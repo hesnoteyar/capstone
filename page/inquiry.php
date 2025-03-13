@@ -1,13 +1,41 @@
 <?php
 session_start();
 include '../authentication/db.php';
+
+// Get user_id first
+$user_id = $_SESSION['id'];
+
+// Handle delete request
+if (isset($_POST['delete_request'])) {
+    $request_id = mysqli_real_escape_string($conn, $_POST['request_id']);
+    $delete_sql = "DELETE FROM service_inquiries WHERE id = ? AND user_id = ?";
+    $stmt = $conn->prepare($delete_sql);
+    $stmt->bind_param("ii", $request_id, $user_id);
+    
+    if ($stmt->execute()) {
+        $_SESSION['message'] = "Request cancelled successfully!";
+        $_SESSION['message_type'] = "success";
+    } else {
+        $_SESSION['message'] = "Error cancelling request. " . $stmt->error;
+        $_SESSION['message_type'] = "error";
+    }
+    
+    // Redirect after handling delete
+    header("Location: inquiry.php");
+    exit();
+}
+
 include '../page/topnavbar.php';
 
 // Assuming user_id is stored in the session
 $user_id = $_SESSION['id'];
 
-// Fetch purchase history for the user
-
+// Fetch existing service requests for the user
+$sql = "SELECT * FROM service_inquiries WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -37,6 +65,29 @@ $user_id = $_SESSION['id'];
             </div>
         </div>
     </div>
+
+    <!-- Notification Banner -->
+    <?php if (isset($_SESSION['message'])): ?>
+        <div id="alert-banner" class="fixed bottom-4 right-4 z-50 opacity-0 max-w-sm">
+            <div class="alert <?php echo $_SESSION['message_type'] === 'success' ? 'alert-success' : 'alert-error'; ?> shadow-lg">
+                <div class="flex items-center">
+                    <?php if ($_SESSION['message_type'] === 'success'): ?>
+                        <i class="fas fa-check-circle text-2xl"></i>
+                    <?php else: ?>
+                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                    <?php endif; ?>
+                    <div class="ml-2">
+                        <span class=""><?php echo $_SESSION['message']; ?></span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="btn btn-ghost btn-xs">✕</button>
+                </div>
+            </div>
+        </div>
+        <?php 
+        unset($_SESSION['message']);
+        unset($_SESSION['message_type']);
+        ?>
+    <?php endif; ?>
 
     <main class="container mx-auto p-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -122,9 +173,93 @@ $user_id = $_SESSION['id'];
 
             <!-- Right Column - Inquiry Form -->
             <div class="lg:col-span-2">
+                <!-- Existing Requests Moved Here -->
+                <div class="card bg-white shadow-xl border border-gray-100 mb-8" id="existing-requests">
+                    <div class="card-body">
+                        <h2 class="card-title text-2xl mb-6 text-red-600">Your Service Requests</h2>
+                        <?php if ($result->num_rows > 0): ?>
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra w-full">
+                                    <thead>
+                                        <tr>
+                                            <th>Reference</th>
+                                            <th>Vehicle</th>
+                                            <th>Service</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($row = $result->fetch_assoc()): ?>
+                                            <tr>
+                                                <td class="font-mono text-sm"><?php echo htmlspecialchars($row['reference_number']); ?></td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($row['brand'] . ' ' . $row['model']); ?>
+                                                    <br>
+                                                    <span class="text-sm opacity-60">Year: <?php echo htmlspecialchars($row['year_model']); ?></span>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($row['service_type']); ?></td>
+                                                <td><?php echo date('M d, Y', strtotime($row['preferred_date'])); ?></td>
+                                                <td>
+                                                    <?php
+                                                    $status_classes = [
+                                                        'Pending' => 'badge-warning',
+                                                        'Approved' => 'badge-success',
+                                                        'In Progress' => 'badge-info',
+                                                        'Completed' => 'badge-success',
+                                                        'Cancelled' => 'badge-error'
+                                                    ];
+                                                    $badge_class = $status_classes[$row['status']] ?? 'badge-ghost';
+                                                    ?>
+                                                    <div class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($row['status']); ?></div>
+                                                </td>
+                                                <td>
+                                                    <?php if ($row['status'] === 'Pending'): ?>
+                                                        <label for="cancel-modal-<?php echo $row['id']; ?>" 
+                                                            class="btn btn-error btn-xs">
+                                                            <i class="fas fa-times"></i> Cancel
+                                                        </label>
+
+                                                        <!-- Cancel Modal -->
+                                                        <input type="checkbox" id="cancel-modal-<?php echo $row['id']; ?>" class="modal-toggle" />
+                                                        <div class="modal">
+                                                            <div class="modal-box relative">
+                                                                <h3 class="text-lg font-bold">Cancel Service Request</h3>
+                                                                <p class="py-4">Are you sure you want to cancel this service request?<br>
+                                                                <span class="text-sm opacity-70">Reference: <?php echo htmlspecialchars($row['reference_number']); ?></span></p>
+                                                                <div class="modal-action">
+                                                                    <form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                                                                        <input type="hidden" name="request_id" value="<?php echo $row['id']; ?>">
+                                                                        <div class="flex gap-2">
+                                                                            <label for="cancel-modal-<?php echo $row['id']; ?>" class="btn btn-ghost">No, Keep Request</label>
+                                                                            <button type="submit" name="delete_request" class="btn btn-error">
+                                                                                Yes, Cancel Request
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert">
+                                <i class="fas fa-info-circle"></i>
+                                <span>No service requests found. Create your first request below.</span>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <div class="card bg-white shadow-xl border border-gray-100" id="form">
                     <div class="card-body">
-                        <h2 class="card-title text-2xl m    b-6 text-red-600">Service Inquiry</h2>
+                        <h2 class="card-title text-2xl mb-6 text-red-600">Service Inquiry</h2>
                         <form action="submit_inquiry.php" method="POST" class="space-y-6">
                             <!-- Two Column Form Layout -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -193,7 +328,7 @@ $user_id = $_SESSION['id'];
                             </div>
 
                             <div class="mt-6">
-                                <button class="btn w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
+                                <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
                                     Submit Service Request
                                 </button>
                             </div>
@@ -205,6 +340,34 @@ $user_id = $_SESSION['id'];
     </main>
 
     <script>
+        // Replace existing alert banner animation with this
+        const alertBanner = document.getElementById('alert-banner');
+        if (alertBanner) {
+            gsap.fromTo(alertBanner, 
+                {
+                    opacity: 0,
+                    x: 100
+                },
+                {
+                    duration: 0.5,
+                    opacity: 1,
+                    x: 0,
+                    ease: "back.out(1.7)"
+                }
+            );
+
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                gsap.to(alertBanner, {
+                    duration: 0.5,
+                    opacity: 0,
+                    x: 100,
+                    ease: "power2.in",
+                    onComplete: () => alertBanner.remove()
+                });
+            }, 5000);
+        }
+
         // Enhanced GSAP animations
         gsap.from("#hero", {
             duration: 1.2,
