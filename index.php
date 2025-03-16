@@ -75,7 +75,7 @@
                 <p>Enter your email and password to access your account</p>
             </div>
 
-            <form class="card-body" action="..\capstone\authentication\login.php" method="post">
+            <form class="card-body" action="\authentication\login.php" method="post">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Email</span>
