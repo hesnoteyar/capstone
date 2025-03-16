@@ -91,6 +91,7 @@ if ($payroll_count == 0) {
     $update_payroll_stmt->bind_param("dddddddis", $monthly_salary, $overtime_pay, $total_deductions, $net_salary, $sss_deduction, $philhealth_deduction, $pagibig_deduction, $employee_id, $current_month);
     $update_payroll_stmt->execute();
     $update_payroll_stmt->close();
+
     
 }
 
