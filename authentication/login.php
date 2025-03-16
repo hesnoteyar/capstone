@@ -2,7 +2,7 @@
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-include 'authentication\db.php';
+include 'db.php';
 
 $error_message = "";
 
@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['lastName'] = $last_name;
 
                 session_write_close(); // Ensure session data is written
-                header("Location: ..\page\shop.php");
+                header("Location: /page/shop.php"); // Adjusted the path to match the correct directory
                 exit;
             } else {
                 $error_message = "Invalid password.";
@@ -47,7 +47,7 @@ $conn->close();
 
 if (!empty($error_message)) {
     $_SESSION['error_message'] = $error_message;
-    header("Location: ..\index.php");
+    header("Location: /index.php"); // Adjusted the path to match the correct directory
     exit;
 }
 ?>
