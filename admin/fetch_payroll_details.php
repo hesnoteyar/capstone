@@ -6,7 +6,8 @@ $payroll_id = $data['payroll_id'];
 
 $sql = "SELECT p.*, 
         e.firstName as emp_firstName, e.middleName as emp_middleName, e.lastName as emp_lastName,
-        e.profile_picture
+        e.profile_picture,
+        p.sss_deduction, p.philhealth_deduction, p.pagibig_deduction
         FROM payroll p 
         LEFT JOIN employee e ON p.employee_id = e.employee_id
         WHERE p.payroll_id = ?";

@@ -13,13 +13,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || empty($password)) {
         $_SESSION['error_message'] = "Email and password are required.";
     } else {
-        $stmt = $conn->prepare("SELECT employee_id, password, firstName, lastName FROM employee WHERE email = ?");
+        $stmt = $conn->prepare("SELECT employee_id, password, firstName, lastName, role FROM employee WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
 
         if ($stmt->num_rows == 1) {
-            $stmt->bind_result($id, $hashed_password, $first_name, $last_name);
+            $stmt->bind_result($id, $hashed_password, $first_name, $last_name, $role);
             $stmt->fetch();
 
             if (password_verify($password, $hashed_password)) {
@@ -27,6 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['id'] = $id;
                 $_SESSION['firstName'] = $first_name;
                 $_SESSION['lastName'] = $last_name;
+                $_SESSION['role'] = $role;
 
                 header("Location: ../employee/employee_dashboard.php");
                 exit;

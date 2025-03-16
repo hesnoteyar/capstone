@@ -3,37 +3,11 @@ session_start();
 include '../admin/adminnavbar.php';
 include '../authentication/db.php';
 
-// Assuming admin_id is stored in session
-$admin_id = $_SESSION['id'];
-
-// Get the filter status from the query string, default to 'All'
-$status = isset($_GET['status']) ? $_GET['status'] : 'All';
-
 // Fetch payroll data from the database
 $sql = "SELECT p.*, e.firstName, e.middleName, e.lastName, e.profile_picture FROM payroll p JOIN employee e ON p.employee_id = e.employee_id";
-if ($status != 'All') {
-    $sql .= " WHERE p.status = ?";
-}
 $stmt = $conn->prepare($sql);
-if ($status != 'All') {
-    $stmt->bind_param("s", $status);
-}
 $stmt->execute();
 $result = $stmt->get_result();
-
-// Function to map status to badge class
-function getStatusBadgeClass($status) {
-  switch ($status) {
-    case 'Approved':
-      return 'success';
-    case 'Pending':
-      return 'warning';
-    case 'Rejected':
-      return 'error';
-    default:
-      return 'secondary';
-  }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -76,31 +50,24 @@ function getStatusBadgeClass($status) {
 </head>
 <body class="min-h-screen bg-base-200 flex flex-col">
   <div class="container mx-auto p-6 flex-grow">
-    <h1 class="text-4xl font-bold mb-8 text-center">Payslip Approvals</h1>
+    <h1 class="text-4xl font-bold mb-8 text-center">Payroll Records</h1>
     <div class="mb-4 flex justify-center gap-4">
       <button class="btn btn-primary" onclick="window.location.href='?compute=1'">Compute Payroll</button>
       <button class="btn btn-secondary" onclick="window.location.href='admin_payroll.php'">Refresh</button>
     </div>
 
-    <!-- New filter design -->
-    <div class="mb-4">
-      <a href="?status=All" class="btn <?= $status == 'All' ? 'btn-primary' : 'btn-outline' ?>">All</a>
-      <a href="?status=Pending" class="btn <?= $status == 'Pending' ? 'btn-warning' : 'btn-outline' ?>">Pending</a>
-      <a href="?status=Approved" class="btn <?= $status == 'Approved' ? 'btn-success' : 'btn-outline' ?>">Approved</a>
-      <a href="?status=Rejected" class="btn <?= $status == 'Rejected' ? 'btn-error' : 'btn-outline' ?>">Rejected</a>
-    </div>
-
     <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100 w-full mt-16">
-      <table class="table w-full">
+      <table class="table w-full">  
         <thead>
           <tr>
             <th>Payroll ID</th>
             <th>Employee ID</th>
+            <th>Employee Name</th>
             <th>Payroll Date</th>
-            <th>Salary</th>
+            <th>Basic Salary</th>
             <th>Overtime Pay</th>
+            <th>Total Deductions</th>
             <th>Net Salary</th>
-            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -110,27 +77,20 @@ function getStatusBadgeClass($status) {
               <tr id="row-<?php echo $row['payroll_id']; ?>">
                 <td><?php echo htmlspecialchars($row['payroll_id']); ?></td>
                 <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['firstName'] . ' ' . $row['middleName'] . ' ' . $row['lastName']); ?></td>
                 <td><?php echo htmlspecialchars($row['payroll_date']); ?></td>
-                <td><?php echo htmlspecialchars($row['salary']); ?></td>
-                <td><?php echo htmlspecialchars($row['overtime_pay']); ?></td>
-                <td><?php echo htmlspecialchars($row['net_salary']); ?></td>
-                <td id="status-<?php echo $row['payroll_id']; ?>">
-                  <span class="badge badge-<?php echo getStatusBadgeClass($row['status']); ?>">
-                    <?php echo htmlspecialchars($row['status']); ?>
-                  </span>
-                </td>
-                <td class="flex gap-2">
-                  <?php if ($row['status'] === 'Pending'): ?>
-                    <button class="btn btn-sm btn-success" onclick="approvePayroll(<?php echo $row['payroll_id']; ?>)">Approve</button>
-                    <button class="btn btn-sm btn-error" onclick="denyPayroll(<?php echo $row['payroll_id']; ?>)">Deny</button>
-                  <?php endif; ?>
+                <td>₱<?php echo number_format($row['salary'], 2); ?></td>
+                <td>₱<?php echo number_format($row['overtime_pay'], 2); ?></td>
+                <td>₱<?php echo number_format($row['deductions'], 2); ?></td>
+                <td>₱<?php echo number_format($row['net_salary'], 2); ?></td>
+                <td>
                   <button class="btn btn-sm btn-info" onclick="viewPayrollDetails(<?php echo $row['payroll_id']; ?>)">View</button>
                 </td>
               </tr>
             <?php endwhile; ?>
           <?php else: ?>
             <tr>
-              <td colspan="8" class="text-center">No payroll records found.</td>
+              <td colspan="9" class="text-center">No payroll records found.</td>
             </tr>
           <?php endif; ?>
         </tbody>
@@ -178,33 +138,44 @@ function getStatusBadgeClass($status) {
           <div class="grid grid-cols-2 gap-4">
             <div>
               <p class="text-sm text-gray-500">Basic Salary</p>
-              <p class="font-medium" id="modal-salary"></p>
+              <p class="font-medium">₱<span id="modal-salary"></span></p>
             </div>
             <div>
               <p class="text-sm text-gray-500">Overtime Pay</p>
-              <p class="font-medium" id="modal-overtime"></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">Deductions</p>
-              <p class="font-medium" id="modal-deductions"></p>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">Net Salary</p>
-              <p class="font-medium text-lg text-success" id="modal-net-salary"></p>
+              <p class="font-medium">₱<span id="modal-overtime"></span></p>
             </div>
           </div>
         </div>
 
-        <!-- Status Section -->
+        <!-- Deductions Section -->
         <div class="bg-base-200 p-4 rounded-lg">
-          <h4 class="font-semibold text-lg mb-3">Payment Status</h4>
-          <div class="grid grid-cols-1 gap-4">
+          <h4 class="font-semibold text-lg mb-3">Mandatory Deductions</h4>
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-500">Status</p>
-              <p class="font-medium" id="modal-status"></p>
+              <p class="text-sm text-gray-500">SSS Contribution (4.5%)</p>
+              <p class="font-medium">₱<span id="modal-sss"></span></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">PhilHealth (2.5%)</p>
+              <p class="font-medium">₱<span id="modal-philhealth"></span></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Pag-IBIG (2%)</p>
+              <p class="font-medium">₱<span id="modal-pagibig"></span></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Total Deductions</p>
+              <p class="font-medium text-error">₱<span id="modal-deductions"></span></p>
             </div>
           </div>
         </div>
+
+        <!-- Net Salary Section -->
+        <div class="bg-base-200 p-4 rounded-lg">
+          <h4 class="font-semibold text-lg mb-3">Net Salary</h4>
+          <p class="font-medium text-xl text-success">₱<span id="modal-net-salary"></span></p>
+        </div>
+
       </div>
 
       <div class="modal-action">
@@ -223,70 +194,6 @@ function getStatusBadgeClass($status) {
   </footer>
 
   <script>
-    // Add this new function at the top of your script section
-    function filterPayroll(status) {
-      const rows = document.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const statusCell = row.querySelector('[id^="status-"]');
-        if (!statusCell) return;
-        
-        const statusText = statusCell.textContent.trim();
-        if (status === 'all') {
-          row.style.display = '';
-        } else {
-          row.style.display = statusText === status ? '' : 'none';
-        }
-      });
-    }
-
-    function approvePayroll(payrollID) {
-      fetch('approve_payroll.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ payroll_id: payrollID })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          const statusElement = document.getElementById('status-' + payrollID);
-          statusElement.innerHTML = '<span class="badge badge-success">Approved</span>';
-          showNotification('Payroll approved successfully', 'success');
-        } else {
-          showNotification('Failed to approve payroll', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error occurred while approving payroll', 'error');
-      });
-    }
-
-    function denyPayroll(payrollID) {
-      fetch('deny_payroll.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ payroll_id: payrollID })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          const statusElement = document.getElementById('status-' + payrollID);
-          statusElement.innerHTML = '<span class="badge badge-error">Rejected</span>';
-          showNotification('Payroll rejected successfully', 'error');
-        } else {
-          showNotification('Failed to deny payroll', 'error');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        showNotification('Error occurred while denying payroll', 'error');
-      });
-    }
-
     function viewPayrollDetails(payrollID) {
       fetch('fetch_payroll_details.php', {
         method: 'POST',
@@ -302,33 +209,24 @@ function getStatusBadgeClass($status) {
           document.getElementById('modal-payroll-id').textContent = data.payroll_id;
           document.getElementById('modal-employee-name').textContent = 
             `${data.emp_firstName} ${data.emp_middleName} ${data.emp_lastName}`;
-          document.getElementById('modal-salary').textContent = data.salary;
-          document.getElementById('modal-overtime').textContent = data.overtime_pay;
-          document.getElementById('modal-deductions').textContent = data.deductions;
-          document.getElementById('modal-net-salary').textContent = data.net_salary;
-          document.getElementById('modal-status').textContent = data.status;
+          document.getElementById('modal-salary').textContent = Number(data.salary).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-overtime').textContent = Number(data.overtime_pay).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-sss').textContent = Number(data.sss_deduction).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-philhealth').textContent = Number(data.philhealth_deduction).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-pagibig').textContent = Number(data.pagibig_deduction).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-deductions').textContent = Number(data.deductions).toLocaleString('en-PH', {minimumFractionDigits: 2});
+          document.getElementById('modal-net-salary').textContent = Number(data.net_salary).toLocaleString('en-PH', {minimumFractionDigits: 2});
           
-          // Set profile picture
           const profilePic = document.getElementById('modal-profile-picture');
           if (data.profile_picture) {
             profilePic.src = 'data:image/jpeg;base64,' + data.profile_picture;
           } else {
-            profilePic.src = '../img/default-profile.jpg'; // Set a default image path
+            profilePic.src = '../img/default-profile.jpg';
           }
 
           document.getElementById('payrollModal').showModal();
         }
       });
-    }
-
-    function showNotification(message, type) {
-      const banner = document.getElementById('notificationBanner');
-      banner.innerText = message;
-      banner.style.backgroundColor = type === 'success' ? '#4caf50' : '#f44336';
-      banner.style.display = 'block';
-      setTimeout(() => {
-        banner.style.display = 'none';
-      }, 5000);
     }
   </script>
 </body>

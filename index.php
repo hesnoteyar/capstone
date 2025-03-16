@@ -24,8 +24,9 @@
         <?php
         session_start();
         if (isset($_SESSION['success_message']) && !empty($_SESSION['success_message'])) {
-            echo '<div class="alert alert-success shadow-lg absolute top-4 left-4 max-w-sm">';
+            echo '<div class="alert alert-success shadow-lg fixed bottom-4 right-4 max-w-sm" id="success-alert">';
             echo '<div>';
+            echo '<i class="fas fa-check-circle text-2xl"></i>';
             echo '<span>' . $_SESSION['success_message'] . '</span>';
             echo '</div>';
             echo '</div>';
@@ -33,8 +34,9 @@
         }
         
         if (isset($_SESSION['error_message']) && !empty($_SESSION['error_message'])) {
-            echo '<div class="alert alert-error shadow-lg absolute top-4 left-4 max-w-sm">';
+            echo '<div class="alert alert-error shadow-lg fixed bottom-4 right-4 max-w-sm" id="error-alert">';
             echo '<div>';
+            echo '<i class="fas fa-exclamation-circle text-2xl"></i>';
             echo '<span>' . $_SESSION['error_message'] . '</span>';
             echo '</div>';
             echo '</div>';
@@ -43,6 +45,26 @@
         }
         ?>
         <!-- End Alert Section -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('success-alert')) {
+            gsap.fromTo('#success-alert', { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 1 });
+            setTimeout(() => {
+            gsap.to('#success-alert', { x: 100, opacity: 0, duration: 1, onComplete: () => document.getElementById('success-alert').remove() });
+            }, 5000);
+            }
+            if (document.getElementById('error-alert')) {
+            gsap.fromTo('#error-alert', { x: -100, opacity: 0 }, { x: 0, opacity: 1, duration: 1 });
+            setTimeout(() => {
+            gsap.to('#error-alert', { x: 100, opacity: 0, duration: 1, onComplete: () => document.getElementById('error-alert').remove() });
+            }, 5000);
+            }
+            });
+
+            function closeAlert(alertId) {
+            gsap.to(`#${alertId}`, { x: 100, opacity: 0, duration: 1, onComplete: () => document.getElementById(alertId).remove() });
+            }
+        </script>
 
         <div class="card bg-base-100 w-full max-w-2xl shrink-0 shadow-2xl">
             <div class="text-center lg:text-above">

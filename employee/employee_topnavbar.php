@@ -41,6 +41,7 @@
               <li><a href="..\employee\employee_dashboard.php">Dashboard</a></li>
               <li><a href="..\employee\employee_payroll.php">Payroll</a></li>
               <li><a href="..\employee\employee_workhours.php">Work Hours</a></li>
+              <li><a href="..\employee\employee_inquiries.php">Customer Inquiries</a></li>
               <li><a href="..\employee\employee_leave.php">Leave Application</a></li>
               <li><a href="..\employee\employee_request.php">Request Schedule</a></li>
               <li><a href="..\employee\employee_logout.php">Logout</a></li>

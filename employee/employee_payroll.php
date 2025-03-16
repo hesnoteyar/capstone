@@ -43,6 +43,20 @@ $daily_wage = $hourly_rate * 8;
 $monthly_salary = $hourly_rate * $total_hours;
 $overtime_pay = $overtime_rate * $overtime_hours;
 
+// Calculate SSS deduction
+$sss_deduction = min($monthly_salary * 0.045, 1125);
+
+// Calculate PhilHealth deduction
+$philhealth_contribution = $monthly_salary * 0.05;
+$philhealth_deduction = min(max($philhealth_contribution / 2, 400), 2500);
+
+// Calculate Pag-IBIG deduction
+$pagibig_rate = ($monthly_salary <= 1500) ? 0.01 : 0.02;
+$pagibig_deduction = min($monthly_salary * $pagibig_rate, 200);
+
+// Calculate total deductions
+$total_deductions = $sss_deduction + $philhealth_deduction + $pagibig_deduction;
+
 // Check if payroll record already exists for the current month
 $payroll_check_query = "SELECT COUNT(*) FROM payroll WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
 $payroll_check_stmt = $conn->prepare($payroll_check_query);
@@ -53,20 +67,28 @@ $payroll_check_stmt->fetch();
 $payroll_check_stmt->close();
 
 if ($payroll_count == 0) {
-    // Insert payroll record since none exists
+    // Update net salary calculation with deductions
+    $net_salary = $monthly_salary + $overtime_pay - $total_deductions;
+    
     $payroll_date = date('Y-m-d');
-    $net_salary = $monthly_salary + $overtime_pay; // Calculate net salary
-    $insert_payroll_query = "INSERT INTO payroll (employee_id, payroll_date, salary, overtime_pay, deductions, net_salary, status) VALUES (?, ?, ?, ?, 0, ?, 'Pending')";
+    $insert_payroll_query = "INSERT INTO payroll (employee_id, payroll_date, salary, overtime_pay, deductions, net_salary, sss_deduction, philhealth_deduction, pagibig_deduction) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $insert_payroll_stmt = $conn->prepare($insert_payroll_query);
-    $insert_payroll_stmt->bind_param("isddd", $employee_id, $payroll_date, $monthly_salary, $overtime_pay, $net_salary);
+    // Changed bind_param types to match the actual parameter types
+    $insert_payroll_stmt->bind_param("isddddddd", $employee_id, $payroll_date, $monthly_salary, $overtime_pay, $total_deductions, $net_salary, $sss_deduction, $philhealth_deduction, $pagibig_deduction);
     $insert_payroll_stmt->execute();
     $insert_payroll_stmt->close();
 } else {
-    // Update existing payroll record
-    $net_salary = $monthly_salary + $overtime_pay; // Recalculate net salary
-    $update_payroll_query = "UPDATE payroll SET salary = ?, overtime_pay = ?, net_salary = ? WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
+    // Update net salary calculation with deductions
+    $net_salary = $monthly_salary + $overtime_pay - $total_deductions;
+    
+    $update_payroll_query = "UPDATE payroll 
+                            SET salary = ?, overtime_pay = ?, deductions = ?, net_salary = ?, 
+                                sss_deduction = ?, philhealth_deduction = ?, pagibig_deduction = ? 
+                            WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
     $update_payroll_stmt = $conn->prepare($update_payroll_query);
-    $update_payroll_stmt->bind_param("dddis", $monthly_salary, $overtime_pay, $net_salary, $employee_id, $current_month);
+    // Changed bind_param types to match the actual parameter types
+    $update_payroll_stmt->bind_param("dddddddis", $monthly_salary, $overtime_pay, $total_deductions, $net_salary, $sss_deduction, $philhealth_deduction, $pagibig_deduction, $employee_id, $current_month);
     $update_payroll_stmt->execute();
     $update_payroll_stmt->close();
 }
@@ -96,81 +118,156 @@ $conn->close();
     body { font-family: 'Poppins', sans-serif; }
   </style>
 </head>
-<body class="bg-base-200">
+<body class="bg-base-200 min-h-screen">
   <div class="container mx-auto p-6">
     <!-- Employee Information Card -->
-    <div class="card lg:card-side bg-base-100 shadow-xl mb-8">
-      <figure><img src="<?php echo $profileImage; ?>" alt="Profile Picture" class="rounded-lg w-48"/></figure>
+    <div class="card lg:card-side bg-base-100 shadow-xl mb-8 hover:shadow-2xl transition-shadow duration-300">
+      <figure class="p-6">
+        <img src="<?php echo $profileImage; ?>" alt="Profile Picture" class="rounded-full w-32 h-32 object-cover shadow-lg border-4 border-white ml-auto mr-4"/>
+      </figure>
       <div class="card-body">
-        <h2 class="card-title"><?= htmlspecialchars("$firstName $middleName $lastName") ?></h2>
-        <p><span class="font-bold">Role:</span> <?= htmlspecialchars($role) ?></p>
-        <p><span class="font-bold">Address:</span> <?= htmlspecialchars($address) ?></p>
-        <p><span class="font-bold">City:</span> <?= htmlspecialchars($city) ?></p>
+      <h2 class="card-title text-2xl text-error"><?= htmlspecialchars("$firstName $middleName $lastName") ?></h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="stats bg-error text-secondary-content">
+        <div class="stat">
+          <div class="stat-title">Role</div>
+          <div class="stat-value text-lg"><?= htmlspecialchars($role) ?></div>
+        </div>
+        </div>
+        <div class="stats bg-error text-secondary-content">
+        <div class="stat">
+          <div class="stat-title">Location</div>
+          <div class="stat-value text-lg"><?= htmlspecialchars("$address, $city") ?></div>
+        </div>
+        </div>
+      </div>
       </div>
     </div>
+
+    <!-- Payroll Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">Total Hours</div>
+          <div class="stat-value"><?= number_format($total_hours, 1) ?></div>
+          <div class="stat-desc">Hours Worked This Month</div>
+        </div>
+      </div>
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">Overtime Hours</div>
+          <div class="stat-value"><?= number_format($overtime_hours, 1) ?></div>
+          <div class="stat-desc">Extra Hours This Month</div>
+        </div>
+      </div>
+      <div class="stats shadow">
+        <div class="stat">
+          <div class="stat-title">Net Salary</div>
+          <div class="stat-value text-primary">₱<?= number_format($net_salary, 2) ?></div>
+          <div class="stat-desc">Current Month</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Payroll Information Card -->
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300">
       <div class="card-body">
-        <h2 class="card-title mb-4">Payroll Information</h2>
+        <h2 class="card-title text-2xl mb-6">Payroll Details - <?= date('F Y', strtotime($current_month)) ?></h2>
         <?php if ($payroll): ?>
           <div class="overflow-x-auto">
-            <table class="table table-zebra w-full">
-              <tbody>
-                <tr>
-                  <td class="font-bold">Payroll Date:</td>
-                  <td><?= date('F j, Y', strtotime($payroll['payroll_date'])) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Status:</td>
-                  <td>
-                  <?php if ($payroll['status'] == 'Approved'): ?>
-                    <span class="badge badge-success text-white"><?= htmlspecialchars($payroll['status']) ?></span>
-                  <?php elseif ($payroll['status'] == 'Pending'): ?>
-                    <span class="badge badge-warning text-white"><?= htmlspecialchars($payroll['status']) ?></span>
-                  <?php elseif ($payroll['status'] == 'Rejected'): ?>
-                    <span class="badge badge-error text-white"><?= htmlspecialchars($payroll['status']) ?></span>
-                  <?php else: ?>
-                    <span class="badge text-white"><?= htmlspecialchars($payroll['status']) ?></span>
-                  <?php endif; ?>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Total Hours Worked:</td>
-                  <td><?= number_format($total_hours, 1) ?> hours</td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Overtime Hours:</td>
-                  <td><?= number_format($overtime_hours, 1) ?> hours</td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Hourly Rate:</td>
-                  <td>₱<?= number_format($hourly_rate, 2) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Overtime Rate:</td>
-                  <td>₱<?= number_format($overtime_rate, 2) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Salary:</td>
-                  <td>₱<?= number_format($payroll['salary'], 2) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Overtime Pay:</td>
-                  <td>₱<?= number_format($payroll['overtime_pay'], 2) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">Deductions:</td>
-                  <td>₱<?= number_format($payroll['deductions'], 2) ?></td>
-                </tr>
-                <tr>
-                  <td class="font-bold text-2xl">Net Salary:</td>
-                  <td class="text-2xl">₱<?= number_format($payroll['net_salary'], 2) ?></td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="collapse collapse-plus bg-base-200 mb-4">
+              <input type="checkbox" /> 
+              <div class="collapse-title text-xl font-medium">
+                Earnings Breakdown
+              </div>
+              <div class="collapse-content"> 
+                <table class="table table-zebra w-full">
+                  <tbody>
+                    <tr>
+                      <td class="font-bold">Hourly Rate:</td>
+                      <td>₱<?= number_format($hourly_rate, 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">Overtime Rate:</td>
+                      <td>₱<?= number_format($overtime_rate, 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">Base Salary:</td>
+                      <td>₱<?= number_format($payroll['salary'], 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">Overtime Pay:</td>
+                      <td>₱<?= number_format($payroll['overtime_pay'], 2) ?></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="collapse collapse-plus bg-base-200 mb-4">
+              <input type="checkbox" /> 
+              <div class="collapse-title text-xl font-medium">
+                Deductions
+              </div>
+              <div class="collapse-content"> 
+                <table class="table table-zebra w-full">
+                  <tbody>
+                    <tr>
+                      <td class="font-bold">SSS:</td>
+                      <td class="text-error">-₱<?= number_format($payroll['sss_deduction'], 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">PhilHealth:</td>
+                      <td class="text-error">-₱<?= number_format($payroll['philhealth_deduction'], 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">Pag-IBIG:</td>
+                      <td class="text-error">-₱<?= number_format($payroll['pagibig_deduction'], 2) ?></td>
+                    </tr>
+                    <tr>
+                      <td class="font-bold">Total Deductions:</td>
+                      <td class="text-error">-₱<?= number_format($payroll['deductions'], 2) ?></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            
+            <div class="stats stats-vertical lg:stats-horizontal shadow w-full">
+              <div class="stat">
+                <div class="stat-title">Gross Salary</div>
+                <div class="stat-value text-success">₱<?= number_format($payroll['salary'] + $payroll['overtime_pay'], 2) ?></div>
+                <div class="stat-desc">Before Deductions</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">Deductions</div>
+                <div class="stat-value text-error">₱<?= number_format($payroll['deductions'], 2) ?></div>
+                <div class="stat-desc">Total Deductions</div>
+              </div>
+              <div class="stat">
+                <div class="stat-title">Net Salary</div>
+                <div class="stat-value text-primary">₱<?= number_format($payroll['net_salary'], 2) ?></div>
+                <div class="stat-desc">Final Take-home Pay</div>
+              </div>
+            </div>
+            
+            <!-- Add this button after the stats div -->
+            <div class="flex justify-center mt-6">
+              <a href="generate_payslip.php" class="btn btn-error">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Payslip
+              </a>
+            </div>
           </div>
         <?php else: ?>
-          <p class="text-center">No payroll records found.</p>
+          <div class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>No payroll records found for the current month.</span>
+          </div>
         <?php endif; ?>
       </div>
     </div>

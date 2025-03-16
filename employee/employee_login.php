@@ -23,7 +23,7 @@
         <?php
         session_start();
         if (isset($_SESSION['error_message']) && !empty($_SESSION['error_message'])) {
-            echo '<div class="alert alert-error shadow-lg absolute top-4 left-4 max-w-sm">';
+            echo '<div class="alert alert-error shadow-lg fixed bottom-4 right-4 max-w-sm" id="error-alert">';
             echo '<div>';
             echo '<span>' . $_SESSION['error_message'] . '</span>';
             echo '</div>';
@@ -32,6 +32,15 @@
             unset($_SESSION['error_message']);
         }
         ?>
+        <script>
+            // Hide the alert after 5 seconds
+            setTimeout(function() {
+            var alert = document.getElementById('error-alert');
+            if (alert) {
+                alert.style.display = 'none';
+            }
+            }, 5000);
+        </script>
         <!-- End Alert Section -->
 
         <div class="card bg-base-100 w-full max-w-2xl shrink-0 shadow-2xl">

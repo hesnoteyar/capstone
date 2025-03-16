@@ -66,7 +66,52 @@ $leave_count_stmt->close();
         <div class="card bg-base-100 shadow-xl mb-4">
             <div class="card-body">
                 <h2 class="card-title text-2xl font-bold mb-4">Available Leaves:</h2>
-                <p class="text-lg">You have     <strong><?php echo $total_leaves; ?></strong> leaves.</p>
+                <p class="text-lg">You have <strong><?php echo $total_leaves; ?></strong> leaves remaining for Sick and Casual leaves.</p>
+                <p class="text-sm text-error">Note: Only Sick Leave and Casual Leave will be deducted from your leave balance.</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-xl mb-4">
+            <div class="card-body">
+                <h2 class="card-title text-2xl font-bold mb-4">Leave Description</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>Leave Type</th>
+                                <th>Maximum Duration</th>
+                                <th>Description</th>
+                                <th>Deductible</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sick Leave</td>
+                                <td>15 days</td>
+                                <td>For illness, medical procedures, or recovery</td>
+                                <td class="text-success">Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Casual Leave</td>
+                                <td>10 days</td>
+                                <td>For personal matters and emergencies</td>
+                                <td class="text-success">Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Maternity Leave</td>
+                                <td>90 days (3 months)</td>
+                                <td>For female employees before and after childbirth</td>
+                                <td class="text-error">No</td>
+                            </tr>
+                            <tr>
+                                <td>Paternity Leave</td>
+                                <td>90 days (3 months)</td>
+                                <td>For male employees to support their partner during and after childbirth</td>
+                                <td class="text-error">No</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
