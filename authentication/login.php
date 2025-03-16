@@ -45,7 +45,7 @@ $conn->close();
 
 if (!empty($error_message)) {
     $_SESSION['error_message'] = $error_message;
-    header("Location: ..\index.php");
+    header("Location: .\index.php");
     exit;
 }
 ?>
