@@ -56,7 +56,7 @@
                 </h1>
             </div>
 
-            <form action="..\authentication\register_method.php" method="post" class="card-body">
+            <form action="\authentication\register_method.php" method="post" class="card-body">
                 <!-- Name Section -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-control">
