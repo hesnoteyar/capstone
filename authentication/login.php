@@ -14,6 +14,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "Email and password are required.";
     } else {
         $stmt = $conn->prepare("SELECT id, password, firstName, lastName FROM users WHERE email = ?");
+        if ($stmt === false) {
+            die('Prepare failed: ' . htmlspecialchars($conn->error));
+        }
+
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
@@ -30,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['lastName'] = $last_name;
 
                 session_write_close(); // Ensure session data is written
-                header("Location: \page\shop.php"); // Adjusted the path to match the correct directory
+                header("Location: /page/shop.php"); // Adjusted the path to match the correct directory
                 exit;
             } else {
                 $error_message = "Invalid password.";
