@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['lastName'] = $last_name;
 
                 session_write_close(); // Ensure session data is written
-                header("Location: /page/shop.php"); // Adjusted the path to match the correct directory
+                header("Location: \page\shop.php"); // Adjusted the path to match the correct directory
                 exit;
             } else {
                 $error_message = "Invalid password.";
