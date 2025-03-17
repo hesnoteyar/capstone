@@ -1,7 +1,7 @@
 <?php
 ob_start();  // Start output buffering
 session_start();
-include 'db.php'; // Include your database connection
+include '../authentication/db.php'; // Include your database connection
 include 'topnavbar.php'; // Include the navbar
 
 // Check if the user is logged in
