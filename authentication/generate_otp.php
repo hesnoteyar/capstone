@@ -5,8 +5,10 @@ ini_set('display_errors', 1);
 include 'db.php'; // Include your database connection file
 require '../vendor/autoload.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require '../vendor/PHPMailer/src/PHPMailer.php';
+require '../vendor/PHPMailer/src/Exception.php';
+require '../vendor/PHPMailer/src/SMTP.php';
+
 
 if (isset($_SESSION['email'])) {
     $email = $_SESSION['email'];
