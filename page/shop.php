@@ -588,7 +588,7 @@ if ($result === false) {
     </div>
 </div>
 
-<?php include '..\page\footer.php'; ?>
+<?php include 'footer.php'; ?>
 <?php ob_end_flush(); ?>
 
 </body>
