@@ -1,7 +1,7 @@
 <?php
 ob_start();
 session_start();
-include '\page\topnavbar.php';
+include 'topnavbar.php';
 include '\authentication\db.php';
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
