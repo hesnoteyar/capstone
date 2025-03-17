@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\authentication\db.php'; 
+include 'db.php'; 
 
 // Initialize the error message
 $_SESSION['error_message'] = "";
