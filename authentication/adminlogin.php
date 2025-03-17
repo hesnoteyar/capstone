@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\authentication\db.php'; 
+include 'db.php'; 
 
 // Initialize the error message
 $_SESSION['error_message'] = "";
@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['firstName'] = $first_name;
                 $_SESSION['lastName'] = $last_name;
 
-                header("Location: ..\admin\admin_dashboard.php");
+                header("Location: ../admin/admin_dashboard.php");
                 exit;
             } else {
                 $_SESSION['error_message'] = "Invalid password.";
@@ -42,6 +42,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 $conn->close();
-header("Location: ..\admin\admin_login.php");
+header("Location: ../admin/admin_login.php");
 exit;
 ?>
