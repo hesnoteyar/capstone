@@ -16,6 +16,10 @@ if (isset($_SESSION['email'])) {
 
     // Update OTP in the database
     $stmt = $conn->prepare("UPDATE users SET otp = ? WHERE email = ?");
+    if ($stmt === false) {
+        die('Prepare failed: ' . htmlspecialchars($conn->error));
+    }
+
     $stmt->bind_param("is", $otp, $email);
 
     if ($stmt->execute()) {
@@ -39,25 +43,28 @@ if (isset($_SESSION['email'])) {
                            <p>Enter this OTP on the verification page to complete your registration.</p>
                            <p>This message is intended for the owner of the email address and contains confidential information</p>
                            <p><strong>--THIS IS AN ELECTRONICALLY GENERATED MESSAGE, PLEASE DO NOT REPLY--</strong></p>";
-                        
 
             $mail->send();
 
             $_SESSION['success_message'] = "OTP sent to your email.";
             header("Location: otp_input.php");
+            exit;
         } catch (Exception $e) {
             $_SESSION['error_message'] = "Error sending OTP: " . $mail->ErrorInfo;
             header("Location: ../index.php");
+            exit;
         }
     } else {
         $_SESSION['error_message'] = "Error updating OTP in the database.";
         header("Location: ../index.php");
+        exit;
     }
 
     $stmt->close();
 } else {
     $_SESSION['error_message'] = "Session expired. Please log in again.";
     header("Location: ../index.php");
+    exit;
 }
 $conn->close();
 ?>
