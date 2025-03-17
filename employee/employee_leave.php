@@ -1,7 +1,7 @@
 <?php
 // filepath: /d:/XAMPP/htdocs/capstone/employee/employee_leave.php
 session_start();
-include '..\employee\employee_topnavbar.php';
+include 'employee_topnavbar.php';
 include '../authentication/db.php'; // Include your database connection
 
 $employee_id = $_SESSION['id']; // Assuming the employee ID is stored in the session
@@ -157,6 +157,6 @@ $leave_count_stmt->close();
 </body>
 
 <?php
-include '..\employee\employee_footer.php';
+include 'employee_footer.php';
 ?>
 </html>

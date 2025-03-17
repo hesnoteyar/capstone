@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\employee\employee_topnavbar.php';
+include 'employee_topnavbar.php';
 
 // Assuming the employee ID is stored in the session
 $employee_id = $_SESSION['id'];
@@ -89,6 +89,6 @@ $employee_id = $_SESSION['id'];
 </body>
 
 <?php
-include '..\employee\employee_footer.php';
+include 'employee_footer.php';
 ?>
 </html>
