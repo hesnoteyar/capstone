@@ -33,7 +33,7 @@ $total_hours_query = "SELECT SUM(total_hours) AS total_hours, SUM(overtime_hours
                       WHERE CAST(employee_id AS UNSIGNED) = ? 
                       AND DATE_FORMAT(date, '%Y-%m') = ?";
 $total_hours_stmt = $conn->prepare($total_hours_query);
-$total_hours_stmt->bind_param("is", $employee_id, $current_month);
+$total_hours_stmt->bind_param("ss", $employee_id, $current_month);
 $total_hours_stmt->execute();
 $total_hours_stmt->bind_result($total_hours, $overtime_hours);
 $total_hours_stmt->fetch();
