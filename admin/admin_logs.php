@@ -1,7 +1,7 @@
 <?php
 session_start();
-include '..\admin\adminnavbar.php';
-include '..\authentication\db.php'; // Include your database connection
+include 'adminnavbar.php';
+include '../authentication/db.php'; // Include your database connection
 
 // Set the default sorting order
 $orderBy = isset($_GET['sort']) && in_array($_GET['sort'], ['action', 'audit_id', 'user_id', 'activity_date']) ? $_GET['sort'] : 'activity_date';
@@ -86,7 +86,7 @@ $auditLogs = $conn->query($auditQuery);
 <br>
 <br>
     <!-- Footer Section -->
-    <?php include '..\admin\admin_footer.php'; ?>
+    <?php include 'admin_footer.php'; ?>
 </body>
 
 </html>
