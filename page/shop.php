@@ -2,7 +2,7 @@
 ob_start();
 session_start();
 include 'topnavbar.php';
-include '\authentication\db.php';
+include '..\authentication\db.php';
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
