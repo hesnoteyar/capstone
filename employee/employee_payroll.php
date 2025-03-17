@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include '../employee/employee_topnavbar.php';
+include 'employee_topnavbar.php';
 include '../authentication/db.php'; 
 $employee_id = $_SESSION['id']; 
 
