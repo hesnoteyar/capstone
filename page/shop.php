@@ -15,8 +15,8 @@ $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 
 $sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name 
-        FROM Product p 
-        JOIN Category c ON p.category_id = c.category_id 
+        FROM product p 
+        JOIN category c ON p.category_id = c.category_id 
         WHERE 1=1";
 
 if ($category !== 'All') {
