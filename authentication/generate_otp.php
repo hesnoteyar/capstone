@@ -1,7 +1,7 @@
 <?php
 session_start();
-include '../authentication/db.php'; // Include your database connection file
-require '../vendor/autoload.php';
+include 'db.php'; // Include your database connection file
+require '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

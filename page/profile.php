@@ -1,8 +1,8 @@
 <?php
 ob_start();  // Start output buffering
 session_start();
-include '../authentication/db.php'; // Include your database connection
-include '../page/topnavbar.php'; // Include the navbar
+include 'db.php'; // Include your database connection
+include 'topnavbar.php'; // Include the navbar
 
 // Check if the user is logged in
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
