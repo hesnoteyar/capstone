@@ -2,7 +2,7 @@
 session_start(); // Start the session
 
 // Include your database connection
-include '..\authentication\db.php';
+include 'db.php';
 
 // Check if the user is logged in (optional)
 if (isset($_SESSION['id'])) {
