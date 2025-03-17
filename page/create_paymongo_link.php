@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 session_start();
-include '..\authentication\db.php';
+include '../authentication/db.php';
 
 // Enable error reporting for debugging
 ini_set('display_errors', 1);

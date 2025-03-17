@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\authentication\db.php'; // Include your database connection
+include '../authentication/db.php'; // Include your database connection
 
 // Check if the user is logged in by ensuring the user_id exists in the session
 if (isset($_SESSION['id'])) {

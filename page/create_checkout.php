@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\authentication\db.php';
+include '../authentication/db.php';
 
 // Assuming user_id is stored in the session
 $user_id = $_SESSION['id'];

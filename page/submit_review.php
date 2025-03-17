@@ -1,7 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-include '..\authentication\db.php';
+include '../authentication/db.php';
 
 // Check if the request is POST and contains the necessary data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

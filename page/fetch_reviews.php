@@ -1,7 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-include '..\authentication\db.php';
+include '../authentication/db.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
