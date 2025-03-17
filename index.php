@@ -99,6 +99,10 @@
                         <a href="page\register.php" class="text-red-600 hover:text-red-700 text-base py-3 link-hover">Create an Account</a>
                     </div>
                 </div>
+                <div class="text-center pb-4">
+                <a href="admin/login.php" class="text-blue-600 hover:text-blue-700 mr-4">Admin Login</a>
+                <a href="employee/login.php" class="text-blue-600 hover:text-blue-700">Employee Login</a>
+            </div>
             </form>
         </div>
     </div>
