@@ -8,6 +8,10 @@ require '../vendor/PHPMailer/src/PHPMailer.php';
 require '../vendor/PHPMailer/src/Exception.php';
 require '../vendor/PHPMailer/src/SMTP.php';
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\SMTP;
+
 
 if (isset($_SESSION['email'])) {
     $email = $_SESSION['email'];
