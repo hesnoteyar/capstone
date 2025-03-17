@@ -42,7 +42,7 @@ if (isset($_SESSION['email'])) {
             $mail->send();
 
             $_SESSION['success_message'] = "OTP sent to your email.";
-            header("Location: ../authentication/otp_input.php");
+            header("Location: otp_input.php");
         } catch (Exception $e) {
             $_SESSION['error_message'] = "Error sending OTP: " . $mail->ErrorInfo;
             header("Location: ../index.php");
