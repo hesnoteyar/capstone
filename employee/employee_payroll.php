@@ -31,17 +31,7 @@ $current_month = date('Y-m');
 $total_hours_query = "SELECT SUM(total_hours) AS total_hours, SUM(overtime_hours) AS overtime_hours FROM attendance WHERE employee_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?";
 $total_hours_stmt = $conn->prepare($total_hours_query);
 $total_hours_stmt->bind_param("is", $employee_id, $current_month);
-// $total_hours_stmt->execute();
-if (!$total_hours_stmt) {
-  die("Prepare failed: " . $conn->error);
-}
-if (!$total_hours_stmt->bind_param("is", $employee_id, $current_month)) {
-  die("Bind failed: " . $total_hours_stmt->error);
-}
-if (!$total_hours_stmt->execute()) {
-  die("Execute failed: " . $total_hours_stmt->error);
-}
-
+$total_hours_stmt->execute();
 $total_hours_stmt->bind_result($total_hours, $overtime_hours);
 $total_hours_stmt->fetch();
 $total_hours_stmt->close();
