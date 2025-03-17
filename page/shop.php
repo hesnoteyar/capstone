@@ -1,9 +1,8 @@
 <?php
 ob_start();
 session_start();
-print_r($_SESSION);
 include '../authentication/db.php'; // Include your database connection
-include '../page/topnavbar.php';
+include 'topnavbar.php';
 
 
 
