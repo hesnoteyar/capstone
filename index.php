@@ -101,7 +101,7 @@
                 </div>
                 <div class="text-center pb-4">
                 <a href="admin/admin_login.php" class="text-blue-600 hover:text-blue-700 mr-4">Admin Login</a>
-                <a href="employee/login.php" class="text-blue-600 hover:text-blue-700">Employee Login</a>
+                <a href="employee/employee_login.php" class="text-blue-600 hover:text-blue-700">Employee Login</a>
             </div>
             </form>
         </div>
