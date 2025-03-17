@@ -5,7 +5,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: ../admin/admin_login.php");
     exit();
 }
-include '../admin/adminnavbar.php';
+include 'adminnavbar.php';
 include '../authentication/db.php';
 
 // Fetch employee data from the database
@@ -314,7 +314,7 @@ $result = $stmt->get_result();
     <div id="notificationBanner" class="notification-banner"></div>
 
     <footer class="mt-auto">
-        <?php include '../admin/admin_footer.php'; ?>
+        <?php include 'admin_footer.php'; ?>
     </footer>
 
     <script>
