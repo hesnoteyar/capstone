@@ -1,6 +1,6 @@
 <?php
     session_start(); // Start the session to access session variables
-    include '..\admin\adminnavbar.php';
+    include 'adminnavbar.php';
 ?>
 
 <!DOCTYPE html>
@@ -160,6 +160,6 @@
 
 </body>
 <?php
-    include '..\admin\admin_footer.php';
+    include 'admin_footer.php';
 ?>
 </html>
