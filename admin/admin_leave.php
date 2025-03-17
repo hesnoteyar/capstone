@@ -1,6 +1,6 @@
 <?php
 // filepath: /d:/XAMPP/htdocs/capstone/admin/admin_leave.php
-include '..\admin\adminnavbar.php';
+include 'adminnavbar.php';
 include '../authentication/db.php'; // Include your database connection
 
 // Get the filter status from the query string, default to 'All'
@@ -189,6 +189,6 @@ unset($_SESSION['error_message']);
 </body>
 
 <?php
-include '..\admin\admin_footer.php';
+include 'admin_footer.php';
 ?>
 </html>
