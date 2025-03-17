@@ -274,6 +274,6 @@ $conn->close();
       </div>
     </div>
   </div>
-  <?php include '../employee/employee_footer.php'; ?>
+  <?php include 'employee_footer.php'; ?>
 </body>
 </html>
