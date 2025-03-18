@@ -74,11 +74,10 @@ include '../page/topnavbar.php';
         const models = [
             { name: "Motorcycle Battery", path: "../models/Motor_Battery/Motorcycle_Battery.fbx" },
             { name: "Motorcycle Frame", path: "../models/Bike_Frame/Bike_Frame_texture.fbx" },
-            { name: "Motorcycle Chain", path: "../models/Motor_Battery/Chain_and_Sprockets_texture.fbx" },
-            { name: "Motorcycle Frame", path: "../models/Motor_Battery/Motorcycle_Frame_texture.fbx" },
-            { name: "Motorcycle Tire", path: "../models/Motor_Battery/Motorcycle_Tire_texture.fbx" },
+            { name: "Motorcycle Chain", path: "../models/Chain_and_Sprockets/Chain_and_Sprockets_texture.fbx" },
+            { name: "Motorcycle Frame", path: "../models/Motor_Frame/Motorcycle_Frame_texture.fbx" },
+            { name: "Motorcycle Tire", path: "../models/Motor_Tire/Motorcycle_Tire_texture.fbx" },
             { name: "Motorcycle Shock", path: "../models/Motor_Battery/Dual_Shock_texture.fbx" },
-            { name: "Motorcycle Exhaust", path: "../models/Motor_Exhaust/Motorcycle_Exhaust.fbx" },
         ];
 
         function createModelViewer(model) {
