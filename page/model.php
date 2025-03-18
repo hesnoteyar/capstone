@@ -73,11 +73,11 @@ include '../page/topnavbar.php';
     <script>
         const models = [
             { name: "Motorcycle Battery", path: "../models/Motor_Battery/Motorcycle_Battery.fbx" },
-            { name: "Motorcycle Engine", path: "../models/Bike_Frame/Bike_Frame_texture.fbx" },
-            { name: "Motorcycle Seat", path: "../models/Motor_Battery/Chain_and_Sprockets_texture.fbx" },
-            { name: "Motorcycle Wheels", path: "../models/Motor_Battery/Motorcycle_Frame_texture.fbx" },
-            { name: "Motorcycle Frame", path: "../models/Motor_Battery/Motorcycle_Tire_texture.fbx" },
-            { name: "Motorcycle Handlebar", path: "../models/Motor_Battery/Dual_Shock_texture.fbx" },
+            { name: "Motorcycle Frame", path: "../models/Bike_Frame/Bike_Frame_texture.fbx" },
+            { name: "Motorcycle Chain", path: "../models/Motor_Battery/Chain_and_Sprockets_texture.fbx" },
+            { name: "Motorcycle Frame", path: "../models/Motor_Battery/Motorcycle_Frame_texture.fbx" },
+            { name: "Motorcycle Tire", path: "../models/Motor_Battery/Motorcycle_Tire_texture.fbx" },
+            { name: "Motorcycle Shock", path: "../models/Motor_Battery/Dual_Shock_texture.fbx" },
             { name: "Motorcycle Exhaust", path: "../models/Motor_Exhaust/Motorcycle_Exhaust.fbx" },
         ];
 
