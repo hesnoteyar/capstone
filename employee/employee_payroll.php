@@ -23,8 +23,8 @@ if ($profileImageBlob) {
     $profileImage = "../media/default_profile.png";
 }
 
-$hourly_rate = 78;
-$overtime_rate = 97;
+$hourly_rate = 100;
+$overtime_rate = 150;
 
 // Fetch total hours worked and overtime hours in the current month from the attendance table
 $current_month = date("Y-m");
