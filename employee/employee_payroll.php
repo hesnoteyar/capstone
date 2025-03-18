@@ -64,7 +64,9 @@ $pagibig_deduction = min($monthly_salary * $pagibig_rate, 200);
 $total_deductions = $sss_deduction + $philhealth_deduction + $pagibig_deduction;
 
 // Check if payroll record already exists for the current month
-$payroll_check_query = "SELECT COUNT(*) FROM payroll WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
+$payroll_check_query = "SELECT COUNT(*) FROM payroll 
+                        WHERE employee_id = ? 
+                        AND DATE_FORMAT(payroll_date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
 $payroll_check_stmt = $conn->prepare($payroll_check_query);
 $payroll_check_stmt->bind_param("is", $employee_id, $current_month);
 $payroll_check_stmt->execute();
