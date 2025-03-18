@@ -14,30 +14,38 @@ include '../page/topnavbar.php';
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@1.1.4/dist/full.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <!-- Three.js for 3D Model -->
+<!-- Include Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- fflate (Needed for FBXLoader) -->
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
 
-    <!-- fflate (Needed for FBXLoader) -->
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
+<!-- FBXLoader -->
+<script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/FBXLoader.js"></script>
 
-    <!-- FBXLoader -->
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/FBXLoader.js"></script>
+<!-- OrbitControls for mouse interaction -->
+<script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
 
-    <!-- OrbitControls for mouse interaction -->
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
 
-    <title>Interactive 3D Motorcycle Battery</title>
+    <title>Purchase History</title>
     <style>
+        /* Ensures the footer stays at the bottom */
         html, body {
             height: 100%;
             margin: 0;
             display: flex;
             flex-direction: column;
+        }
+        .content {
+            flex: 1;
+            display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
-        canvas {
+        /* Canvas styling */
+        #threeCanvas {
             width: 100%;
             height: 500px;
             background-color: #222; /* Dark background */
@@ -46,8 +54,11 @@ include '../page/topnavbar.php';
 </head>
 <body class="bg-base-100 text-base-content">
 
-    <h1 class="text-2xl font-bold text-center my-4">Interactive 3D Motorcycle Battery</h1>
-    <canvas id="threeCanvas"></canvas>
+    <div class="content">
+        <h1 class="text-2xl font-bold text-center my-4">3D Motorcycle Battery Model</h1>
+        <canvas id="threeCanvas"></canvas>
+    </div>
+
 
     <script>
         // Create Three.js Scene
@@ -105,6 +116,8 @@ include '../page/topnavbar.php';
         });
     </script>
 
+<?php include '../page/footer.php'; ?>
+
+
 </body>
 </html>
-
