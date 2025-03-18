@@ -24,7 +24,6 @@ include '../page/topnavbar.php';
     <title>3D Models Showcase</title>
 
     <style>
-        /* Ensures footer stays at the bottom */
         html, body {
             height: 100%;
             margin: 0;
@@ -46,10 +45,18 @@ include '../page/topnavbar.php';
             max-width: 1200px;
             justify-content: center;
         }
+        .model-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+        }
         canvas {
             width: 100%;
             height: 300px;
-            background-color: #222;
             border-radius: 10px;
         }
     </style>
@@ -59,16 +66,8 @@ include '../page/topnavbar.php';
     <div class="content">
         <h1 class="text-2xl font-bold text-center my-4">3D Motorcycle Battery Models</h1>
         
-        <!-- Container for multiple 3D models -->
-        <div class="canvas-container">
-            <canvas id="canvas1"></canvas>
-            <canvas id="canvas2"></canvas>
-            <canvas id="canvas3"></canvas>
-            <canvas id="canvas4"></canvas>
-            <canvas id="canvas5"></canvas>
-            <canvas id="canvas6"></canvas>
-            <canvas id="canvas7"></canvas>
-        </div>
+        <!-- Container for dynamically added models -->
+        <div id="modelsContainer" class="canvas-container"></div>
     </div>
 
     <script>
@@ -83,13 +82,20 @@ include '../page/topnavbar.php';
         ];
 
         function createModelViewer(model) {
-            // Create container
+            // Get container
+            const container = document.getElementById("modelsContainer");
+            if (!container) {
+                console.error("modelsContainer not found");
+                return;
+            }
+
+            // Create card container
             const card = document.createElement("div");
             card.className = "model-card";
 
             // Create title
             const title = document.createElement("h2");
-            title.className = "text-lg font-semibold";
+            title.className = "text-lg font-semibold text-white";
             title.innerText = model.name;
             card.appendChild(title);
 
@@ -99,7 +105,7 @@ include '../page/topnavbar.php';
             canvas.height = 300;
             card.appendChild(canvas);
 
-            document.getElementById("modelsContainer").appendChild(card);
+            container.appendChild(card);
 
             // Setup Three.js
             const scene = new THREE.Scene();
@@ -154,6 +160,7 @@ include '../page/topnavbar.php';
         // Create viewers for each model
         models.forEach(createModelViewer);
     </script>
+
 <?php include '../page/footer.php'; ?>
 
 </body>
