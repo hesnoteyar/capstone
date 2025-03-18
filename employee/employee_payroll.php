@@ -106,7 +106,9 @@ if ($payroll_count == 0) {
 }
 
 // Fetch payroll record for the current month
-$query = "SELECT * FROM payroll WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
+$query = "SELECT * FROM payroll 
+          WHERE employee_id = ? 
+          AND DATE_FORMAT(payroll_date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("is", $employee_id, $current_month);
 $stmt->execute();
