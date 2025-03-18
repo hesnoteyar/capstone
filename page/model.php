@@ -72,32 +72,45 @@ include '../page/topnavbar.php';
     </div>
 
     <script>
-        // Model Paths
-        const modelPaths = [
-            '../models/Motor_Battery/Motorcycle_Battery.fbx',
-            '../models/Bike_Frame/Bike_Frame_texture.fbx',
-            '../models/Motor_Battery/Chain_and_Sprockets_texture.fbx',
-            '../models/Motor_Battery/Motorcycle_Frame_texture.fbx',
-            '../models/Motor_Battery/Motorcycle_Tire_texture.fbx',
-            '../models/Motor_Battery/Dual_Shock_texture.fbx',
+        const models = [
+            { name: "Motorcycle Battery", path: "../models/Motor_Battery/Motorcycle_Battery.fbx" },
+            { name: "Motorcycle Engine", path: "../models/Bike_Frame/Bike_Frame_texture.fbx" },
+            { name: "Motorcycle Seat", path: "../models/Motor_Battery/Chain_and_Sprockets_texture.fbx" },
+            { name: "Motorcycle Wheels", path: "../models/Motor_Battery/Motorcycle_Frame_texture.fbx" },
+            { name: "Motorcycle Frame", path: "../models/Motor_Battery/Motorcycle_Tire_texture.fbx" },
+            { name: "Motorcycle Handlebar", path: "../models/Motor_Battery/Dual_Shock_texture.fbx" },
+            { name: "Motorcycle Exhaust", path: "../models/Motor_Exhaust/Motorcycle_Exhaust.fbx" },
         ];
 
-        const scenes = [];
-        const cameras = [];
-        const renderers = [];
-        const controls = [];
+        function createModelViewer(model) {
+            // Create container
+            const card = document.createElement("div");
+            card.className = "model-card";
 
-        // Initialize Scenes for each canvas
-        function initScene(index, canvas) {
+            // Create title
+            const title = document.createElement("h2");
+            title.className = "text-lg font-semibold";
+            title.innerText = model.name;
+            card.appendChild(title);
+
+            // Create canvas
+            const canvas = document.createElement("canvas");
+            canvas.width = 300;
+            canvas.height = 300;
+            card.appendChild(canvas);
+
+            document.getElementById("modelsContainer").appendChild(card);
+
+            // Setup Three.js
             const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-            camera.position.set(0, 2, 8); // Set distance from model
+            const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+            camera.position.set(0, 2, 6);
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-            canvas.appendChild(renderer.domElement);
+            renderer.setSize(300, 300);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -105,64 +118,42 @@ include '../page/topnavbar.php';
             scene.add(directionalLight);
 
             // Controls
-            const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-            orbitControls.enableDamping = true;
-            orbitControls.dampingFactor = 0.05;
-            orbitControls.rotateSpeed = 0.5;
-            orbitControls.zoomSpeed = 0.8;
-            orbitControls.target.set(0, 0, 0);
-            orbitControls.update();
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 0.8;
 
-            scenes.push(scene);
-            cameras.push(camera);
-            renderers.push(renderer);
-            controls.push(orbitControls);
-        }
-
-        // Load Models
-        function loadModel(index) {
+            // Load Model
             const loader = new THREE.FBXLoader();
-            loader.load(modelPaths[index], function (object) {
-                object.scale.set(0.05, 0.05, 0.05); // Adjust size
+            loader.load(model.path, function (object) {
+                object.scale.set(0.05, 0.05, 0.05);
                 object.position.set(0, -1, 0);
-                scenes[index].add(object);
+                scene.add(object);
+
+                // Animation Loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
             }, undefined, function (error) {
-                console.error(`Error loading model ${index + 1}:`, error);
+                console.error(`Error loading ${model.name}:`, error);
+            });
+
+            // Handle Resizing
+            window.addEventListener("resize", () => {
+                const size = 300;
+                renderer.setSize(size, size);
+                camera.aspect = 1;
+                camera.updateProjectionMatrix();
             });
         }
 
-        // Animate all scenes
-        function animate() {
-            requestAnimationFrame(animate);
-            for (let i = 0; i < scenes.length; i++) {
-                controls[i].update();
-                renderers[i].render(scenes[i], cameras[i]);
-            }
-        }
-
-        // Initialize everything
-        document.addEventListener("DOMContentLoaded", () => {
-            const canvases = document.querySelectorAll("canvas");
-            canvases.forEach((canvas, index) => {
-                initScene(index, canvas);
-                loadModel(index);
-            });
-
-            animate();
-        });
-
-        // Resize handling
-        window.addEventListener("resize", () => {
-            for (let i = 0; i < renderers.length; i++) {
-                const width = document.querySelectorAll("canvas")[i].clientWidth;
-                const height = 300;
-                renderers[i].setSize(width, height);
-                cameras[i].aspect = width / height;
-                cameras[i].updateProjectionMatrix();
-            }
-        });
+        // Create viewers for each model
+        models.forEach(createModelViewer);
     </script>
-
 <?php include '../page/footer.php'; ?>
 
 </body>
