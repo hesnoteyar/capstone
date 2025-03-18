@@ -91,9 +91,11 @@ if ($payroll_count == 0) {
     $net_salary = $monthly_salary + $overtime_pay - $total_deductions;
     
     $update_payroll_query = "UPDATE payroll 
-                            SET salary = ?, overtime_pay = ?, deductions = ?, net_salary = ?, 
-                                sss_deduction = ?, philhealth_deduction = ?, pagibig_deduction = ? 
-                            WHERE employee_id = ? AND DATE_FORMAT(payroll_date, '%Y-%m') = ?";
+    SET salary = ?, overtime_pay = ?, deductions = ?, net_salary = ?, 
+        sss_deduction = ?, philhealth_deduction = ?, pagibig_deduction = ? 
+    WHERE employee_id = ? 
+    AND DATE_FORMAT(payroll_date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+
     $update_payroll_stmt = $conn->prepare($update_payroll_query);
     // Changed bind_param types to match the actual parameter types
     $update_payroll_stmt->bind_param("dddddddis", $monthly_salary, $overtime_pay, $total_deductions, $net_salary, $sss_deduction, $philhealth_deduction, $pagibig_deduction, $employee_id, $current_month);
