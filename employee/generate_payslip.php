@@ -13,7 +13,9 @@ $current_month = date('Y-m');
 $query = "SELECT e.*, p.* 
           FROM employee e 
           JOIN payroll p ON e.employee_id = p.employee_id 
-          WHERE e.employee_id = ? AND DATE_FORMAT(p.payroll_date, '%Y-%m') = ?";
+          WHERE e.employee_id = ? 
+          AND DATE_FORMAT(p.payroll_date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+
 $stmt = $conn->prepare($query);
 $stmt->bind_param("is", $employee_id, $current_month);
 $stmt->execute();
