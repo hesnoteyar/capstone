@@ -95,6 +95,7 @@ include '../page/topnavbar.php';
 
             const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            canvas.appendChild(renderer.domElement);
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
