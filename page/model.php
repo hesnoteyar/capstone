@@ -49,7 +49,6 @@ include '../page/topnavbar.php';
         <canvas id="threeCanvas"></canvas>
     </div>
 
-    <?php include '../page/footer.php'; ?>
 
     <script>
         // Initialize Three.js scene
@@ -95,6 +94,9 @@ include '../page/topnavbar.php';
             camera.updateProjectionMatrix();
         });
     </script>
+
+<?php include '../page/footer.php'; ?>
+
 
 </body>
 </html>
