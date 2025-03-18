@@ -59,14 +59,15 @@ $pdf->SetFillColor(230, 230, 230);
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(0, 8, 'Earnings', 0, 1, 'L', true);
 $pdf->SetFont('Arial', '', 10);
-$pdf->Cell(100, 7, 'Basic Salary:', 0);
-$pdf->Cell(0, 7, 'PHP ' . number_format($data['salary'], 2), 0, 1, 'R');
 $pdf->Cell(100, 7, 'Hourly Rate:', 0);
 $pdf->Cell(0, 7, 'PHP 100.00', 0, 1, 'R');
 $pdf->Cell(100, 7, 'Overtime Rate:', 0);
 $pdf->Cell(0, 7, 'PHP 150.00', 0, 1, 'R');
 $pdf->Cell(100, 7, 'Overtime Pay:', 0);
 $pdf->Cell(0, 7, 'PHP ' . number_format($data['overtime_pay'], 2), 0, 1, 'R');
+$pdf->Cell(100, 7, 'Basic Salary:', 0);
+$pdf->Cell(0, 7, 'PHP ' . number_format($data['salary'], 2), 0, 1, 'R');
+
 $pdf->Ln(5);
 
 // Deductions Section
