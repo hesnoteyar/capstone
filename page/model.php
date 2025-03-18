@@ -77,7 +77,7 @@ include '../page/topnavbar.php';
             { name: "Motorcycle Chain", path: "../models/Chain_and_Sprockets/Chain_and_Sprockets_texture.fbx" },
             { name: "Motorcycle Frame", path: "../models/Motor_Frame/Motorcycle_Frame_texture.fbx" },
             { name: "Motorcycle Tire", path: "../models/Motor_Tire/Motorcycle_Tire_texture.fbx" },
-            { name: "Motorcycle Shock", path: "../models/Motor_Battery/Dual_Shock_texture.fbx" },
+            { name: "Motorcycle Shock", path: "../models/Shock/Dual_Shock_texture.fbx" },
         ];
 
         function createModelViewer(model) {
