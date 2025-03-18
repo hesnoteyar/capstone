@@ -28,7 +28,11 @@ $overtime_rate = 97;
 
 // Fetch total hours worked and overtime hours in the current month from the attendance table
 $current_month = date("Y-m");
-$total_hours_query = "SELECT SUM(total_hours) AS total_hours, SUM(overtime_hours) AS overtime_hours FROM attendance WHERE employee_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?";
+$total_hours_query = "SELECT SUM(total_hours) AS total_hours, SUM(overtime_hours) AS overtime_hours 
+                      FROM attendance 
+                      WHERE employee_id = ? 
+                      AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+
 $total_hours_stmt = $conn->prepare($total_hours_query);
 $total_hours_stmt->bind_param("is", $employee_id, $current_month);
 $total_hours_stmt->execute();
