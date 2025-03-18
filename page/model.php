@@ -68,7 +68,7 @@ include '../page/topnavbar.php';
 
         // Load FBX Model
         const loader = new THREE.FBXLoader();
-        loader.load('../models/Motorcycle_Battery.fbx', function (object) {
+        loader.load('../models/Motor_Battery/Motorcycle_Battery.fbx', function (object) {
             object.scale.set(0.05, 0.05, 0.05);  // Adjust size
             object.position.set(0, -1, 0);
             scene.add(object);
