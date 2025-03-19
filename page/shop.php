@@ -12,7 +12,7 @@ include 'topnavbar.php';
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 
-$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name 
+$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name, p.model 
         FROM product p 
         JOIN category c ON p.category_id = c.category_id 
         WHERE 1=1";
@@ -35,6 +35,11 @@ if ($result === false) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Three.js & Dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/FBXLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
     
     <style>
         .modal-image { width: 100%; height: 400px; object-fit: cover; }
@@ -111,7 +116,67 @@ if ($result === false) {
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script>
-        function openModal(productName, description, categoryName, imageUrl, price, productId) {
+
+function loadAndRender3DModel(modelPath) {
+    // Get canvas
+    const canvas = document.getElementById('model-canvas');
+    
+    // Setup Three.js
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    camera.position.set(0, 2, 6);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    // Controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.5;
+    controls.zoomSpeed = 0.8;
+
+    // Load Model
+    const loader = new THREE.FBXLoader();
+    loader.load(modelPath, function (object) {
+        object.scale.set(0.05, 0.05, 0.05);
+        object.position.set(0, -1, 0);
+        scene.add(object);
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    }, undefined, function (error) {
+        console.error(`Error loading model:`, error);
+        document.getElementById('model-container').innerHTML = 
+            '<div class="text-red-500">Failed to load 3D model</div>';
+    });
+
+    // Handle Resizing
+    window.addEventListener("resize", () => {
+        if (canvas.parentElement.clientWidth > 0) {
+            const width = canvas.parentElement.clientWidth;
+            const height = width * 0.75; // 4:3 aspect ratio
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+    });
+}
+
+    function openModal(productName, description, categoryName, imageUrl, price, productId, modelPath) {
             console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId); // Debug log
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-category').textContent = categoryName;
@@ -122,6 +187,16 @@ if ($result === false) {
             document.getElementById('modal-product-id').value = productId; // Set the product ID
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
+
+            // Check if there's a 3D model to display
+            const modelContainer = document.getElementById('model-container');
+            if (modelPath && modelPath.trim() !== '') {
+                modelContainer.classList.remove('hidden');
+                // Load 3D model
+                loadAndRender3DModel(modelPath);
+            } else {
+                modelContainer.classList.add('hidden');
+            }
 
             // Fetch and display reviews
             fetchReviews(productId);
@@ -495,7 +570,9 @@ if ($result === false) {
                         <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                                onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>)">
+                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>')"
+
+
                             View Details
                         </button>
                     </div>
@@ -523,6 +600,13 @@ if ($result === false) {
                 <figure class="w-full lg:w-1/2 zoom">
                     <img id="modal-image" src="" alt="Product" class="modal-image rounded-lg object-cover">
                 </figure>
+                <div id="model-container" class="hidden w-full lg:w-1/2">
+                    <h3 class="text-xl font-bold mb-4">3D Model</h3>
+                    <canvas id="model-canvas" class="w-full h-64 bg-gray-100 rounded-lg"></canvas>
+                    <div class="text-sm text-gray-500 mt-2">Click and drag to rotate the model</div>
+                            <!-- 3D Model section -->
+
+                </div>
                 <div class="w-full lg:w-1/2 lg:pl-6">
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
