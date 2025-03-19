@@ -108,7 +108,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                     </span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-primary btn-sm" 
+                                    <button class="btn btn-error btn-sm" 
                                             onclick="openInquiryModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">
                                         View
                                     </button>
