@@ -629,13 +629,12 @@ function loadAndRender3DModel(modelPath) {
                 </div>
             </div>
 
-                                                       <!-- 3D Model section -->
-
-                <div id="model-container" class="hidden w-full lg:w-96">
-                    <h3 class="text-xl font-bold mb-4">3D Model</h3>
-                    <canvas id="model-canvas" class="w-full h-64 bg-gray-100 rounded-lg"></canvas>
-                    <div class="text-sm text-gray-500 mt-2">Click and drag to rotate the model</div>
-                </div>
+            <!-- 3D Model section -->
+            <div id="model-container" class="w-full max-w-full flex flex-col items-center">
+                <h3 class="text-xl font-bold mb-4">3D Model</h3>
+                <canvas id="model-canvas" class="w-full max-w-md h-72 bg-gray-100 rounded-lg"></canvas>
+                <div class="text-sm text-gray-500 mt-2">Click and drag to rotate the model</div>
+            </div>
 
             <!-- Review and Rating Section -->
             <div class="review-section">
