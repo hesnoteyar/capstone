@@ -631,7 +631,7 @@ function loadAndRender3DModel(modelPath) {
 
                                                        <!-- 3D Model section -->
 
-                <div id="model-container" class="hidden w-full lg:w-1">
+                <div id="model-container" class="hidden w-full lg:w-96">
                     <h3 class="text-xl font-bold mb-4">3D Model</h3>
                     <canvas id="model-canvas" class="w-full h-64 bg-gray-100 rounded-lg"></canvas>
                     <div class="text-sm text-gray-500 mt-2">Click and drag to rotate the model</div>
