@@ -35,14 +35,16 @@ if (!$result) {
   <style>
     body { font-family: 'Poppins', sans-serif; }
     .banner { position: fixed; bottom: 20px; right: 20px; display: none; }
+    .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+    .inquiry-row:hover { background-color: #f9fafb; }
   </style>
 </head>
 <body class="bg-base-200">
 
     <div class="min-h-screen flex flex-col">
         <div class="flex-grow">
-            <div class="container mx-auto p-4">
-                <h1 class="text-2xl font-bold mb-4">Service Inquiries</h1>
+            <div class="container mx-auto p-6">
+                <h1 class="text-3xl font-bold mb-6">Service Inquiries</h1>
                 
                 <?php if (isset($error_message)): ?>
                 <div id="errorBanner" class="alert alert-error banner">
@@ -54,8 +56,8 @@ if (!$result) {
                 </script>
                 <?php endif; ?>
                 
-                <div class="mb-4">
-                    <label class="mr-2">Filter by Status:</label>
+                <div class="mb-6">
+                    <label class="mr-2 font-semibold">Filter by Status:</label>
                     <select id="statusFilter" class="select select-bordered">
                         <option value="all">All</option>
                         <option value="Pending">Pending</option>
@@ -63,7 +65,7 @@ if (!$result) {
                     </select>
                 </div>
                 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto table-container">
                     <table class="table w-full">
                         <thead>
                             <tr>
