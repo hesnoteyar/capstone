@@ -63,7 +63,7 @@ if (!$result) {
                         <option value="Pending">Pending</option>
                         <option value="Claimed">Claimed</option>
                     </select>
-                </div>z
+                </div>
                 
                 <div class="overflow-x-auto table-container">
                     <table class="table w-full">
