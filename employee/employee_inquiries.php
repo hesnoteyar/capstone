@@ -40,7 +40,18 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
   <title>Service Inquiries</title>
   <style>
     body { font-family: 'Poppins', sans-serif; }
-    .banner { position: fixed; bottom: 20px; right: 20px; display: none; }
+    .banner { 
+      position: fixed; 
+      bottom: 20px; 
+      right: 20px; 
+      display: none; 
+      width: auto; 
+      max-width: 300px; 
+      z-index: 1000;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
     .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
     .inquiry-row:hover { background-color: #f9fafb; }
   </style>
@@ -58,7 +69,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 </div>
                 <script>
                     document.getElementById('errorBanner').style.display = 'block';
-                    setTimeout(() => document.getElementById('errorBanner').style.display = 'none', 5000);
+                    setTimeout(() => document.getElementById('errorBanner').style.display = 'none', 3000);
                 </script>
                 <?php endif; ?>
                 
@@ -68,7 +79,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 </div>
                 <script>
                     document.getElementById('successBanner').style.display = 'block';
-                    setTimeout(() => document.getElementById('successBanner').style.display = 'none', 5000);
+                    setTimeout(() => document.getElementById('successBanner').style.display = 'none', 3000);
                 </script>
                 <?php endif; ?>
                 
@@ -125,7 +136,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
 
     <!-- Modal for viewing inquiry details -->
     <dialog id="inquiryModal" class="modal">
-        <div class="modal-box max-w-3xl">
+        <div class="modal-box max-w-4xl">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
@@ -136,14 +147,14 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 <span id="status-badge" class="badge text-lg p-3"></span>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                     <h5 class="text-lg font-bold mb-3">Vehicle Information</h5>
                     <div class="overflow-x-auto">
-                        <table class="table w-full">
+                        <table class="table table-compact w-full">
                             <tbody>
                                 <tr>
-                                    <td class="font-semibold">Brand</td>
+                                    <td class="font-semibold w-1/3">Brand</td>
                                     <td id="brand"></td>
                                 </tr>
                                 <tr>
@@ -162,10 +173,10 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 <div>
                     <h5 class="text-lg font-bold mb-3">Service Information</h5>
                     <div class="overflow-x-auto">
-                        <table class="table w-full">
+                        <table class="table table-compact w-full">
                             <tbody>
                                 <tr>
-                                    <td class="font-semibold">Service Type</td>
+                                    <td class="font-semibold w-1/3">Service Type</td>
                                     <td id="service-type"></td>
                                 </tr>
                                 <tr>
