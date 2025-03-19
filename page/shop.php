@@ -570,7 +570,7 @@ function loadAndRender3DModel(modelPath) {
                         <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>')"
+                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>')">
 
 
                             View Details
