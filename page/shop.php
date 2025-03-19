@@ -2,17 +2,13 @@
 ob_start();
 session_start();
 
-
-
 include '../authentication/db.php'; // Include your database connection
 include 'topnavbar.php';
-
-
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 
-$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name 
+$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name, p.model 
         FROM product p 
         JOIN category c ON p.category_id = c.category_id 
         WHERE 1=1";
@@ -35,6 +31,13 @@ if ($result === false) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Three.js & Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/FBXLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     
     <style>
         .modal-image { width: 100%; height: 400px; object-fit: cover; }
@@ -108,117 +111,337 @@ if ($result === false) {
             transform: scale(1.05);
             transition: transform 0.3s ease;
         }
+        
+        /* 3D Model Viewer Styles */
+        #model-canvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+        }
+        
+        .view-3d-button {
+            background-color: #4c1d95;
+            color: white;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            margin-top: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .view-3d-button:hover {
+            background-color: #6d28d9;
+        }
+        
+        .model-tab-button {
+            padding: 0.5rem 1rem;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .model-tab-button.active {
+            border-bottom: 2px solid #dc2626;
+            font-weight: bold;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
     <script>
-        function openModal(productName, description, categoryName, imageUrl, price, productId) {
-            console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId); // Debug log
+        let currentModelRenderer = null;
+        
+        function openModal(productName, description, categoryName, imageUrl, price, productId, modelPath) {
+            console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId, modelPath); // Debug log
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-category').textContent = categoryName;
             document.getElementById('modal-description').textContent = description;
             document.getElementById('modal-image').src = imageUrl;
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
-            document.getElementById('modal-product-id').value = productId; // Set the product ID
+            document.getElementById('modal-product-id').value = productId;
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
 
+            // Handle 3D model
+            const modelContainer = document.getElementById('model-container');
+            const imageContainer = document.getElementById('image-container');
+            const viewModelBtn = document.getElementById('view-model-btn');
+            const viewImageBtn = document.getElementById('view-image-btn');
+            
+            if (modelPath && modelPath.trim() !== '') {
+                // Store model path for later use
+                document.getElementById('model-path').value = modelPath;
+                
+                // Show the tab buttons
+                document.getElementById('view-tabs').classList.remove('hidden');
+                
+                // Default to showing the image
+                imageContainer.classList.remove('hidden');
+                modelContainer.classList.add('hidden');
+                viewImageBtn.classList.add('active');
+                viewModelBtn.classList.remove('active');
+                
+                // We'll load the 3D model only when the user clicks the 3D button
+            } else {
+                // No model, just show the image
+                document.getElementById('view-tabs').classList.add('hidden');
+                imageContainer.classList.remove('hidden');
+                modelContainer.classList.add('hidden');
+            }
+
             // Fetch and display reviews
             fetchReviews(productId);
+            
             // Add event listener for zoom effect
             const zoomElement = document.querySelector('.zoom');
             const zoomImage = document.querySelector('.zoom img');
-            zoomElement.addEventListener('mousemove', function(e) {
-                const rect = zoomElement.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                zoomImage.style.transformOrigin = `${x}px ${y}px`;
-            });
+            if (zoomElement && zoomImage) {
+                zoomElement.addEventListener('mousemove', function(e) {
+                    const rect = zoomElement.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    zoomImage.style.transformOrigin = `${x}px ${y}px`;
+                });
+            }
 
             // GSAP animations for modal elements
             gsap.from('.modal-header', { duration: 0.5, y: -50, opacity: 0, ease: 'power1.out' });
             gsap.from('.modal-body', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.25 });
             gsap.from('.modal-footer', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', delay: 0.5 });
         }
+        
+        function showImage() {
+            document.getElementById('image-container').classList.remove('hidden');
+            document.getElementById('model-container').classList.add('hidden');
+            document.getElementById('view-image-btn').classList.add('active');
+            document.getElementById('view-model-btn').classList.remove('active');
+            
+            // Stop 3D renderer if active
+            if (currentModelRenderer) {
+                cancelAnimationFrame(currentModelRenderer);
+                currentModelRenderer = null;
+            }
+        }
+        
+        function showModel() {
+            document.getElementById('image-container').classList.add('hidden');
+            document.getElementById('model-container').classList.remove('hidden');
+            document.getElementById('view-image-btn').classList.remove('active');
+            document.getElementById('view-model-btn').classList.add('active');
+            
+            // Load 3D model if not already loaded
+            const modelPath = document.getElementById('model-path').value;
+            if (modelPath && !currentModelRenderer) {
+                loadAndRender3DModel(modelPath);
+            }
+        }
+        
+        function loadAndRender3DModel(modelPath) {
+            // Get canvas
+            const canvas = document.getElementById('model-canvas');
+            
+            // Clear any existing content and show loading indicator
+            if (currentModelRenderer) {
+                cancelAnimationFrame(currentModelRenderer);
+                currentModelRenderer = null;
+            }
+            
+            document.getElementById('model-loading').classList.remove('hidden');
+            
+            // Setup Three.js
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf0f0f0);
+            
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+            camera.position.set(0, 2, 6);
+
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            // Add a hemisphere light for more natural lighting
+            const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            scene.add(hemisphereLight);
+
+            // Controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 0.8;
+            controls.minDistance = 3;
+            controls.maxDistance = 10;
+
+            // Load Model
+            console.log("Loading 3D model:", modelPath);
+            const loader = new THREE.FBXLoader();
+            loader.load(modelPath, function (object) {
+                // Hide loading indicator
+                document.getElementById('model-loading').classList.add('hidden');
+                
+                // Automatically calculate appropriate scale
+                const box = new THREE.Box3().setFromObject(object);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 5 / maxDim; // Adjust this value as needed
+                
+                object.scale.set(scale, scale, scale);
+                
+                // Center the object
+                const center = box.getCenter(new THREE.Vector3());
+                object.position.x = -center.x * scale;
+                object.position.y = -center.y * scale;
+                object.position.z = -center.z * scale;
+                
+                scene.add(object);
+                
+                // Initial rotation for better view
+                object.rotation.y = Math.PI / 4;
+                
+                // Auto rotate slightly
+                const autoRotate = () => {
+                    object.rotation.y += 0.005;
+                };
+                
+                // Animation Loop
+                function animate() {
+                    currentModelRenderer = requestAnimationFrame(animate);
+                    controls.update();
+                    if (!controls.enableRotate) {
+                        autoRotate();
+                    }
+                    renderer.render(scene, camera);
+                }
+                animate();
+                
+                // Stop auto-rotation when user interacts
+                controls.addEventListener('start', function() {
+                    controls.autoRotate = false;
+                });
+            }, 
+            // Progress callback
+            function(xhr) {
+                const percentComplete = xhr.loaded / xhr.total * 100;
+                const loadingText = document.getElementById('model-loading-text');
+                if (loadingText) {
+                    loadingText.textContent = `Loading: ${Math.round(percentComplete)}%`;
+                }
+            },
+            // Error callback
+            function (error) {
+                console.error(`Error loading model:`, error);
+                document.getElementById('model-loading').classList.add('hidden');
+                document.getElementById('model-error').classList.remove('hidden');
+                document.getElementById('model-error').textContent = 'Failed to load 3D model';
+            });
+
+            // Handle Resizing
+            function handleResize() {
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                
+                if (width > 0 && height > 0) {
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(width, height);
+                }
+            }
+            
+            window.addEventListener("resize", handleResize);
+        }
 
         function closeModal() {
             console.log('closeModal called'); // Debug log
             document.getElementById('product-modal').classList.add('hidden');
             document.body.classList.remove('no-scroll'); // Enable background scrolling
-        }
-        function fetchReviews(productId, page = 1) {
-    fetch('fetch_reviews.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ product_id: productId, page: page, limit: 5 }) // Limit to 5 reviews per page
-    })
-    .then(response => response.json())
-    .then(data => {
-        const reviewsContainer = document.getElementById('reviews-container');
-        reviewsContainer.innerHTML = ''; // Clear existing reviews
-
-        if (data.status === 'success') {
-            data.reviews.forEach(review => {
-                const reviewElement = document.createElement('div');
-                reviewElement.classList.add('p-4', 'border', 'rounded-md', 'mb-4');
-
-                const ratingElement = document.createElement('div');
-                ratingElement.classList.add('flex', 'items-center', 'mb-2');
-
-                // Dynamically render stars based on rating
-                const ratingStars = document.createElement('div');
-                for (let i = 1; i <= 5; i++) {
-                    const star = document.createElement('span');
-                    star.classList.add('inline-block', 'text-yellow-500', 'text-xl', 'mr-1');
-                    star.innerHTML = i <= review.rating ? '★' : '☆'; // Fill the star based on rating
-                    ratingStars.appendChild(star);
-                }
-
-                const username = document.createElement('span');
-                username.classList.add('text-gray-600', 'ml-2');
-                username.textContent = review.username;
-
-                ratingElement.appendChild(ratingStars);
-                ratingElement.appendChild(username);
-
-                const reviewText = document.createElement('p');
-                reviewText.classList.add('text-gray-700');
-                reviewText.textContent = review.review_text;
-
-                reviewElement.appendChild(ratingElement);
-                reviewElement.appendChild(reviewText);
-
-                reviewsContainer.appendChild(reviewElement);
-            });
-
-            // Add pagination if there are multiple pages
-            if (data.total_pages > 1) {
-                const paginationContainer = document.createElement('div');
-                paginationContainer.classList.add('join', 'mt-4');
-
-                for (let i = 1; i <= data.total_pages; i++) {
-                    const pageButton = document.createElement('button');
-                    pageButton.classList.add('join-item', 'btn', i === page ? 'btn-active' : '');
-                    pageButton.textContent = i;
-                    pageButton.onclick = () => fetchReviews(productId, i);
-                    paginationContainer.appendChild(pageButton);
-                }
-
-                reviewsContainer.appendChild(paginationContainer);
+            
+            // Stop 3D renderer if active
+            if (currentModelRenderer) {
+                cancelAnimationFrame(currentModelRenderer);
+                currentModelRenderer = null;
             }
-        } else {
-            const noReviews = document.createElement('p');
-            noReviews.textContent = 'No reviews found.';
-            reviewsContainer.appendChild(noReviews);
         }
-    })
-    .catch(error => {
-        console.error('Error fetching reviews:', error);
-    });
-}
+        
+        function fetchReviews(productId, page = 1) {
+            fetch('fetch_reviews.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ product_id: productId, page: page, limit: 5 }) // Limit to 5 reviews per page
+            })
+            .then(response => response.json())
+            .then(data => {
+                const reviewsContainer = document.getElementById('reviews-container');
+                reviewsContainer.innerHTML = ''; // Clear existing reviews
 
+                if (data.status === 'success') {
+                    data.reviews.forEach(review => {
+                        const reviewElement = document.createElement('div');
+                        reviewElement.classList.add('p-4', 'border', 'rounded-md', 'mb-4');
+
+                        const ratingElement = document.createElement('div');
+                        ratingElement.classList.add('flex', 'items-center', 'mb-2');
+
+                        // Dynamically render stars based on rating
+                        const ratingStars = document.createElement('div');
+                        for (let i = 1; i <= 5; i++) {
+                            const star = document.createElement('span');
+                            star.classList.add('inline-block', 'text-yellow-500', 'text-xl', 'mr-1');
+                            star.innerHTML = i <= review.rating ? '★' : '☆'; // Fill the star based on rating
+                            ratingStars.appendChild(star);
+                        }
+
+                        const username = document.createElement('span');
+                        username.classList.add('text-gray-600', 'ml-2');
+                        username.textContent = review.username;
+
+                        ratingElement.appendChild(ratingStars);
+                        ratingElement.appendChild(username);
+
+                        const reviewText = document.createElement('p');
+                        reviewText.classList.add('text-gray-700');
+                        reviewText.textContent = review.review_text;
+
+                        reviewElement.appendChild(ratingElement);
+                        reviewElement.appendChild(reviewText);
+
+                        reviewsContainer.appendChild(reviewElement);
+                    });
+
+                    // Add pagination if there are multiple pages
+                    if (data.total_pages > 1) {
+                        const paginationContainer = document.createElement('div');
+                        paginationContainer.classList.add('join', 'mt-4');
+
+                        for (let i = 1; i <= data.total_pages; i++) {
+                            const pageButton = document.createElement('button');
+                            pageButton.classList.add('join-item', 'btn', i === page ? 'btn-active' : '');
+                            pageButton.textContent = i;
+                            pageButton.onclick = () => fetchReviews(productId, i);
+                            paginationContainer.appendChild(pageButton);
+                        }
+
+                        reviewsContainer.appendChild(paginationContainer);
+                    }
+                } else {
+                    const noReviews = document.createElement('p');
+                    noReviews.textContent = 'No reviews found.';
+                    reviewsContainer.appendChild(noReviews);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reviews:', error);
+            });
+        }
 
         function checkout() {
             fetch('check_user_status.php', {
@@ -484,6 +707,7 @@ if ($result === false) {
                     $categoryName = htmlspecialchars($row['category_name']);
                     $imageUrl = 'data:image/jpeg;base64,' . base64_encode($row['image']);
                     $price = (float)$row['price'];
+                    $modelPath = htmlspecialchars($row['model'] ?? '');
                     ?>
                 
                 <div class="card bg-base-100 w-80 shadow-lg">
@@ -494,8 +718,11 @@ if ($result === false) {
                         <h2 class="card-title"><?= htmlspecialchars($productName, ENT_QUOTES) ?></h2>
                         <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
+                        <?php if (!empty($modelPath)): ?>
+                            <div class="text-xs text-blue-600">3D Model Available</div>
+                        <?php endif; ?>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                                onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>)">
+                                onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= addslashes($modelPath) ?>')">
                             View Details
                         </button>
                     </div>
