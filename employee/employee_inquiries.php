@@ -4,9 +4,18 @@ session_start();
 include '../employee/employee_topnavbar.php';
 include '../authentication/db.php'; 
 $employee_id = $_SESSION['id']; 
+$employee_name = $_SESSION['firstName'] . " " . $_SESSION['lastName'];
+$role = $_SESSION['role'];
+
+
+if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
+    echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>You are not a Mechanic</div>";
+    exit;
+}
+
 
 // Fetch inquiries from the database
-$query = "SELECT * FROM service_inquiries WHERE user_id = '$employee_id'";
+$query = "SELECT * FROM service_inquiries";
 $result = mysqli_query($conn, $query);
 
 ?>
@@ -31,15 +40,22 @@ $result = mysqli_query($conn, $query);
     <div class="min-h-screen flex flex-col">
         <div class="flex-grow">
             <div class="container mx-auto p-4">
-                <h1 class="text-2xl font-bold mb-4">Employee Inquiries</h1>
+                <h1 class="text-2xl font-bold mb-4">Service Inquiries</h1>
                 <div class="overflow-x-auto">
                     <table class="table w-full">
                         <thead>
                             <tr>
-                                <th>Inquiry ID</th>
-                                <th>Subject</th>
-                                <th>Message</th>
+                                <th>ID</th>
+                                <th>Reference #</th>
+                                <th>Brand</th>
+                                <th>Model</th>
+                                <th>Year</th>
+                                <th>Service Type</th>
+                                <th>Description</th>
+                                <th>Contact</th>
+                                <th>Preferred Date</th>
                                 <th>Status</th>
+                                <th>Service Rep</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -47,21 +63,28 @@ $result = mysqli_query($conn, $query);
                             <?php while($row = mysqli_fetch_assoc($result)): ?>
                             <tr>
                                 <td><?php echo $row['id']; ?></td>
-                                <td><?php echo $row['subject']; ?></td>
-                                <td><?php echo $row['message']; ?></td>
+                                <td><?php echo $row['reference_number']; ?></td>
+                                <td><?php echo $row['brand']; ?></td>
+                                <td><?php echo $row['model']; ?></td>
+                                <td><?php echo $row['year_model']; ?></td>
+                                <td><?php echo $row['service_type']; ?></td>
+                                <td><?php echo $row['description']; ?></td>
+                                <td><?php echo $row['contact_number']; ?></td>
+                                <td><?php echo $row['preferred_date']; ?></td>
                                 <td>
                                     <span class="badge <?php echo $row['status'] == 'Pending' ? 'badge-warning' : 'badge-success'; ?>">
                                         <?php echo $row['status']; ?>
                                     </span>
                                 </td>
+                                <td><?php echo $row['service_representative'] ? $row['service_representative'] : 'Unassigned'; ?></td>
                                 <td>
-                                    <?php if($row['status'] == 'Pending'): ?>
-                                    <form method="POST" action="approve_inquiry.php">
+                                    <?php if($row['status'] == 'Pending' && empty($row['service_representative'])): ?>
+                                    <form method="POST" action="claim_inquiry.php">
                                         <input type="hidden" name="inquiry_id" value="<?php echo $row['id']; ?>">
-                                        <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">Claim</button>
                                     </form>
                                     <?php else: ?>
-                                    <button class="btn btn-disabled btn-sm">Approved</button>
+                                    <button class="btn btn-disabled btn-sm">Claimed</button>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -73,5 +96,6 @@ $result = mysqli_query($conn, $query);
         </div>
         <?php include '../employee/employee_footer.php'; ?>
     </div>
+
 </body>
 </html>
