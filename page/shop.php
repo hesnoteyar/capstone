@@ -600,13 +600,13 @@ function loadAndRender3DModel(modelPath) {
                 <figure class="w-full lg:w-1/2 zoom">
                     <img id="modal-image" src="" alt="Product" class="modal-image rounded-lg object-cover">
                 </figure>
+                                           <!-- 3D Model section
+
                 <div id="model-container" class="hidden w-full lg:w-1/2">
                     <h3 class="text-xl font-bold mb-4">3D Model</h3>
                     <canvas id="model-canvas" class="w-full h-64 bg-gray-100 rounded-lg"></canvas>
                     <div class="text-sm text-gray-500 mt-2">Click and drag to rotate the model</div>
-                            <!-- 3D Model section -->
-
-                </div>
+                </div> -->
                 <div class="w-full lg:w-1/2 lg:pl-6">
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
