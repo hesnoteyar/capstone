@@ -56,6 +56,15 @@ if (!$result) {
                 </script>
                 <?php endif; ?>
                 
+                <div class="mb-6">
+                    <label class="mr-2 font-semibold">Filter by Status:</label>
+                    <select id="statusFilter" class="select select-bordered">
+                        <option value="all">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Claimed">Claimed</option>
+                    </select>
+                </div>z
+                
                 <div class="overflow-x-auto table-container">
                     <table class="table w-full">
                         <thead>
@@ -64,7 +73,13 @@ if (!$result) {
                                 <th>Reference #</th>
                                 <th>Brand</th>
                                 <th>Model</th>
+                                <th>Year</th>
+                                <th>Service Type</th>
+                                <th>Description</th>
+                                <th>Contact</th>
+                                <th>Preferred Date</th>
                                 <th>Status</th>
+                                <th>Service Rep</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -75,13 +90,26 @@ if (!$result) {
                                 <td><?php echo $row['reference_number']; ?></td>
                                 <td><?php echo $row['brand']; ?></td>
                                 <td><?php echo $row['model']; ?></td>
+                                <td><?php echo $row['year_model']; ?></td>
+                                <td><?php echo $row['service_type']; ?></td>
+                                <td><?php echo $row['description']; ?></td>
+                                <td><?php echo $row['contact_number']; ?></td>
+                                <td><?php echo $row['preferred_date']; ?></td>
                                 <td>
                                     <span class="badge <?php echo $row['status'] == 'Pending' ? 'badge-warning' : 'badge-success'; ?>">
                                         <?php echo $row['status']; ?>
                                     </span>
                                 </td>
+                                <td><?php echo $row['service_representative'] ? $row['service_representative'] : 'Unassigned'; ?></td>
                                 <td>
-                                    <button class="btn btn-info btn-sm" onclick="openModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">View</button>
+                                    <?php if($row['status'] == 'Pending' && empty($row['service_representative'])): ?>
+                                    <form method="POST" action="claim_inquiry.php">
+                                        <input type="hidden" name="inquiry_id" value="<?php echo $row['id']; ?>">
+                                        <button type="submit" class="btn btn-primary btn-sm">Claim</button>
+                                    </form>
+                                    <?php else: ?>
+                                    <button class="btn btn-disabled btn-sm">Claimed</button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endwhile; ?>
@@ -93,36 +121,14 @@ if (!$result) {
         <?php include '../employee/employee_footer.php'; ?>
     </div>
 
-    <!-- Modal -->
-    <div id="inquiryModal" class="modal hidden">
-        <div class="modal-box">
-            <h2 class="text-xl font-bold">Service Inquiry Details</h2>
-            <p id="modalContent"></p>
-            <div class="modal-action">
-                <button class="btn" onclick="closeModal()">Close</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        function openModal(data) {
-            let content = `<strong>Reference #:</strong> ${data.reference_number}<br>
-                           <strong>Brand:</strong> ${data.brand}<br>
-                           <strong>Model:</strong> ${data.model}<br>
-                           <strong>Year:</strong> ${data.year_model}<br>
-                           <strong>Service Type:</strong> ${data.service_type}<br>
-                           <strong>Description:</strong> ${data.description}<br>
-                           <strong>Contact:</strong> ${data.contact_number}<br>
-                           <strong>Preferred Date:</strong> ${data.preferred_date}<br>
-                           <strong>Status:</strong> ${data.status}<br>
-                           <strong>Service Rep:</strong> ${data.service_representative ? data.service_representative : 'Unassigned'}`;
-            document.getElementById('modalContent').innerHTML = content;
-            document.getElementById('inquiryModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('inquiryModal').classList.add('hidden');
-        }
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            const selectedStatus = this.value.toLowerCase();
+            document.querySelectorAll('.inquiry-row').forEach(row => {
+                row.style.display = (selectedStatus === 'all' || row.dataset.status.toLowerCase() === selectedStatus) ? '' : 'none';
+            });
+        });
     </script>
+
 </body>
 </html>
