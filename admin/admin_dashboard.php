@@ -4,21 +4,21 @@ session_start();
 include '../admin/adminnavbar.php';
 include '../authentication/db.php'; // Database connection
 
-// Initialize an array for new employees count per month
-$new_employees_data = array_fill(0, 12, 0); // 12 months initialized to 0
+// Initialize an array for monthly sales data
+$monthly_sales_data = array_fill(0, 12, 0); // 12 months initialized to 0
 $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Fetch new employees count from the database
-$sql_new_employees = "SELECT MONTH(date_hired) AS month, COUNT(*) AS count 
-                      FROM employee 
-                      WHERE YEAR(date_hired) = YEAR(CURDATE()) 
+// Fetch monthly sales data from the database
+$sql_monthly_sales = "SELECT MONTH(purchase_date) AS month, SUM(price * quantity) AS total_sales 
+                      FROM purchase_history 
+                      WHERE YEAR(purchase_date) = YEAR(CURDATE()) 
                       GROUP BY month 
                       ORDER BY month";
-$result_new_employees = $conn->query($sql_new_employees);
+$result_monthly_sales = $conn->query($sql_monthly_sales);
 
-if ($result_new_employees->num_rows > 0) {
-    while ($row = $result_new_employees->fetch_assoc()) {
-        $new_employees_data[$row['month'] - 1] = (int)$row['count']; // Adjust index for zero-based array
+if ($result_monthly_sales->num_rows > 0) {
+    while ($row = $result_monthly_sales->fetch_assoc()) {
+        $monthly_sales_data[$row['month'] - 1] = (float)$row['total_sales']; // Adjust index for zero-based array
     }
 }
 
@@ -74,11 +74,11 @@ if ($result_attendance->num_rows > 0) {
             </div>
         </div>
 
-        <!-- Card for New Employees Chart -->
+        <!-- Card for Monthly Sales Chart -->
         <div class="card w-full shadow-lg px-4">
             <div class="card-body">
-                <h2 class="card-title">New Employees</h2>
-                <div id="newEmployeesChart" class="w-full"></div>
+                <h2 class="card-title">Monthly Sales</h2>
+                <div id="monthlySalesChart" class="w-full"></div>
             </div>
         </div>
     </div>
@@ -198,24 +198,24 @@ if ($result_attendance->num_rows > 0) {
         var attendanceChart = new ApexCharts(document.querySelector("#attendanceChart"), attendanceOptions);
         attendanceChart.render();
 
-        // New Employees Chart Options
-        var newEmployeesOptions = {
-            series:[{ name:'New Employees', data : <?php echo json_encode($new_employees_data); ?> }],
-            chart:{ height :400 , type:'line' , zoom :{ enabled :true }},
-            dataLabels:{ enabled :false },
-            stroke:{ curve:'smooth' , width :2 , colors:['#3b82f6']},
-            title:{ text:'New Employees' , align:'left'},
-            grid:{ row:{ colors:['#f3f3f3' ,'transparent'], opacity :0.5}},
-            xaxis:{ categories : <?php echo json_encode($months); ?> },
-            yaxis:{
+        // Monthly Sales Chart Options
+        var monthlySalesOptions = {
+            series: [{ name: 'Monthly Sales', data: <?php echo json_encode($monthly_sales_data); ?> }],
+            chart: { height: 400, type: 'line', zoom: { enabled: true } },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2, colors: ['#3b82f6'] },
+            title: { text: 'Monthly Sales', align: 'left' },
+            grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
+            xaxis: { categories: <?php echo json_encode($months); ?> },
+            yaxis: {
                 min: 0,
-                max: 50,
+                max: Math.max(...<?php echo json_encode($monthly_sales_data); ?>) + 10,
             }
         };
 
-        // Render New Employees Chart
-        var newEmployeesChart = new ApexCharts(document.querySelector("#newEmployeesChart"), newEmployeesOptions);
-        newEmployeesChart.render();
+        // Render Monthly Sales Chart
+        var monthlySalesChart = new ApexCharts(document.querySelector("#monthlySalesChart"), monthlySalesOptions);
+        monthlySalesChart.render();
     </script>
 
 </body>
