@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '..\authentication\db.php'; // Include your database connection file
+include '\db.php'; // Include your database connection file
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize form inputs
