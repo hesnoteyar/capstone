@@ -11,6 +11,7 @@ include 'topnavbar.php';
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
+$searchQuery = isset($_GET['search']) ? $_GET['search'] : ''; // Add this line
 
 $sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name, p.model 
         FROM product p 
@@ -19,6 +20,11 @@ $sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.p
 
 if ($category !== 'All') {
     $sql .= " AND LOWER(c.name) = LOWER('" . $conn->real_escape_string($category) . "')";
+}
+
+if (!empty($searchQuery)) {
+    $sql .= " AND (LOWER(p.name) LIKE LOWER('%" . $conn->real_escape_string($searchQuery) . "%') 
+              OR LOWER(p.description) LIKE LOWER('%" . $conn->real_escape_string($searchQuery) . "%'))";
 }
 
 $sql .= " AND p.price <= " . (int)$priceRange;
@@ -533,6 +539,26 @@ function loadAndRender3DModel(modelPath) {
 <div class="flex min-h-screen">
     <form action="" method="GET" class="w-1/4 bg-base-200 p-6 shadow-lg h-screen sticky top-0">
         <h3 class="font-bold text-2xl mb-6">Filters</h3>
+        
+        <!-- Add search field -->
+        <div class="mb-6">
+            <label class="block text-lg mb-2">Search Products</label>
+            <div class="form-control">
+                <div class="input-group">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Search..." 
+                           class="input input-bordered w-full"
+                           value="<?= htmlspecialchars($searchQuery) ?>">
+                    <button type="submit" class="btn btn-square bg-red-700 hover:bg-red-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="mb-6">
             <label class="block text-lg mb-2">Category</label>
             <select name="category" class="p-2 w-full border rounded-md">
