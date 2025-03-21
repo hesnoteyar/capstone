@@ -224,12 +224,24 @@ foreach ($employee_names as $employee_id => $employee_name) {
             chart: { height: 400, type: 'line', zoom: { enabled: true } },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2 },
-            title: { text: 'Employee Attendance', align: 'left' },
+            title: { text: 'Employee Attendance (Hours)', align: 'left' },
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
                 min: 0,
                 max: 300,
+                labels: {
+                    formatter: function(val) {
+                        return val + " hours";
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return val + " hours";
+                    }
+                }
             }
         };
 
@@ -250,12 +262,24 @@ foreach ($employee_names as $employee_id => $employee_name) {
             chart: { height: 400, type: 'line', zoom: { enabled: true } },
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 2 },
-            title: { text: 'Monthly Sales', align: 'left' },
+            title: { text: 'Monthly Sales (₱)', align: 'left' },
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
                 min: 0,
                 max: 50000,
+                labels: {
+                    formatter: function(val) {
+                        return "₱" + val.toLocaleString();
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return "₱" + val.toLocaleString();
+                    }
+                }
             }
         };
 
