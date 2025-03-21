@@ -219,6 +219,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         gsap.from('.card', { duration: 0.5, y: 50, opacity: 0, ease: 'power1.out', stagger: 0.1 });
         gsap.from('.btn', { duration: 0.5, scale: 0.5, opacity: 0, ease: 'back.out(1.7)', delay: 0.5 });
     });
+
+    // Add this JavaScript function where the other functions are
+    function openFaqModal() {
+        document.getElementById('faq-modal').classList.remove('hidden');
+        document.body.classList.add('no-scroll');
+    }
+
+    function closeFaqModal() {
+        document.getElementById('faq-modal').classList.add('hidden');
+        document.body.classList.remove('no-scroll');
+    }
 </script>
 
 </head>
@@ -348,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                 <div class="text-center mt-6 flex justify-center space-x-4">
                 <button type="button" id="editButton" onclick="toggleEdit()" class="btn btn-outline bg-gray-400 hover:bg-red-500 text-white">Edit Details</button>
 
-                <button type="button" id="contactCustomerButton" onclick="contactCustomer()" class="btn btn-error bg-gray-400 hover:bg-red-500 text-white">Customer Support</button>
+                <button type="button" id="contactCustomerButton" onclick="openFaqModal()" class="btn btn-error bg-gray-400 hover:bg-red-500 text-white">FAQs</button>
 
                 <button type="submit" name="save_changes" id="saveButton" class="btn btn-success bg-gray-400 hover:bg-red-500 text-white hidden">Save Changes</button>
 
@@ -402,6 +413,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                 <p>There is no favorite item.</p> <!-- Updated message -->
             <?php endif; ?>
             <?php $favoritesStmt->close(); ?>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Modal -->
+<div id="faq-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl p-8 modal-content" style="max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Frequently Asked Questions</h2>
+            <button class="btn btn-sm btn-circle btn-error" onclick="closeFaqModal()">✕</button>
+        </div>
+        <div class="join join-vertical w-full">
+            <div class="collapse collapse-arrow join-item border border-base-300">
+                <input type="radio" name="my-accordion-4" checked="checked" /> 
+                <div class="collapse-title text-xl font-medium">
+                    How do I change my profile picture?
+                </div>
+                <div class="collapse-content"> 
+                    <p>Click the "Select Photo" button under your profile picture, choose an image file, then click "Save Photo" to update your profile picture.</p>
+                </div>
+            </div>
+            <div class="collapse collapse-arrow join-item border border-base-300">
+                <input type="radio" name="my-accordion-4" /> 
+                <div class="collapse-title text-xl font-medium">
+                    How can I update my personal information?
+                </div>
+                <div class="collapse-content"> 
+                    <p>Click the "Edit Details" button, make your changes, then click "Save Changes" to update your information.</p>
+                </div>
+            </div>
+            <div class="collapse collapse-arrow join-item border border-base-300">
+                <input type="radio" name="my-accordion-4" /> 
+                <div class="collapse-title text-xl font-medium">
+                    What should I do if I can't verify my account?
+                </div>
+                <div class="collapse-content"> 
+                    <p>If you're having trouble verifying your account, click the "Verify Now" button and follow the instructions. If problems persist, please contact our support team.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
