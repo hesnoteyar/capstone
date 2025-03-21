@@ -58,7 +58,7 @@ $checkout_data = [
                     'amount' => $item['price'] * 100, // Convert to centavos
                     'currency' => 'PHP',
                     'quantity' => $item['quantity'],
-                    'send_email_receipt' => true // Enable email receipt
+                    
                 ];
             }, $cart_items),
             'payment_method_types' => ['card', 'gcash'],
