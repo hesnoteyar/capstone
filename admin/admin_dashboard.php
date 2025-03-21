@@ -6,23 +6,23 @@ include '../authentication/db.php'; // Database connection
 
 // Initialize arrays for monthly sales data
 $monthly_sales_data = [];
-$product_ids = [];
+$product_names = [];
 $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Fetch distinct product IDs
-$sql_product_ids = "SELECT DISTINCT product_id FROM purchase_history";
+// Fetch distinct product IDs and names
+$sql_product_ids = "SELECT DISTINCT product_id, product_name FROM purchase_history";
 $result_product_ids = $conn->query($sql_product_ids);
 
 if ($result_product_ids->num_rows > 0) {
     while ($row = $result_product_ids->fetch_assoc()) {
-        $product_ids[] = $row['product_id'];
+        $product_id = $row['product_id'];
+        $product_names[$product_id] = $row['product_name'];
+        $monthly_sales_data[$product_id] = array_fill(0, 12, 0); // 12 months initialized to 0
     }
 }
 
 // Fetch monthly sales data for each product
-foreach ($product_ids as $product_id) {
-    $monthly_sales_data[$product_id] = array_fill(0, 12, 0); // 12 months initialized to 0
-
+foreach ($product_names as $product_id => $product_name) {
     $sql_monthly_sales = "SELECT MONTH(purchase_date) AS month, SUM(price * quantity) AS total_sales 
                           FROM purchase_history 
                           WHERE YEAR(purchase_date) = YEAR(CURDATE()) AND product_id = $product_id
@@ -218,7 +218,7 @@ if ($result_attendance->num_rows > 0) {
             series: [
                 <?php foreach ($monthly_sales_data as $product_id => $sales_data): ?>
                 {
-                    name: 'Product ID <?php echo $product_id; ?>',
+                    name: '<?php echo addslashes($product_names[$product_id]); ?>',
                     data: <?php echo json_encode($sales_data); ?>
                 },
                 <?php endforeach; ?>
@@ -230,8 +230,8 @@ if ($result_attendance->num_rows > 0) {
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
-                min: 5000,
-                max: 500000,
+                min: 3000,
+                max: 50000,
             }
         };
 
