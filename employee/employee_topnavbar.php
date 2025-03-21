@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,33 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
+
+    <script>
+        // Check for saved theme preference or default to light
+        const getTheme = () => {
+            return localStorage.getItem('theme') || 'light'
+        }
+        
+        // Apply theme
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme)
+            localStorage.setItem('theme', theme)
+        }
+
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = getTheme()
+            setTheme(savedTheme)
+            const themeController = document.querySelector('.theme-controller')
+            themeController.checked = savedTheme === 'dark'
+            
+            // Add event listener for theme toggle
+            themeController.addEventListener('change', (e) => {
+                const newTheme = e.target.checked ? 'dark' : 'light'
+                setTheme(newTheme)
+            })
+        })
+    </script>
 </head>
 
 <body>
@@ -53,46 +80,10 @@
                 <img src="..\media\small_logo.png" alt="Logo" class="" />
             </a>
         </div>
-        <div class="navbar-end space-x-4"> <!-- Added spacing between icons -->
-          <!-- Search Icon -->
-          <button class="btn btn-ghost btn-circle">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-          <!-- Notification Icon -->
-          <button class="btn btn-ghost btn-circle">
-            <div class="indicator">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span class="badge badge-xs badge-error indicator-item"></span>
-            </div>
-          </button>
-
+        <div class="navbar-end">
           <!-- Theme Toggle -->
           <label class="swap swap-rotate">
-            <!-- this hidden checkbox controls the state -->
             <input type="checkbox" class="theme-controller" value="dark" />
-
             <!-- Sun icon -->
             <svg
               class="swap-off h-6 w-6 fill-current"

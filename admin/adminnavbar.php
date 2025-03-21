@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,33 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
+
+    <script>
+        // Check for saved theme preference or default to light
+        const getTheme = () => {
+            return localStorage.getItem('theme') || 'light'
+        }
+        
+        // Apply theme
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme)
+            localStorage.setItem('theme', theme)
+        }
+
+        // Initialize theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = getTheme()
+            setTheme(savedTheme)
+            const themeController = document.querySelector('.theme-controller')
+            themeController.checked = savedTheme === 'dark'
+            
+            // Add event listener for theme toggle
+            themeController.addEventListener('change', (e) => {
+                const newTheme = e.target.checked ? 'dark' : 'light'
+                setTheme(newTheme)
+            })
+        })
+    </script>
 </head>
 
 <body>
