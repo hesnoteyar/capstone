@@ -444,7 +444,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                         Where is ABA Racing located?
                     </div>
                     <div class="collapse-content"> 
-                        <p>Our shop is located at [Insert Address]. You can visit us during our operating hours for purchases and repair services.</p>
+                        <p>Our shop is located at Blk 23 - Suha St, Taytay, 1920 Rizal. You can visit us during our operating hours for purchases and repair services.</p>
                     </div>
                 </div>
                 <div class="collapse collapse-arrow join-item border border-base-300">
@@ -453,7 +453,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                         What are your operating hours?
                     </div>
                     <div class="collapse-content"> 
-                        <p>We are open from [Insert Hours], Monday to Sunday.</p>
+                        <p>We are open from 8:00 Am - 6:00 Pm, Monday to Saturday.</p>
                     </div>
                 </div>
             </div>
@@ -511,7 +511,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                         <ul class="list-disc pl-4 mt-2">
                             <li>Cash</li>
                             <li>Bank transfers</li>
-                            <li>[Insert other payment methods]</li>
+                            <li>Mayapay</li>
+                            <li>Gcash</li>
+                            <li>Credit/Debit Card</li>
                         </ul>
                     </div>
                 </div>
@@ -530,9 +532,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                     <div class="collapse-content"> 
                         <p>You can reach us via:</p>
                         <ul class="list-disc pl-4 mt-2">
-                            <li>Phone: [Insert Phone Number]</li>
-                            <li>Email: [Insert Email Address]</li>
-                            <li>Social Media: [Insert Links]</li>
+                            <li>Email: abaracing@gmail.com</li>
+                            <li>Social Media: Aba Racing on Facebook</li>
                         </ul>
                     </div>
                 </div>
@@ -542,7 +543,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                         What is your return policy?
                     </div>
                     <div class="collapse-content"> 
-                        <p>We accept returns or exchanges within [Insert Number] days, provided the item is unused and in its original packaging. Some exclusions apply, such as electrical components.</p>
+                        <p>We accept returns or exchanges within 5 days, provided the item is unused and in its original packaging. Some exclusions apply, such as electrical components.</p>
                     </div>
                 </div>
             </div>
