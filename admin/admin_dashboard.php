@@ -4,21 +4,36 @@ session_start();
 include '../admin/adminnavbar.php';
 include '../authentication/db.php'; // Database connection
 
-// Initialize an array for monthly sales data
-$monthly_sales_data = array_fill(0, 12, 0); // 12 months initialized to 0
+// Initialize arrays for monthly sales data
+$monthly_sales_data = [];
+$product_ids = [];
 $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Fetch monthly sales data from the database
-$sql_monthly_sales = "SELECT MONTH(purchase_date) AS month, SUM(price * quantity) AS total_sales 
-                      FROM purchase_history 
-                      WHERE YEAR(purchase_date) = YEAR(CURDATE()) 
-                      GROUP BY month 
-                      ORDER BY month";
-$result_monthly_sales = $conn->query($sql_monthly_sales);
+// Fetch distinct product IDs
+$sql_product_ids = "SELECT DISTINCT product_id FROM purchase_history";
+$result_product_ids = $conn->query($sql_product_ids);
 
-if ($result_monthly_sales->num_rows > 0) {
-    while ($row = $result_monthly_sales->fetch_assoc()) {
-        $monthly_sales_data[$row['month'] - 1] = (float)$row['total_sales']; // Adjust index for zero-based array
+if ($result_product_ids->num_rows > 0) {
+    while ($row = $result_product_ids->fetch_assoc()) {
+        $product_ids[] = $row['product_id'];
+    }
+}
+
+// Fetch monthly sales data for each product
+foreach ($product_ids as $product_id) {
+    $monthly_sales_data[$product_id] = array_fill(0, 12, 0); // 12 months initialized to 0
+
+    $sql_monthly_sales = "SELECT MONTH(purchase_date) AS month, SUM(price * quantity) AS total_sales 
+                          FROM purchase_history 
+                          WHERE YEAR(purchase_date) = YEAR(CURDATE()) AND product_id = $product_id
+                          GROUP BY month 
+                          ORDER BY month";
+    $result_monthly_sales = $conn->query($sql_monthly_sales);
+
+    if ($result_monthly_sales->num_rows > 0) {
+        while ($row = $result_monthly_sales->fetch_assoc()) {
+            $monthly_sales_data[$product_id][$row['month'] - 1] = (float)$row['total_sales']; // Adjust index for zero-based array
+        }
     }
 }
 
@@ -200,16 +215,23 @@ if ($result_attendance->num_rows > 0) {
 
         // Monthly Sales Chart Options
         var monthlySalesOptions = {
-            series: [{ name: 'Monthly Sales', data: <?php echo json_encode($monthly_sales_data); ?> }],
+            series: [
+                <?php foreach ($monthly_sales_data as $product_id => $sales_data): ?>
+                {
+                    name: 'Product ID <?php echo $product_id; ?>',
+                    data: <?php echo json_encode($sales_data); ?>
+                },
+                <?php endforeach; ?>
+            ],
             chart: { height: 400, type: 'line', zoom: { enabled: true } },
             dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 2, colors: ['#3b82f6'] },
+            stroke: { curve: 'smooth', width: 2 },
             title: { text: 'Monthly Sales', align: 'left' },
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
-                min: 0,
-                max: Math.max(...<?php echo json_encode($monthly_sales_data); ?>) + 10,
+                min: 5000,
+                max: 500000,
             }
         };
 
