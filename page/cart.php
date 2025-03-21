@@ -1,7 +1,7 @@
 <?php
 session_start();
 ob_start();
-include '../page/topnavbar.php';
+include 'topnavbar.php';
 include '../authentication/db.php';
 
 // Assuming user_id is stored in the session
