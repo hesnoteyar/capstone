@@ -419,37 +419,131 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
 
 <!-- FAQ Modal -->
 <div id="faq-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-base-100 rounded-lg shadow-lg w-full max-w-2xl p-8 modal-content" style="max-height: 80vh; overflow-y: auto;">
+    <div class="bg-base-100 rounded-lg shadow-lg w-full max-w-4xl p-8 modal-content" style="max-height: 85vh; overflow-y: auto;">
         <div class="modal-header flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold">Frequently Asked Questions</h2>
             <button class="btn btn-sm btn-circle btn-error" onclick="closeFaqModal()">✕</button>
         </div>
-        <div class="join join-vertical w-full">
-            <div class="collapse collapse-arrow join-item border border-base-300">
-                <input type="radio" name="my-accordion-4" checked="checked" /> 
-                <div class="collapse-title text-xl font-medium">
-                    How do I change my profile picture?
+
+        <!-- General Information -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-4 text-error">About ABA Racing</h3>
+            <div class="join join-vertical w-full">
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-about" checked="checked" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What is ABA Racing?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>ABA Racing is a motorcycle parts and repair shop that provides high-quality parts, accessories, and repair services to motorcycle enthusiasts and riders.</p>
+                    </div>
                 </div>
-                <div class="collapse-content"> 
-                    <p>Click the "Select Photo" button under your profile picture, choose an image file, then click "Save Photo" to update your profile picture.</p>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-about" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        Where is ABA Racing located?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>Our shop is located at [Insert Address]. You can visit us during our operating hours for purchases and repair services.</p>
+                    </div>
+                </div>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-about" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What are your operating hours?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>We are open from [Insert Hours], Monday to Sunday.</p>
+                    </div>
                 </div>
             </div>
-            <div class="collapse collapse-arrow join-item border border-base-300">
-                <input type="radio" name="my-accordion-4" /> 
-                <div class="collapse-title text-xl font-medium">
-                    How can I update my personal information?
+        </div>
+
+        <!-- Products & Services -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-4 text-error">Products & Services</h3>
+            <div class="join join-vertical w-full">
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-products" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What motorcycle parts do you sell?
+                    </div>
+                    <div class="collapse-content"> 
+                        <ul class="list-disc pl-4">
+                            <li>Engine parts</li>
+                            <li>Tires and wheels</li>
+                            <li>Brakes and suspension</li>
+                            <li>Batteries and electrical components</li>
+                            <li>Accessories and riding gear</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="collapse-content"> 
-                    <p>Click the "Edit Details" button, make your changes, then click "Save Changes" to update your information.</p>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-products" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        Do you offer repair and maintenance services?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>Yes! We provide expert repair and maintenance services, including:</p>
+                        <ul class="list-disc pl-4 mt-2">
+                            <li>Engine repairs</li>
+                            <li>Brake servicing</li>
+                            <li>Oil changes</li>
+                            <li>Electrical diagnostics</li>
+                            <li>Custom modifications</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div class="collapse collapse-arrow join-item border border-base-300">
-                <input type="radio" name="my-accordion-4" /> 
-                <div class="collapse-title text-xl font-medium">
-                    What should I do if I can't verify my account?
+        </div>
+
+        <!-- Orders & Payments -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-4 text-error">Orders & Payments</h3>
+            <div class="join join-vertical w-full">
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-orders" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What payment methods do you accept?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>We accept:</p>
+                        <ul class="list-disc pl-4 mt-2">
+                            <li>Cash</li>
+                            <li>Bank transfers</li>
+                            <li>[Insert other payment methods]</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="collapse-content"> 
-                    <p>If you're having trouble verifying your account, click the "Verify Now" button and follow the instructions. If problems persist, please contact our support team.</p>
+            </div>
+        </div>
+
+        <!-- Customer Support -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-4 text-error">Customer Support</h3>
+            <div class="join join-vertical w-full">
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-support" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        How can I contact ABA Racing?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>You can reach us via:</p>
+                        <ul class="list-disc pl-4 mt-2">
+                            <li>Phone: [Insert Phone Number]</li>
+                            <li>Email: [Insert Email Address]</li>
+                            <li>Social Media: [Insert Links]</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-support" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What is your return policy?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>We accept returns or exchanges within [Insert Number] days, provided the item is unused and in its original packaging. Some exclusions apply, such as electrical components.</p>
+                    </div>
                 </div>
             </div>
         </div>
