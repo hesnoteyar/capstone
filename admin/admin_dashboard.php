@@ -37,20 +37,37 @@ foreach ($product_names as $product_id => $product_name) {
     }
 }
 
-// Initialize an array for attendance count per month
-$attendance_data = array_fill(0, 12, 0); // 12 months initialized to 0
+// Initialize arrays for attendance data
+$attendance_data = [];
+$employee_names = [];
 
-// Fetch attendance data from the database
-$sql_attendance = "SELECT MONTH(date) AS month, COUNT(DISTINCT employee_id) AS count 
-                   FROM attendance 
-                   WHERE YEAR(date) = YEAR(CURDATE()) 
-                   GROUP BY month 
-                   ORDER BY month";
-$result_attendance = $conn->query($sql_attendance);
+// Fetch distinct employee IDs and names
+$sql_employee_ids = "SELECT DISTINCT e.employee_id, CONCAT(e.firstName, ' ', e.middleName, ' ', e.lastName) AS employee_name 
+                     FROM attendance a 
+                     JOIN employee e ON a.employee_id = e.employee_id";
+$result_employee_ids = $conn->query($sql_employee_ids);
 
-if ($result_attendance->num_rows > 0) {
-    while ($row = $result_attendance->fetch_assoc()) {
-        $attendance_data[$row['month'] - 1] = (int)$row['count']; // Adjust index for zero-based array
+if ($result_employee_ids->num_rows > 0) {
+    while ($row = $result_employee_ids->fetch_assoc()) {
+        $employee_id = $row['employee_id'];
+        $employee_names[$employee_id] = $row['employee_name'];
+        $attendance_data[$employee_id] = array_fill(0, 12, 0); // 12 months initialized to 0
+    }
+}
+
+// Fetch attendance data for each employee
+foreach ($employee_names as $employee_id => $employee_name) {
+    $sql_attendance = "SELECT MONTH(date) AS month, SUM(total_hours) AS total_hours 
+                       FROM attendance 
+                       WHERE YEAR(date) = YEAR(CURDATE()) AND employee_id = $employee_id
+                       GROUP BY month 
+                       ORDER BY month";
+    $result_attendance = $conn->query($sql_attendance);
+
+    if ($result_attendance->num_rows > 0) {
+        while ($row = $result_attendance->fetch_assoc()) {
+            $attendance_data[$employee_id][$row['month'] - 1] = (float)$row['total_hours']; // Adjust index for zero-based array
+        }
     }
 }
 ?>
@@ -196,16 +213,23 @@ if ($result_attendance->num_rows > 0) {
 
         // Attendance Chart Options
         var attendanceOptions = {
-            series: [{ name: 'Attendance', data: <?php echo json_encode($attendance_data); ?> }],
+            series: [
+                <?php foreach ($attendance_data as $employee_id => $hours_data): ?>
+                {
+                    name: '<?php echo addslashes($employee_names[$employee_id]); ?>',
+                    data: <?php echo json_encode($hours_data); ?>
+                },
+                <?php endforeach; ?>
+            ],
             chart: { height: 400, type: 'line', zoom: { enabled: true } },
             dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 2, colors: ['#dc2626'] },
+            stroke: { curve: 'smooth', width: 2 },
             title: { text: 'Employee Attendance', align: 'left' },
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
                 min: 0,
-                max: 50,
+                max: 300,
             }
         };
 
