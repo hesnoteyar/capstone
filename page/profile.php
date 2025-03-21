@@ -520,6 +520,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
             </div>
         </div>
 
+        <!-- Shipping & Pickup -->
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold mb-4 text-error">Shipping & Pickup</h3>
+            <div class="join join-vertical w-full">
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-shipping" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        Do you offer delivery?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>At the moment, we do not offer delivery services. However, you can visit our shop for in-store pickup.</p>
+                    </div>
+                </div>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-shipping" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        Can I pick up my order at the shop?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>Yes! Once your order is confirmed, you can pick it up at our store during business hours.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Customer Support -->
         <div class="mb-6">
             <h3 class="text-xl font-semibold mb-4 text-error">Customer Support</h3>
@@ -544,6 +569,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                     </div>
                     <div class="collapse-content"> 
                         <p>We accept returns or exchanges within 5 days, provided the item is unused and in its original packaging. Some exclusions apply, such as electrical components.</p>
+                    </div>
+                </div>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-support" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        Do you offer warranties on products?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>Yes, selected products come with warranties. Please check with our staff for warranty details before purchasing.</p>
+                    </div>
+                </div>
+                <div class="collapse collapse-arrow join-item border border-base-300">
+                    <input type="radio" name="faq-support" /> 
+                    <div class="collapse-title text-lg font-medium">
+                        What if I receive a defective product?
+                    </div>
+                    <div class="collapse-content"> 
+                        <p>If you receive a defective item, please contact us within 7 days for assistance. We will assess the issue and provide a solution, such as a replacement or repair.</p>
                     </div>
                 </div>
             </div>
