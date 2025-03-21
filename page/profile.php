@@ -330,10 +330,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                     <label class="label text-sm text-error">Age</label>
                     <p class="text-base-content mb-4">21</p>
                   </div>
-                  <div>
-                    <label class="label text-sm text-error">Phone</label>
-                    <p class="text-base-content">09123456789</p>
-                  </div>
+
                 </div>
 
                 <!-- Location Info -->
