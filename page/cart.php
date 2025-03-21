@@ -9,7 +9,7 @@ $user_id = $_SESSION['id'] ?? null;
 
 // Redirect if user is not logged in
 if (!$user_id) {
-    header("Location: ../page/login.php");
+    header("Location: ../index.php");
     exit;
 }
 
