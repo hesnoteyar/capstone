@@ -230,7 +230,7 @@ if ($result_attendance->num_rows > 0) {
             grid: { row: { colors: ['#f3f3f3', 'transparent'], opacity: 0.5 } },
             xaxis: { categories: <?php echo json_encode($months); ?> },
             yaxis: {
-                min: 3000,
+                min: 0,
                 max: 50000,
             }
         };
