@@ -123,7 +123,6 @@ foreach ($employee_names as $employee_id => $employee_name) {
                     <!-- Table Head -->
                     <thead>
                         <tr>
-                            <th><label><input type="checkbox" class="checkbox" /></label></th>
                             <th>Name</th>
                             <th>Role</th>
                             <th>Address</th>
@@ -153,7 +152,6 @@ foreach ($employee_names as $employee_id => $employee_name) {
 
                                     echo "
                                     <tr>
-                                        <th><label><input type='checkbox' class='checkbox' /></label></th>
                                         <td><div class='flex items-center gap-3'>
                                             <div class='avatar'>
                                                 <div class='mask mask-squircle h-12 w-12'>
@@ -164,7 +162,8 @@ foreach ($employee_names as $employee_id => $employee_name) {
                                         <td>{$role}</td>
                                         <td>{$address}</td>
                                         <td>{$city}</td>
-                                        <th><button class='btn btn-error btn-xs' onclick='openModal(\"{$fullName}\", \"{$role}\", \"{$address}\", \"{$city}\", \"{$profilePicture}\", \"{$email}\", \"{$dateHired}\")'>Details</button></th></tr>";
+                                        <th><button class='btn btn-error btn-xs' onclick='openModal(\"{$fullName}\", \"{$role}\", \"{$address}\", \"{$city}\", \"{$profilePicture}\", \"{$email}\", \"{$dateHired}\")'>Details</button></th>
+                                    </tr>";
                                 }
                             } else {
                                 echo "<tr><td colspan='6' class='text-center'>No employees found.</td></tr>";
