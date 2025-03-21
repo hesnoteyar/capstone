@@ -39,7 +39,6 @@ foreach ($product_names as $product_id => $product_name) {
 
 // Initialize arrays for attendance data
 $attendance_data = [];
-$overtime_data = [];
 $employee_names = [];
 
 // Fetch distinct employee IDs and names
@@ -53,13 +52,12 @@ if ($result_employee_ids->num_rows > 0) {
         $employee_id = $row['employee_id'];
         $employee_names[$employee_id] = $row['employee_name'];
         $attendance_data[$employee_id] = array_fill(0, 12, 0); // 12 months initialized to 0
-        $overtime_data[$employee_id] = array_fill(0, 12, 0); // 12 months initialized to 0
     }
 }
 
 // Fetch attendance data for each employee
 foreach ($employee_names as $employee_id => $employee_name) {
-    $sql_attendance = "SELECT MONTH(date) AS month, SUM(total_hours) AS total_hours, SUM(overtime_hours) AS overtime_hours 
+    $sql_attendance = "SELECT MONTH(date) AS month, SUM(total_hours + overtime_hours) AS total_hours 
                        FROM attendance 
                        WHERE YEAR(date) = YEAR(CURDATE()) AND employee_id = $employee_id
                        GROUP BY month 
@@ -69,7 +67,6 @@ foreach ($employee_names as $employee_id => $employee_name) {
     if ($result_attendance->num_rows > 0) {
         while ($row = $result_attendance->fetch_assoc()) {
             $attendance_data[$employee_id][$row['month'] - 1] = (float)$row['total_hours']; // Adjust index for zero-based array
-            $overtime_data[$employee_id][$row['month'] - 1] = (float)$row['overtime_hours']; // Adjust index for zero-based array
         }
     }
 }
@@ -219,13 +216,7 @@ foreach ($employee_names as $employee_id => $employee_name) {
             series: [
                 <?php foreach ($attendance_data as $employee_id => $hours_data): ?>
                 {
-                    name: '<?php echo addslashes($employee_names[$employee_id]); ?> - Total Hours',
-                    data: <?php echo json_encode($hours_data); ?>
-                },
-                <?php endforeach; ?>
-                <?php foreach ($overtime_data as $employee_id => $hours_data): ?>
-                {
-                    name: '<?php echo addslashes($employee_names[$employee_id]); ?> - Overtime Hours',
+                    name: '<?php echo addslashes($employee_names[$employee_id]); ?>',
                     data: <?php echo json_encode($hours_data); ?>
                 },
                 <?php endforeach; ?>
