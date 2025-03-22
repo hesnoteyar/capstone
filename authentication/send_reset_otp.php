@@ -45,8 +45,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->setFrom('racingaba@gmail.com', 'ABA RACING E COMMERCE');
             $mail->addAddress($email);
             $mail->isHTML(true);
-            $mail->Subject = 'Password Reset OTP';
-            $mail->Body = "Your OTP for password reset is: <b>{$otp}</b>. This code will expire in 15 minutes.";
+            $mail->Subject = 'Your Password Reset OTP';
+            $mail->Body = "<h1>Hello!</h1>
+                           <p>Your OTP for Password Reset is: <h1>$otp</h1></p>
+                           <p>Enter this OTP on the password reset page to verify your password reset request.</p>
+                           <p>This message is intended for the owner of the email address and contains confidential information</p>
+                           <p><strong>--THIS IS AN ELECTRONICALLY GENERATED MESSAGE, PLEASE DO NOT REPLY--</strong></p>";
 
             $mail->send();
             $_SESSION['reset_email'] = $email;
