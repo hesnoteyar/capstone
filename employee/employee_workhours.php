@@ -8,35 +8,26 @@ ini_set('display_errors', 1);
     // Get employee ID from session
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
-    $days_in_month = date('t');
 
-    // Modified query to get all days with LEFT JOIN
-    $chart_query = "SELECT 
-        DAY(calendar.date) as day,
-        COALESCE(attendance.total_hours, 0) as total_hours,
-        attendance.check_in_time,
-        attendance.check_out_time
-    FROM (
-        SELECT DATE(LAST_DAY('$current_month-01') - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY) as date
-        FROM (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) as a
-        CROSS JOIN (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) as b
-        CROSS JOIN (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) as c
-        WHERE DATE(LAST_DAY('$current_month-01') - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY) BETWEEN '$current_month-01' AND LAST_DAY('$current_month-01')
-    ) calendar
-    LEFT JOIN attendance ON DATE(attendance.date) = calendar.date AND attendance.employee_id = ?";
-
+    // Get attendance data for chart
+    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
+                           total_hours,
+                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
+                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
+                    FROM attendance 
+                    WHERE employee_id = ? 
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+                    ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("i", $employee_id);  // Changed to only bind employee_id
+    $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Initialize arrays with zeros for all days
-    $days = range(1, $days_in_month);
-    $hours = array_fill(0, $days_in_month, 0);
-
+    $days = [];
+    $hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $day_index = intval($row['day']) - 1;
-        $hours[$day_index] = floatval($row['total_hours']);
+        $days[] = $row['day'];
+        $hours[] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -77,12 +68,8 @@ ini_set('display_errors', 1);
 </head>
 <body>
     <div class="container mx-auto p-6">
-        <div class="flex justify-between items-center mb-6">
-            <div class="text-2xl font-bold">Work Hours Overview</div>
-            <a href="generate_attendance_pdf.php" class="btn btn-primary">
-                Download Report
-            </a>
-        </div>
+        <!-- Header -->
+        <div class="text-2xl font-bold mb-6">Work Hours Overview</div>
         
         <!-- Chart Card -->
         <div class="card bg-base-100 shadow-xl mb-6">
