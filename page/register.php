@@ -93,8 +93,11 @@
                         <label class="label">
                             <span class="label-text">Postal Code</span>
                         </label>
-                        <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" 
-                               pattern="[0-9]*" title="Postal code must contain only numbers" required />
+                        <input type="number" name="postalCode" placeholder="Postal Code" 
+                               class="input input-bordered w-full [appearance:textfield]" 
+                               min="0"
+                               onkeypress="return (event.charCode !=8 && event.charCode ==0 || (event.charCode >= 48 && event.charCode <= 57))"
+                               required />
                     </div>
                 </div>
 
@@ -235,6 +238,11 @@
                      score <= 50 ? 'text-warning' : 
                      score <= 75 ? 'text-info' : 
                      'text-success');
+            });
+
+            // Prevent non-numeric input in postal code
+            document.querySelector('input[name="postalCode"]').addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
             });
         });
 
