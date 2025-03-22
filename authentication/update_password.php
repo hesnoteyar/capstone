@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/db_connection.php';
+require_once '../authentication/db.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SESSION['otp_verified']) && isset($_SESSION['reset_email'])) {
@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SESSION['otp_verified']) && 
 
     if ($password !== $confirm_password) {
         $_SESSION['error_message'] = "Passwords do not match.";
-        header("Location: /page/reset_password.php");
+        header("Location: ../page/reset_password.php");
         exit();
     }
 
@@ -31,11 +31,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SESSION['otp_verified']) && 
         unset($_SESSION['otp_verified']);
         
         $_SESSION['success_message'] = "Password reset successful.";
-        header("Location: /index.php");
+        header("Location: ../index.php");
         exit();
     } else {
         $_SESSION['error_message'] = "Error updating password.";
-        header("Location: /page/reset_password.php");
+        header("Location: ../page/reset_password.php");
         exit();
     }
 }

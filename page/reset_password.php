@@ -19,7 +19,7 @@ if (!isset($_SESSION['otp_verified']) || !isset($_SESSION['reset_email'])) {
     <div class="card bg-base-100 w-full max-w-md shadow-xl">
         <div class="card-body">
             <h2 class="card-title justify-center">Reset Password</h2>
-            <form action="/authentication/update_password.php" method="post">
+            <form action="../authentication/update_password.php" method="post">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">New Password</span>
