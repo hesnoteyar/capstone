@@ -9,25 +9,23 @@ ini_set('display_errors', 1);
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
+    $days_in_month = date('t');
+    $days = range(1, $days_in_month);
+    $hours = array_fill(0, $days_in_month, 0);
+
     // Get attendance data for chart
-    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
-                           total_hours,
-                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
-                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
+    $chart_query = "SELECT DAY(date) as day, total_hours 
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
-                    ORDER BY date ASC";
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
     $stmt = $conn->prepare($chart_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    $days = [];
-    $hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $days[] = $row['day'];
-        $hours[] = floatval($row['total_hours']);
+        $day_index = intval($row['day']) - 1;
+        $hours[$day_index] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -118,37 +116,82 @@ ini_set('display_errors', 1);
                 type: 'area',
                 toolbar: {
                     show: false
-                }
+                },
+                fontFamily: 'Poppins, sans-serif',
+                background: '#fff'
             },
             dataLabels: {
                 enabled: false
             },
             stroke: {
-                curve: 'smooth'
+                curve: 'smooth',
+                width: 3,
+                colors: ['#ef4444']  // Red color
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 90, 100],
+                    colorStops: [
+                        {
+                            offset: 0,
+                            color: "#ef4444",
+                            opacity: 0.4
+                        },
+                        {
+                            offset: 100,
+                            color: "#ef4444",
+                            opacity: 0.1
+                        }
+                    ]
+                }
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
                 title: {
-                    text: 'Day of Month'
+                    text: 'Day of Month',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
                 }
             },
             yaxis: {
                 title: {
-                    text: 'Hours'
+                    text: 'Hours Worked',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
                 },
                 min: 0,
-                max: 12
+                max: 12,
+                tickAmount: 6
             },
             title: {
-                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'left'
+                text: 'Daily Work Hours Overview',
+                align: 'center',
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Poppins, sans-serif',
+                    color: '#374151'
+                }
             },
             tooltip: {
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
-                }
+                },
+                theme: 'dark'
+            },
+            grid: {
+                borderColor: '#f3f4f6',
+                strokeDashArray: 5
             }
         };
 
