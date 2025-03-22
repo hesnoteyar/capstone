@@ -227,6 +227,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
         document.getElementById('faq-modal').classList.add('hidden');
         document.body.classList.remove('no-scroll');
     }
+
+    // Update the previewImage function
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const profileImage = document.getElementById('profileImage');
+                profileImage.src = e.target.result;
+                
+                // Add a smooth transition effect
+                profileImage.style.transition = 'opacity 0.3s ease';
+                profileImage.style.opacity = '0';
+                setTimeout(() => {
+                    profileImage.style.opacity = '1';
+                }, 50);
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
 </script>
 
 </head>
@@ -259,12 +281,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                     
                     <div class="mt-4">
                         <h2 class="text-2xl font-bold text-base-content"><?php echo htmlspecialchars($firstName . ' ' . $lastName); ?></h2>
-                        <div class="badge badge-error gap-2 mt-2">
+                        <div class="badge <?php echo $isActive ? 'badge-success' : 'badge-error'; ?> gap-2 mt-2">
                             <?php echo $isActive ? 'Verified Account' : 'Unverified Account'; ?>
                         </div>
                     </div>
 
-                    <!-- Photo Upload Form with improved styling -->
+                    <!-- Photo Upload Form with improved styling and preview -->
                     <form method="POST" enctype="multipart/form-data" class="space-y-4">
                         <div class="flex justify-center gap-4">
                             <label for="imageInput" class="btn btn-outline btn-error">
