@@ -23,10 +23,10 @@ ini_set('display_errors', 1);
         CROSS JOIN (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) as c
         WHERE DATE(LAST_DAY('$current_month-01') - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) DAY) BETWEEN '$current_month-01' AND LAST_DAY('$current_month-01')
     ) calendar
-    LEFT JOIN attendance ON DATE(attendance.date) = calendar.date AND attendance.employee_id = ?
-    ORDER BY calendar.date ASC";
+    LEFT JOIN attendance ON DATE(attendance.date) = calendar.date AND attendance.employee_id = ?";
+
     $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->bind_param("i", $employee_id);  // Changed to only bind employee_id
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
