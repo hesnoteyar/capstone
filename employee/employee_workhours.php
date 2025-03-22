@@ -1,6 +1,7 @@
 <?php
-print_r($_SESSION);
     session_start();
+    print_r($_SESSION);
+
 
     include 'employee_topnavbar.php';
     include '../authentication/db.php'; 
