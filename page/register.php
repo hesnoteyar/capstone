@@ -92,7 +92,8 @@
                         <label class="label">
                             <span class="label-text">Postal Code</span>
                         </label>
-                        <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" required />
+                        <input type="text" name="postalCode" placeholder="Postal Code" class="input input-bordered w-full" 
+                               pattern="[0-9]*" title="Postal code must contain only numbers" required />
                     </div>
                 </div>
 
@@ -104,19 +105,40 @@
                     <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required />
                 </div>
 
-                <!-- Password and Repeat Password Fields -->
+                <!-- Password Field with Toggle -->
                 <div class="form-control mt-4">
                     <label class="label">
                         <span class="label-text">Password</span>
                     </label>
-                    <input type="password" name="password" placeholder="Password" class="input input-bordered w-full" required />
+                    <div class="relative">
+                        <input type="password" name="password" id="password" placeholder="Password" 
+                               class="input input-bordered w-full" 
+                               pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$"
+                               title="Password must be at least 8 characters long and include at least one letter, one number, and one special character"
+                               required />
+                        <button type="button" class="btn btn-ghost btn-sm absolute top-1/2 right-2 transform -translate-y-1/2" onclick="togglePassword('password')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="form-control mt-4">
                     <label class="label">
                         <span class="label-text">Repeat Password</span>
                     </label>
-                    <input type="password" name="repeat_password" placeholder="Repeat Password" class="input input-bordered w-full" required />
+                    <div class="relative">
+                        <input type="password" name="repeat_password" id="repeat_password" placeholder="Repeat Password" 
+                               class="input input-bordered w-full" required />
+                        <button type="button" class="btn btn-ghost btn-sm absolute top-1/2 right-2 transform -translate-y-1/2" onclick="togglePassword('repeat_password')">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Create Account Button and Back to Login Link -->
@@ -151,6 +173,11 @@
                 });
             });
         });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
     </script>
 </body>
 </html>
