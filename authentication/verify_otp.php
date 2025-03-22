@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/db_connection.php';
+require_once '../authentication/db.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SESSION['reset_email'])) {
@@ -13,11 +13,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_SESSION['reset_email'])) {
 
     if ($result->num_rows > 0) {
         $_SESSION['otp_verified'] = true;
-        header("Location: /page/reset_password.php");
+        header("Location: ../page/reset_password.php");
         exit();
     } else {
         $_SESSION['error_message'] = "Invalid or expired OTP.";
-        header("Location: /page/verify_otp.php");
+        header("Location: ../page/verify_otp.php");
         exit();
     }
 }
