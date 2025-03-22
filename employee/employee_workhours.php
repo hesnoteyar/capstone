@@ -1,4 +1,5 @@
 <?php
+print_r($_SESSION);
     session_start();
 
     include 'employee_topnavbar.php';
