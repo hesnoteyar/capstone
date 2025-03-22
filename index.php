@@ -87,10 +87,16 @@
                     <label class="label">
                         <span class="label-text">Password</span>
                     </label>
-                    <input type="password" name="password" placeholder="Password" class="input input-bordered" required />
+                    <div class="relative">
+                        <input type="password" name="password" id="password" placeholder="Password" class="input input-bordered w-full pr-10" required />
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                        </span>
+                    </div>
                     <label class="label">
                         <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
                     </label>
+                    <div id="password-strength" class="password-strength"></div>
                 </div>
                 <div class="form-control mt-6">
                     <button class="btn bg-red-600 hover:bg-red-700 text-white">Login</button>
@@ -127,6 +133,41 @@
                 });
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function (e) {
+            // Toggle the type attribute
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            // Toggle the eye icon
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // Password complexity function
+        const passwordStrength = document.querySelector('#password-strength');
+        password.addEventListener('input', function () {
+            const value = password.value;
+            let strength = 'Weak';
+            let color = 'red';
+
+            if (value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value)) {
+                strength = 'Strong';
+                color = 'green';
+            } else if (value.length >= 6 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /[0-9]/.test(value)) {
+                strength = 'Medium';
+                color = 'orange';
+            }
+
+            passwordStrength.textContent = `Password Strength: ${strength}`;
+            passwordStrength.style.color = color;
+        });
+    });
+
     </script>
 </body>
 </html>
