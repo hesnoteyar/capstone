@@ -1,42 +1,10 @@
 <?php
     session_start();
+
+
     include 'employee_topnavbar.php';
-    include '../authentication/db.php';
+    include '../authentication/db.php'; 
 
-    // Get current employee ID from session
-    $employee_id = $_SESSION['employee_id'];
-    $current_month = date('Y-m');
-
-    // Get monthly attendance data
-    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, total_hours 
-                    FROM attendance 
-                    WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ?
-                    ORDER BY date ASC";
-    $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
-    $stmt->execute();
-    $chart_result = $stmt->get_result();
-
-    $days = [];
-    $hours = [];
-    while($row = $chart_result->fetch_assoc()) {
-        $days[] = $row['day'];
-        $hours[] = floatval($row['total_hours']);
-    }
-
-    // Get monthly summary
-    $summary_query = "SELECT 
-                        SUM(total_hours) as total_hours,
-                        COUNT(*) as present_days,
-                        SUM(overtime_hours) as total_overtime
-                    FROM attendance 
-                    WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ?";
-    $stmt = $conn->prepare($summary_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
-    $stmt->execute();
-    $summary = $stmt->get_result()->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -76,7 +44,7 @@
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Hours</div>
-                    <div class="stat-value"><?php echo number_format($summary['total_hours'], 1); ?></div>
+                    <div class="stat-value">160</div>
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
@@ -84,15 +52,15 @@
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Present Days</div>
-                    <div class="stat-value"><?php echo $summary['present_days']; ?></div>
-                    <div class="stat-desc">This Month</div>
+                    <div class="stat-value">20</div>
+                    <div class="stat-desc">Out of 22 Working Days</div>
                 </div>
             </div>
 
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Overtime Hours</div>
-                    <div class="stat-value"><?php echo number_format($summary['total_overtime'], 1); ?></div>
+                    <div class="stat-value">8</div>
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
@@ -100,10 +68,11 @@
     </div>
 
     <script>
+        // Sample data - Replace with actual data from database
         var options = {
             series: [{
                 name: 'Work Hours',
-                data: <?php echo json_encode($hours); ?>
+                data: [7.5, 8, 8, 7, 8, 8, 8.5, 7.5, 8, 8]
             }],
             chart: {
                 height: 350,
@@ -119,15 +88,7 @@
                 curve: 'smooth'
             },
             xaxis: {
-                categories: <?php echo json_encode($days); ?>,
-                title: {
-                    text: 'Day of Month'
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'Hours'
-                }
+                categories: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
             },
             title: {
                 text: 'Daily Work Hours',
