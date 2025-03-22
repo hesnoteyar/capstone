@@ -94,7 +94,7 @@
                         </span>
                     </div>
                     <label class="label">
-                        <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
+                        <a href="#" onclick="document.getElementById('reset-modal').showModal()" class="label-text-alt link link-hover">Forgot password?</a>
                     </label>
                     <div id="password-strength" class="password-strength"></div>
                 </div>
@@ -111,6 +111,23 @@
             </form>
         </div>
     </div>
+
+    <!-- Reset Password Modal -->
+    <dialog id="reset-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Reset Password</h3>
+            <p class="py-4">Enter your email address to receive a password reset code.</p>
+            <form action="/authentication/send_reset_otp.php" method="post">
+                <div class="form-control">
+                    <input type="email" name="email" placeholder="Enter your email" class="input input-bordered" required />
+                </div>
+                <div class="modal-action">
+                    <button type="submit" class="btn bg-red-600 hover:bg-red-700 text-white">Send Reset Code</button>
+                    <button type="button" class="btn" onclick="document.getElementById('reset-modal').close()">Close</button>
+                </div>
+            </form>
+        </div>
+    </dialog>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Toggle password visibility
