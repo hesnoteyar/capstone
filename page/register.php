@@ -121,6 +121,11 @@
                             <i class="fas fa-eye toggle-password" id="togglePassword"></i>
                         </span>
                     </div>
+                    <!-- Add password strength indicator -->
+                    <div class="mt-2">
+                        <progress class="progress w-full" id="password-strength-meter" value="0" max="100"></progress>
+                        <p class="text-xs mt-1" id="password-strength-text">Password strength: Too weak</p>
+                    </div>
                 </div>
 
                 <div class="form-control mt-4">
@@ -186,6 +191,50 @@
                 repeatPassword.setAttribute('type', type);
                 this.classList.toggle('fa-eye');
                 this.classList.toggle('fa-eye-slash');
+            });
+
+            // Password strength checker
+            const strengthMeter = document.getElementById('password-strength-meter');
+            const strengthText = document.getElementById('password-strength-text');
+
+            password.addEventListener('input', function() {
+                const val = password.value;
+                let score = 0;
+                
+                // Length check
+                if (val.length >= 8) score += 25;
+                
+                // Uppercase check
+                if (/[A-Z]/.test(val)) score += 25;
+                
+                // Lowercase check
+                if (/[a-z]/.test(val)) score += 25;
+                
+                // Special character check
+                if (/[^A-Za-z0-9]/.test(val)) score += 25;
+
+                // Update progress bar
+                strengthMeter.value = score;
+
+                // Update progress bar color using daisyUI classes
+                strengthMeter.className = 'progress w-full ' + 
+                    (score <= 25 ? 'progress-error' : 
+                     score <= 50 ? 'progress-warning' : 
+                     score <= 75 ? 'progress-info' : 
+                     'progress-success');
+
+                // Update strength text
+                strengthText.textContent = 'Password strength: ' + 
+                    (score <= 25 ? 'Too weak' : 
+                     score <= 50 ? 'Weak' : 
+                     score <= 75 ? 'Medium' : 
+                     'Strong');
+
+                strengthText.className = 'text-xs mt-1 ' + 
+                    (score <= 25 ? 'text-error' : 
+                     score <= 50 ? 'text-warning' : 
+                     score <= 75 ? 'text-info' : 
+                     'text-success');
             });
         });
 
