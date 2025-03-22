@@ -1,11 +1,48 @@
 <?php
     session_start();
-    print_r($_SESSION);
-
-
     include 'employee_topnavbar.php';
-    include '../authentication/db.php'; 
+    include '../authentication/db.php';
 
+    // Get employee ID from session
+    $employee_id = $_SESSION['id'];
+    $current_month = date('Y-m');
+
+    // Get attendance data for chart
+    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
+                           total_hours,
+                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
+                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
+                    FROM attendance 
+                    WHERE employee_id = ? 
+                    AND DATE_FORMAT(date, '%Y-%m') = ?
+                    ORDER BY date ASC";
+    $stmt = $conn->prepare($chart_query);
+    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->execute();
+    $chart_result = $stmt->get_result();
+
+    $days = [];
+    $hours = [];
+    while($row = $chart_result->fetch_assoc()) {
+        $days[] = $row['day'];
+        $hours[] = floatval($row['total_hours']);
+    }
+
+    // Get monthly summary
+    $summary_query = "SELECT 
+                        SUM(total_hours) as total_hours,
+                        COUNT(*) as present_days,
+                        SUM(overtime_hours) as total_overtime
+                    FROM attendance 
+                    WHERE employee_id = ? 
+                    AND DATE_FORMAT(date, '%Y-%m') = ?";
+    $stmt = $conn->prepare($summary_query);
+    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->execute();
+    $summary = $stmt->get_result()->fetch_assoc();
+
+    // Get working days in current month
+    $total_working_days = date('t'); // Gets number of days in current month
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +82,7 @@
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Hours</div>
-                    <div class="stat-value">160</div>
+                    <div class="stat-value"><?php echo number_format($summary['total_hours'] ?? 0, 1); ?></div>
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
@@ -53,15 +90,15 @@
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Present Days</div>
-                    <div class="stat-value">20</div>
-                    <div class="stat-desc">Out of 22 Working Days</div>
+                    <div class="stat-value"><?php echo $summary['present_days'] ?? 0; ?></div>
+                    <div class="stat-desc">Out of <?php echo $total_working_days; ?> Days</div>
                 </div>
             </div>
 
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Overtime Hours</div>
-                    <div class="stat-value">8</div>
+                    <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
@@ -69,11 +106,10 @@
     </div>
 
     <script>
-        // Sample data - Replace with actual data from database
         var options = {
             series: [{
                 name: 'Work Hours',
-                data: [7.5, 8, 8, 7, 8, 8, 8.5, 7.5, 8, 8]
+                data: <?php echo json_encode($hours); ?>
             }],
             chart: {
                 height: 350,
@@ -89,11 +125,28 @@
                 curve: 'smooth'
             },
             xaxis: {
-                categories: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+                categories: <?php echo json_encode($days); ?>,
+                title: {
+                    text: 'Day of Month'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Hours'
+                },
+                min: 0,
+                max: 12
             },
             title: {
-                text: 'Daily Work Hours',
+                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
                 align: 'left'
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val.toFixed(1) + " hours"
+                    }
+                }
             }
         };
 
