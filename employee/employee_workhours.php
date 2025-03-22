@@ -1,6 +1,5 @@
 <?php
     session_start();
-    print_r($_SESSION);
 
 
     include 'employee_topnavbar.php';
