@@ -117,7 +117,7 @@
         <div class="modal-box">
             <h3 class="font-bold text-lg">Reset Password</h3>
             <p class="py-4">Enter your email address to receive a password reset code.</p>
-            <form action="/authentication/send_reset_otp.php" method="post">
+            <form action="../authentication/send_reset_otp.php" method="post">
                 <div class="form-control">
                     <input type="email" name="email" placeholder="Enter your email" class="input input-bordered" required />
                 </div>
