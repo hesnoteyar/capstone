@@ -46,6 +46,9 @@ if ($result === false) {
     <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
+
+    <title>Shop</title>
+
     
     <style>
         .modal-image { width: 100%; height: 400px; object-fit: cover; }
