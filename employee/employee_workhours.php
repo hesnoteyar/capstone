@@ -12,7 +12,6 @@ ini_set('display_errors', 1);
     // Get attendance data for chart
     $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
-                           overtime_hours,
                            TIME_FORMAT(check_in_time, '%H:%i') as check_in,
                            TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
@@ -27,14 +26,12 @@ ini_set('display_errors', 1);
     // Initialize arrays for all days of the month
     $days_in_month = date('t');
     $days = range(1, $days_in_month);
-    $work_hours = array_fill(0, $days_in_month, 0);
-    $overtime = array_fill(0, $days_in_month, 0);
+    $hours = array_fill(0, $days_in_month, 0);
 
     // Fill in actual attendance data
     while($row = $chart_result->fetch_assoc()) {
         $day_index = intval($row['day']) - 1;
-        $work_hours[$day_index] = floatval($row['total_hours']);
-        $overtime[$day_index] = floatval($row['overtime_hours']);
+        $hours[$day_index] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -118,12 +115,7 @@ ini_set('display_errors', 1);
         var options = {
             series: [{
                 name: 'Work Hours',
-                data: <?php echo json_encode($work_hours); ?>,
-                color: '#3b82f6' // blue
-            }, {
-                name: 'Overtime Hours',
-                data: <?php echo json_encode($overtime); ?>,
-                color: '#ef4444' // red
+                data: <?php echo json_encode($hours); ?>
             }],
             chart: {
                 height: 350,
@@ -140,23 +132,13 @@ ini_set('display_errors', 1);
             },
             stroke: {
                 curve: 'smooth',
-                width: 2
-            },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    opacityFrom: 0.6,
-                    opacityTo: 0.1
-                }
+                width: 3,
+                colors: ['#ef4444']
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
                 title: {
-                    text: 'Day of Month',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
+                    text: 'Day of Month'
                 },
                 tickAmount: 31,
                 labels: {
@@ -165,35 +147,21 @@ ini_set('display_errors', 1);
             },
             yaxis: {
                 title: {
-                    text: 'Hours',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
+                    text: 'Hours'
                 },
                 min: 0,
                 max: 12
             },
             title: {
                 text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'center',
-                style: {
-                    fontSize: '18px',
-                    fontWeight: 'bold'
-                }
+                align: 'left'
             },
             tooltip: {
-                shared: true,
-                intersect: false,
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
                 }
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'right'
             }
         };
 
