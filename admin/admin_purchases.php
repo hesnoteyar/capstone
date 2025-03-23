@@ -60,9 +60,9 @@ $payments = json_decode($response, true);
                                 <td>
                                     <?php
                                     $status = $payment['attributes']['status'];
-                                    if ($status === "Paid") {
+                                    if ($status === "paid") {
                                         echo '<span class="badge badge-success">Completed</span>';
-                                    } elseif ($status === "Pending") {
+                                    } elseif ($status === "pending") {
                                         echo '<span class="badge badge-warning">Pending</span>';
                                     } else {
                                         echo '<span class="badge badge-error">Failed</span>';
