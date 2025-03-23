@@ -116,9 +116,7 @@ ini_set('display_errors', 1);
         
         <!-- Action Buttons -->
         <div class="flex justify-end mt-4 gap-2">
-            <a href="../verify_otp.php" class="btn btn-primary">
-                Verify Now
-            </a>
+
             <a href="download_attendance.php" class="btn btn-error">
                 Download Attendance Report
             </a>
