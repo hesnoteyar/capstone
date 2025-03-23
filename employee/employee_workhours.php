@@ -12,6 +12,7 @@ ini_set('display_errors', 1);
     // Get attendance data for chart
     $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
+                           overtime_hours,
                            TIME_FORMAT(check_in_time, '%H:%i') as check_in,
                            TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
@@ -25,9 +26,11 @@ ini_set('display_errors', 1);
 
     $days = [];
     $hours = [];
+    $overtime = [];
     while($row = $chart_result->fetch_assoc()) {
         $days[] = $row['day'];
         $hours[] = floatval($row['total_hours']);
+        $overtime[] = floatval($row['overtime_hours']);
     }
 
     // Get monthly summary
@@ -110,8 +113,12 @@ ini_set('display_errors', 1);
     <script>
         var options = {
             series: [{
-                name: 'Work Hours',
+                name: 'Regular Hours',
                 data: <?php echo json_encode($hours); ?>
+            },
+            {
+                name: 'Overtime Hours',
+                data: <?php echo json_encode($overtime); ?>
             }],
             chart: {
                 height: 350,
@@ -139,6 +146,7 @@ ini_set('display_errors', 1);
                 min: 0,
                 max: 12
             },
+            colors: ['#0284c7', '#dc2626'],
             title: {
                 text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
                 align: 'left'
