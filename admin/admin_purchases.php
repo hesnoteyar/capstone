@@ -1,6 +1,23 @@
 <?php
-    session_start(); // Start the session to access session variables
-    include 'adminnavbar.php';
+session_start();
+include 'adminnavbar.php';
+
+// PayMongo API Credentials
+$paymongo_secret_key = "sk_test_jMpSa2FZsGG3TWQo5TEsmc3K"; // Replace with your real secret key
+
+// API request to PayMongo to get payments
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "https://api.paymongo.com/v1/payments");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Authorization: Basic " . base64_encode($paymongo_secret_key . ":"),
+    "Content-Type: application/json"
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+
+// Decode the JSON response
+$payments = json_decode($response, true);
 ?>
 
 <!DOCTYPE html>
@@ -11,94 +28,56 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.13/dist/full.min.css" rel="stylesheet" type="text/css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <Title>Purchases</Title>
-
+    <title>Purchases</title>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
+        body { font-family: 'Poppins', sans-serif; }
     </style>
 </head>
 <body>
     <div class="p-8">
         <h1 class="text-3xl font-bold mb-6">Customer Purchases</h1>
-        
-        <!-- Search and Filter Section -->
-        <div class="flex gap-4 mb-6">
-            <input type="text" placeholder="Search orders..." class="input input-bordered w-full max-w-xs" />
-            <select class="select select-bordered w-full max-w-xs">
-                <option disabled selected>Filter by Status</option>
-                <option>Completed</option>
-                <option>Pending</option>
-                <option>Cancelled</option>
-            </select>
-        </div>
 
         <!-- Purchases Table -->
         <div class="overflow-x-auto">
             <table class="table table-zebra">
                 <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Customer</th>
-                        <th>Items</th>
-                        <th>Total Amount</th>
-                        <th>Date</th>
+                        <th>Payment ID</th>
+                        <th>Amount</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Created At</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>#ORD-001</td>
-                        <td>John Doe</td>
-                        <td>2 items</td>
-                        <td>₱1,500.00</td>
-                        <td>2024-01-15</td>
-                        <td><span class="badge badge-success">Completed</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">View Details</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#ORD-002</td>
-                        <td>Jane Smith</td>
-                        <td>1 item</td>
-                        <td>₱750.00</td>
-                        <td>2024-01-14</td>
-                        <td><span class="badge badge-warning">Pending</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">View Details</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>#ORD-003</td>
-                        <td>Mike Johnson</td>
-                        <td>3 items</td>
-                        <td>₱2,250.00</td>
-                        <td>2024-01-13</td>
-                        <td><span class="badge badge-error">Cancelled</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary">View Details</button>
-                        </td>
-                    </tr>
+                    <?php if (!empty($payments['data'])): ?>
+                        <?php foreach ($payments['data'] as $payment): ?>
+                            <tr>
+                                <td><?= $payment['id']; ?></td>
+                                <td>₱<?= number_format($payment['attributes']['amount'] / 100, 2); ?></td>
+                                <td>
+                                    <?php
+                                    $status = $payment['attributes']['status'];
+                                    if ($status === "paid") {
+                                        echo '<span class="badge badge-success">Completed</span>';
+                                    } elseif ($status === "pending") {
+                                        echo '<span class="badge badge-warning">Pending</span>';
+                                    } else {
+                                        echo '<span class="badge badge-error">Failed</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="4" class="text-center">No purchases found.</td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination -->
-        <div class="join mt-4 flex justify-center">
-            <button class="join-item btn">1</button>
-            <button class="join-item btn btn-active">2</button>
-            <button class="join-item btn">3</button>
-            <button class="join-item btn">4</button>
-        </div>
     </div>
 </body>
-<?php
-    include 'admin_footer.php';
-?>
+<?php include 'admin_footer.php'; ?>
 </html>
