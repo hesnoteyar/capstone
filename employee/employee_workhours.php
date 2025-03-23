@@ -45,24 +45,6 @@ ini_set('display_errors', 1);
 
     // Get working days in current month
     $total_working_days = date('t'); // Gets number of days in current month
-
-    // Get detailed attendance records
-    $attendance_query = "SELECT 
-        DATE_FORMAT(date, '%d') as day,
-        DATE_FORMAT(date, '%W') as weekday,
-        TIME_FORMAT(check_in_time, '%h:%i %p') as check_in,
-        TIME_FORMAT(check_out_time, '%h:%i %p') as check_out,
-        total_hours,
-        overtime_hours
-    FROM attendance 
-    WHERE employee_id = ? 
-    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
-    ORDER BY date ASC";
-    
-    $stmt = $conn->prepare($attendance_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
-    $stmt->execute();
-    $attendance_records = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -120,54 +102,6 @@ ini_set('display_errors', 1);
                     <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
                     <div class="stat-desc">This Month</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Attendance Records Table -->
-        <div class="card bg-base-100 shadow-xl mt-6">
-            <div class="card-body">
-                <h2 class="card-title text-xl mb-4"><?php echo date('F Y'); ?> Attendance Record</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
-                            <tr class="bg-base-200">
-                                <th>Day</th>
-                                <th>Weekday</th>
-                                <th>Check In</th>
-                                <th>Check Out</th>
-                                <th>Total Hours</th>
-                                <th>Overtime</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php 
-                            // Initialize attendance data array
-                            $attendance_data = array_fill(1, $total_working_days, null);
-                            
-                            // Fill in actual attendance data
-                            while($record = $attendance_records->fetch_assoc()) {
-                                $day = intval($record['day']);
-                                $attendance_data[$day] = $record;
-                            }
-
-                            // Display all days
-                            for($day = 1; $day <= $total_working_days; $day++) {
-                                $date = date('Y-m-') . sprintf('%02d', $day);
-                                $weekday = date('l', strtotime($date));
-                                $record = $attendance_data[$day];
-                            ?>
-                                <tr class="<?php echo in_array($weekday, ['Saturday', 'Sunday']) ? 'text-gray-400' : ''; ?>">
-                                    <td><?php echo $day; ?></td>
-                                    <td><?php echo $weekday; ?></td>
-                                    <td><?php echo $record ? $record['check_in'] : '-'; ?></td>
-                                    <td><?php echo $record ? $record['check_out'] : '-'; ?></td>
-                                    <td><?php echo $record ? number_format($record['total_hours'], 1) : '-'; ?></td>
-                                    <td><?php echo $record ? number_format($record['overtime_hours'], 1) : '-'; ?></td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
