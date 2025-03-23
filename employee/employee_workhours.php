@@ -5,34 +5,29 @@ ini_set('display_errors', 1);
     include 'employee_topnavbar.php';
     include '../authentication/db.php';
 
-    // Get employee ID from session and current month
+    // Get employee ID from session
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
-    // Initialize arrays for all days of the month
-    $days_in_month = date('t');
-    $days = range(1, $days_in_month);
-    $work_hours = array_fill(0, $days_in_month, 0);
-    $overtime_hours = array_fill(0, $days_in_month, 0);
-
     // Get attendance data for chart
-    $chart_query = "SELECT SUBSTRING(date, 9, 2) as day, 
+    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
-                           overtime_hours
+                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
+                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND SUBSTRING(date, 1, 7) = ?
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Fill in actual attendance data
+    $days = [];
+    $hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $day_index = intval($row['day']) - 1; // Convert day to 0-based index
-        $work_hours[$day_index] = floatval($row['total_hours']);
-        $overtime_hours[$day_index] = floatval($row['overtime_hours']);
+        $days[] = $row['day'];
+        $hours[] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -42,7 +37,7 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND SUBSTRING(date, 1, 7) = ?";
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
     $stmt = $conn->prepare($summary_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
@@ -116,12 +111,7 @@ ini_set('display_errors', 1);
         var options = {
             series: [{
                 name: 'Work Hours',
-                data: <?php echo json_encode($work_hours); ?>,
-                color: '#3b82f6' // blue
-            }, {
-                name: 'Overtime Hours',
-                data: <?php echo json_encode($overtime_hours); ?>,
-                color: '#ef4444' // red
+                data: <?php echo json_encode($hours); ?>
             }],
             chart: {
                 height: 350,
@@ -131,21 +121,10 @@ ini_set('display_errors', 1);
                 }
             },
             dataLabels: {
-                enabled: true,
-                formatter: function (val) {
-                    return val > 0 ? val.toFixed(1) : '';
-                }
+                enabled: false
             },
             stroke: {
-                curve: 'smooth',
-                width: 2
-            },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    opacityFrom: 0.6,
-                    opacityTo: 0.1
-                }
+                curve: 'smooth'
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
@@ -162,20 +141,14 @@ ini_set('display_errors', 1);
             },
             title: {
                 text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'center'
+                align: 'left'
             },
             tooltip: {
-                shared: true,
-                intersect: false,
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
                 }
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'right'
             }
         };
 
