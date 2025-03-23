@@ -1,12 +1,24 @@
 <?php
-// filepath: /d:/XAMPP/htdocs/capstone/admin/admin_inventory.php
-session_start(); // Start the session to access session variables
+session_start();
 include '..\admin\adminnavbar.php';
 include '..\authentication\db.php';
 
-// Fetch products from the database
-$sql = "SELECT * FROM product";
+// Initialize pagination variables
+$items_per_page = 5;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
+$offset = ($page - 1) * $items_per_page;
+
+// Modify the query to include search and pagination
+$search_condition = $search ? "WHERE name LIKE '%$search%' OR description LIKE '%$search%'" : "";
+$sql = "SELECT * FROM product $search_condition LIMIT $items_per_page OFFSET $offset";
 $result = $conn->query($sql);
+
+// Get total records for pagination
+$total_records_sql = "SELECT COUNT(*) as count FROM product $search_condition";
+$total_records_result = $conn->query($total_records_sql);
+$total_records = $total_records_result->fetch_assoc()['count'];
+$total_pages = ceil($total_records / $items_per_page);
 ?>
 
 <!DOCTYPE html>
@@ -31,8 +43,16 @@ $result = $conn->query($sql);
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Inventory Management</h1>
 
-        <!-- Add Product Button -->
-        <button class="btn btn-error mb-6" onclick="openAddProductModal()">Add Product</button>
+        <!-- Search and Add Product Controls -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="form-control w-full max-w-xs">
+                <input type="text" id="searchInput" 
+                       placeholder="Search products..." 
+                       class="input input-bordered w-full" 
+                       value="<?php echo htmlspecialchars($search); ?>">
+            </div>
+            <button class="btn btn-error" onclick="openAddProductModal()">Add Product</button>
+        </div>
 
         <!-- Product List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -51,9 +71,21 @@ $result = $conn->query($sql);
                           </div>";
                 }
             } else {
-                echo "<p>No products found.</p>";
+                echo "<p class='col-span-3 text-center'>No products found.</p>";
             }
             ?>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-center space-x-2 mt-6">
+            <?php if ($total_pages > 1): ?>
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>" 
+                       class="btn btn-sm <?php echo $i === $page ? 'btn-active' : ''; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php endfor; ?>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -129,6 +161,14 @@ $result = $conn->query($sql);
     </div>
 
     <script>
+        // Add search functionality
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const searchQuery = this.value.trim();
+                window.location.href = `?search=${encodeURIComponent(searchQuery)}&page=1`;
+            }
+        });
+
         function openAddProductModal() {
             document.getElementById('addProductModal').classList.add('modal-open');
         }
