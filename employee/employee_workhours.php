@@ -9,11 +9,14 @@ ini_set('display_errors', 1);
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
+    // Initialize arrays for all days
+    $days_in_month = date('t');
+    $days = range(1, $days_in_month);
+    $hours = array_fill(0, $days_in_month, 0);
+
     // Get attendance data for chart
-    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
-                           total_hours,
-                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
-                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
+    $chart_query = "SELECT DAY(date) as day, 
+                           total_hours
                     FROM attendance 
                     WHERE employee_id = ? 
                     AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
@@ -23,12 +26,38 @@ ini_set('display_errors', 1);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    $days = [];
-    $hours = [];
+    // Fill in actual attendance data
     while($row = $chart_result->fetch_assoc()) {
-        $days[] = $row['day'];
-        $hours[] = floatval($row['total_hours']);
+        $day_index = intval($row['day']) - 1;
+        $hours[$day_index] = floatval($row['total_hours']);
     }
+
+    // Get detailed attendance records for table
+    $attendance_query = "SELECT 
+        DAY(calendar.date) as day,
+        DATE_FORMAT(calendar.date, '%W') as weekday,
+        COALESCE(TIME_FORMAT(a.check_in_time, '%h:%i %p'), '-') as check_in,
+        COALESCE(TIME_FORMAT(a.check_out_time, '%h:%i %p'), '-') as check_out,
+        COALESCE(a.total_hours, 0) as total_hours,
+        COALESCE(a.overtime_hours, 0) as overtime_hours
+    FROM (
+        SELECT DATE('$current_month-01') + INTERVAL (a.a) DAY as date
+        FROM (
+            SELECT @rownum:=@rownum+1-1 a
+            FROM (SELECT 0 UNION ALL SELECT 1 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6) t1,
+                 (SELECT 0 UNION ALL SELECT 1 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6) t2,
+                 (SELECT @rownum:=-1) r
+            LIMIT $days_in_month
+        ) a
+    ) calendar
+    LEFT JOIN attendance a ON DATE(a.date) = calendar.date AND a.employee_id = ?
+    WHERE calendar.date <= LAST_DAY('$current_month-01')
+    ORDER BY calendar.date";
+
+    $stmt = $conn->prepare($attendance_query);
+    $stmt->bind_param("i", $employee_id);
+    $stmt->execute();
+    $attendance_records = $stmt->get_result();
 
     // Get monthly summary
     $summary_query = "SELECT 
@@ -102,6 +131,39 @@ ini_set('display_errors', 1);
                     <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
                     <div class="stat-desc">This Month</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Records -->
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4"><?php echo date('F Y'); ?> Attendance Record</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th>Day</th>
+                                <th>Weekday</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Total Hours</th>
+                                <th>Overtime</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($record = $attendance_records->fetch_assoc()) { ?>
+                                <tr class="<?php echo in_array($record['weekday'], ['Saturday', 'Sunday']) ? 'text-gray-400' : ''; ?>">
+                                    <td><?php echo $record['day']; ?></td>
+                                    <td><?php echo $record['weekday']; ?></td>
+                                    <td><?php echo $record['check_in']; ?></td>
+                                    <td><?php echo $record['check_out']; ?></td>
+                                    <td><?php echo $record['total_hours'] > 0 ? number_format($record['total_hours'], 1) : '-'; ?></td>
+                                    <td><?php echo $record['overtime_hours'] > 0 ? number_format($record['overtime_hours'], 1) : '-'; ?></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
