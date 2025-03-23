@@ -10,7 +10,7 @@ $employee_id = $_SESSION['id'];
 $current_month = date('Y-m');
 
 // Get employee details
-$emp_query = "SELECT first_name, last_name FROM employees WHERE id = ?";
+$emp_query = "SELECT first_name, last_name FROM employee WHERE id = ?";
 $stmt = $conn->prepare($emp_query);
 $stmt->bind_param("i", $employee_id);
 $stmt->execute();
