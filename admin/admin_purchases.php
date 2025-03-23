@@ -92,8 +92,8 @@ $payments = json_decode($response, true);
     </div>
 
     <!-- Modal -->
-    <div id="paymentModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
-        <div class="modal-box bg-white rounded-lg p-6 w-96 relative">
+    <div id="paymentModal" class="fixed inset-0 z-50 items-center justify-center bg-gray-900 bg-opacity-50" style="display: none;">
+        <div class="modal-box bg-white rounded-lg p-6 w-96 relative mx-auto mt-20">
             <h2 class="text-xl font-bold mb-4">Payment Details</h2>
             <div class="space-y-2">
                 <p><strong>Payment ID:</strong> <span id="modalPaymentId"></span></p>
@@ -110,31 +110,27 @@ $payments = json_decode($response, true);
 
     <script>
         function viewDetails(id, amount, status, date, description) {
-            console.log('Opening modal with:', { id, amount, status, date, description }); // Debug log
-            try {
-                document.getElementById("modalPaymentId").textContent = id;
-                document.getElementById("modalAmount").textContent = amount;
-                document.getElementById("modalStatus").textContent = status;
-                document.getElementById("modalDate").textContent = date;
-                document.getElementById("modalDescription").textContent = description;
-                document.getElementById("paymentModal").style.display = "flex";
-            } catch (error) {
-                console.error('Error in viewDetails:', error);
-            }
+            console.log('Opening modal with:', { id, amount, status, date, description });
+            document.getElementById("modalPaymentId").textContent = id;
+            document.getElementById("modalAmount").textContent = amount;
+            document.getElementById("modalStatus").textContent = status;
+            document.getElementById("modalDate").textContent = date;
+            document.getElementById("modalDescription").textContent = description;
+            
+            const modal = document.getElementById("paymentModal");
+            modal.style.display = "flex";
         }
 
         function closeModal() {
-            try {
-                document.getElementById("paymentModal").style.display = "none";
-            } catch (error) {
-                console.error('Error in closeModal:', error);
-            }
+            document.getElementById("paymentModal").style.display = "none";
         }
 
         // Initialize modal events when document is ready
         document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById("paymentModal");
+            
             // Close modal when clicking outside
-            document.getElementById("paymentModal").addEventListener("click", function(e) {
+            modal.addEventListener("click", function(e) {
                 if (e.target === this) {
                     closeModal();
                 }
