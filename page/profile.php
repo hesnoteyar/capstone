@@ -281,8 +281,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                     
                     <div class="mt-4">
                         <h2 class="text-2xl font-bold text-base-content"><?php echo htmlspecialchars($firstName . ' ' . $lastName); ?></h2>
-                        <div class="badge <?php echo $isActive ? 'badge-success' : 'badge-error'; ?> gap-2 mt-2">
-                            <?php echo $isActive ? 'Verified Account' : 'Unverified Account'; ?>
+                        <div class="flex items-center justify-center gap-2 mt-2">
+                            <div class="badge <?php echo $isActive ? 'badge-success' : 'badge-error'; ?> gap-2">
+                                <?php echo $isActive ? 'Verified Account' : 'Unverified Account'; ?>
+                            </div>
+                            <?php if (!$isActive): ?>
+                                <a href="../authentication/otp_input.php" class="btn btn-xs btn-error">Verify Now</a>
+                            <?php endif; ?>
                         </div>
                     </div>
 

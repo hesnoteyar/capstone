@@ -89,7 +89,7 @@ ini_set('display_errors', 1);
         </div>
 
         <!-- Attendance Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Hours</div>
@@ -113,13 +113,6 @@ ini_set('display_errors', 1);
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Download Button -->
-        <div class="flex justify-end mt-4">
-            <a href="download_attendance.php" class="btn btn-error">
-                Download Attendance Report
-            </a>
         </div>
     </div>
 
