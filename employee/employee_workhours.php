@@ -9,20 +9,22 @@ ini_set('display_errors', 1);
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
-    // Get attendance data for chart
+    // Get attendance data for chart with explicit date range
     $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
-                           overtime_hours,
-                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
-                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
+                           overtime_hours
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+                    AND DATE_FORMAT(date, '%Y-%m') = ?
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
+
+    // Debug output
+    echo "<!-- Current Month: " . $current_month . " -->";
+    echo "<!-- Employee ID: " . $employee_id . " -->";
 
     // Initialize arrays for all days of the month
     $days_in_month = date('t');
@@ -30,12 +32,17 @@ ini_set('display_errors', 1);
     $work_hours = array_fill(0, $days_in_month, 0);
     $overtime_hours = array_fill(0, $days_in_month, 0);
 
-    // Fill in actual attendance data
+    // Fill in actual attendance data and add debug output
     while($row = $chart_result->fetch_assoc()) {
         $day_index = intval($row['day']) - 1;
         $work_hours[$day_index] = floatval($row['total_hours']);
         $overtime_hours[$day_index] = floatval($row['overtime_hours']);
+        echo "<!-- Day: " . $row['day'] . ", Hours: " . $row['total_hours'] . ", OT: " . $row['overtime_hours'] . " -->";
     }
+
+    // Debug output for final arrays
+    echo "<!-- Work Hours: " . json_encode($work_hours) . " -->";
+    echo "<!-- Overtime Hours: " . json_encode($overtime_hours) . " -->";
 
     // Get monthly summary
     $summary_query = "SELECT 
@@ -115,6 +122,9 @@ ini_set('display_errors', 1);
     </div>
 
     <script>
+        console.log('Work Hours:', <?php echo json_encode($work_hours); ?>);
+        console.log('Overtime Hours:', <?php echo json_encode($overtime_hours); ?>);
+        
         var options = {
             series: [{
                 name: 'Work Hours',
