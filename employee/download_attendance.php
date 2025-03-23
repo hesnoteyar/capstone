@@ -25,7 +25,7 @@ $query = "SELECT
     overtime_hours
     FROM attendance 
     WHERE employee_id = ? 
-    AND DATE_FORMAT(date, '%Y-%m') = ?LATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
     ORDER BY date ASC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("is", $employee_id, $current_month);
@@ -46,9 +46,9 @@ $pdf->AddPage();
 
 // Employee Info
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Employee: ' . $emp_result['first_name'] . ' ' . 
-    ($emp_result['middle_name'] ? $emp_result['middle_name'] . ' ' : '') . 
-    $emp_result['last_name'], 0, 1);
+$pdf->Cell(0, 10, 'Employee: ' . $emp_result['firstName'] . ' ' . 
+    ($emp_result['middleName'] ? $emp_result['middleName'] . ' ' : '') . 
+    $emp_result['lastName'], 0, 1);
 $pdf->Cell(0, 10, 'Month: ' . date('F Y'), 0, 1);
 $pdf->Ln(10);
 
