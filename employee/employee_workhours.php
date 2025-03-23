@@ -24,13 +24,19 @@ ini_set('display_errors', 1);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    $days = [];
-    $hours = [];
-    $overtime = [];
+    // Get number of days in current month
+    $days_in_month = date('t');
+    
+    // Initialize arrays with zeros for all days
+    $days = range(1, $days_in_month);
+    $hours = array_fill(0, $days_in_month, 0);
+    $overtime = array_fill(0, $days_in_month, 0);
+
+    // Fill in actual attendance data
     while($row = $chart_result->fetch_assoc()) {
-        $days[] = $row['day'];
-        $hours[] = floatval($row['total_hours']);
-        $overtime[] = floatval($row['overtime_hours']);
+        $day_index = intval($row['day']) - 1;  // Convert to 0-based index
+        $hours[$day_index] = floatval($row['total_hours']);
+        $overtime[$day_index] = floatval($row['overtime_hours']);
     }
 
     // Get monthly summary
