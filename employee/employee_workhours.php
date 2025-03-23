@@ -16,16 +16,15 @@ ini_set('display_errors', 1);
     $overtime_hours = array_fill(0, $days_in_month, 0);
 
     // Get attendance data for chart
-    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
+    $chart_query = "SELECT SUBSTRING(date, 9, 2) as day, 
                            total_hours,
                            overtime_hours
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE(date) >= DATE(?) AND DATE(date) < DATE(?) + INTERVAL 1 MONTH
+                    AND SUBSTRING(date, 1, 7) = ?
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
-    $first_day = $current_month . '-01';
-    $stmt->bind_param("iss", $employee_id, $first_day, $first_day);
+    $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
@@ -43,9 +42,9 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE(date) >= DATE(?) AND DATE(date) < DATE(?) + INTERVAL 1 MONTH";
+                    AND SUBSTRING(date, 1, 7) = ?";
     $stmt = $conn->prepare($summary_query);
-    $stmt->bind_param("iss", $employee_id, $first_day, $first_day);
+    $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $summary = $stmt->get_result()->fetch_assoc();
 
