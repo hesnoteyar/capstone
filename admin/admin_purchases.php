@@ -3,7 +3,7 @@ session_start();
 include 'adminnavbar.php';
 
 // PayMongo API Credentials
-$paymongo_secret_key = "sk_test_jMpSa2FZsGG3TWQo5TEsmc3K"; // Replace with your real secret key
+$paymongo_secret_key = "sk_live_YOUR_SECRET_KEY"; // Replace with your real secret key
 
 // API request to PayMongo to get payments
 $ch = curl_init();
@@ -48,6 +48,7 @@ $payments = json_decode($response, true);
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Created At</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,15 +70,56 @@ $payments = json_decode($response, true);
                                     ?>
                                 </td>
                                 <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewDetails(
+                                        '<?= $payment['id']; ?>',
+                                        '₱<?= number_format($payment['attributes']['amount'] / 100, 2); ?>',
+                                        '<?= $payment['attributes']['status']; ?>',
+                                        '<?= $payment['attributes']['created_at']; ?>',
+                                        '<?= $payment['attributes']['description'] ?? "N/A"; ?>'
+                                    )">
+                                        View Details
+                                    </button>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="4" class="text-center">No purchases found.</td></tr>
+                        <tr><td colspan="5" class="text-center">No purchases found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div id="paymentModal" class="modal hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-lg p-6 w-96">
+            <h2 class="text-xl font-bold mb-4">Payment Details</h2>
+            <p><strong>Payment ID:</strong> <span id="modalPaymentId"></span></p>
+            <p><strong>Amount:</strong> <span id="modalAmount"></span></p>
+            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+            <p><strong>Created At:</strong> <span id="modalDate"></span></p>
+            <p><strong>Description:</strong> <span id="modalDescription"></span></p>
+            <div class="mt-4 text-right">
+                <button class="btn btn-error" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function viewDetails(id, amount, status, date, description) {
+            document.getElementById("modalPaymentId").innerText = id;
+            document.getElementById("modalAmount").innerText = amount;
+            document.getElementById("modalStatus").innerText = status;
+            document.getElementById("modalDate").innerText = new Date(date * 1000).toLocaleString();
+            document.getElementById("modalDescription").innerText = description;
+            document.getElementById("paymentModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("paymentModal").classList.add("hidden");
+        }
+    </script>
 </body>
 <?php include 'admin_footer.php'; ?>
 </html>
