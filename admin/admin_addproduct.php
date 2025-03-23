@@ -1,11 +1,28 @@
 <?php
-// filepath: /d:/XAMPP/htdocs/capstone/admin/admin_addproduct.php
-session_start(); // Start the session to access session variables
-include '../authentication/db.php'; // Include your database connection
-include '../admin/adminnavbar.php'; // Include the navbar
+session_start();
+include '../authentication/db.php';
+include '../admin/adminnavbar.php';
 
-// Fetch products from the database
-$sql = "SELECT product_id, name, description, price, stock_quantity, image FROM product";
+// Get search query
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
+// Pagination settings
+$items_per_page = 5;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $items_per_page;
+
+// Modified query with search and pagination
+$search_condition = $search ? "WHERE name LIKE '%$search%' OR description LIKE '%$search%'" : "";
+$sql = "SELECT product_id, name, description, price, stock_quantity, image FROM product $search_condition";
+$count_sql = "SELECT COUNT(*) as total FROM product $search_condition";
+
+// Get total records for pagination
+$total_result = $conn->query($count_sql);
+$total_row = $total_result->fetch_assoc();
+$total_pages = ceil($total_row['total'] / $items_per_page);
+
+// Get products with limit
+$sql .= " LIMIT $offset, $items_per_page";
 $result = $conn->query($sql);
 ?>
 
@@ -40,8 +57,16 @@ $result = $conn->query($sql);
     <main class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Inventory Management</h1>
 
-        <!-- Add Product Button -->
-        <button class="btn btn-error text-white mb-6" onclick="openAddProductModal()">Add Product</button>
+        <!-- Search and Add Product -->
+        <div class="flex justify-between items-center mb-6">
+            <form class="w-1/3">
+                <input type="text" name="search" placeholder="Search products..." 
+                    value="<?php echo htmlspecialchars($search); ?>"
+                    class="input input-bordered w-full"
+                    onkeypress="if(event.keyCode==13) this.form.submit();">
+            </form>
+            <button class="btn btn-error text-white" onclick="openAddProductModal()">Add Product</button>
+        </div>
 
         <!-- Product List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -63,10 +88,22 @@ $result = $conn->query($sql);
                           </div>";
                 }
             } else {
-                echo "<p>No products found.</p>";
+                echo "<p class='col-span-3 text-center'>No products found.</p>";
             }
             ?>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($total_pages > 1): ?>
+        <div class="flex justify-center mt-8 space-x-2">
+            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                <a href="?page=<?php echo $i; ?><?php echo $search ? '&search='.urlencode($search) : ''; ?>" 
+                   class="btn btn-sm <?php echo ($page === $i) ? 'btn-error text-white' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
+            <?php endfor; ?>
+        </div>
+        <?php endif; ?>
     </main>
 
     <!-- Add Product Modal -->
