@@ -39,7 +39,7 @@ class PDF extends FPDF {
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(0, 10, 'ABA RACING ONLINE', 0, 1, 'C');
         $this->SetFont('Arial', '', 10);
-        $this->Cell(0, 5, 'Attendance Management System', 0, 1, 'C');
+        $this->Cell(0, 5, 'Attendance Report', 0, 1, 'C');
         $this->Cell(0, 5, '123 Racing Street, Metro Manila', 0, 1, 'C');
         $this->Cell(0, 5, 'Contact: (123) 456-7890', 0, 1, 'C');
         
