@@ -9,26 +9,25 @@ ini_set('display_errors', 1);
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
-    // Initialize arrays for all days of the month
-    $days_in_month = date('t');
-    $days = range(1, $days_in_month);
-    $hours = array_fill(0, $days_in_month, 0);
-
     // Get attendance data for chart
-    $chart_query = "SELECT DAY(date) as day, 
-                           total_hours
+    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
+                           total_hours,
+                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
+                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+                    ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Fill the hours array with actual data
+    $days = [];
+    $hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $day_index = intval($row['day']) - 1;
-        $hours[$day_index] = floatval($row['total_hours']);
+        $days[] = $row['day'];
+        $hours[] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -46,6 +45,24 @@ ini_set('display_errors', 1);
 
     // Get working days in current month
     $total_working_days = date('t'); // Gets number of days in current month
+
+    // Get detailed attendance records
+    $attendance_query = "SELECT 
+        DATE_FORMAT(date, '%d') as day,
+        DATE_FORMAT(date, '%W') as weekday,
+        TIME_FORMAT(check_in_time, '%h:%i %p') as check_in,
+        TIME_FORMAT(check_out_time, '%h:%i %p') as check_out,
+        total_hours,
+        overtime_hours
+    FROM attendance 
+    WHERE employee_id = ? 
+    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
+    ORDER BY date ASC";
+    
+    $stmt = $conn->prepare($attendance_query);
+    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->execute();
+    $attendance_records = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -106,6 +123,54 @@ ini_set('display_errors', 1);
                 </div>
             </div>
         </div>
+
+        <!-- Attendance Records Table -->
+        <div class="card bg-base-100 shadow-xl mt-6">
+            <div class="card-body">
+                <h2 class="card-title text-xl mb-4"><?php echo date('F Y'); ?> Attendance Record</h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th>Day</th>
+                                <th>Weekday</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Total Hours</th>
+                                <th>Overtime</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            // Initialize attendance data array
+                            $attendance_data = array_fill(1, $total_working_days, null);
+                            
+                            // Fill in actual attendance data
+                            while($record = $attendance_records->fetch_assoc()) {
+                                $day = intval($record['day']);
+                                $attendance_data[$day] = $record;
+                            }
+
+                            // Display all days
+                            for($day = 1; $day <= $total_working_days; $day++) {
+                                $date = date('Y-m-') . sprintf('%02d', $day);
+                                $weekday = date('l', strtotime($date));
+                                $record = $attendance_data[$day];
+                            ?>
+                                <tr class="<?php echo in_array($weekday, ['Saturday', 'Sunday']) ? 'text-gray-400' : ''; ?>">
+                                    <td><?php echo $day; ?></td>
+                                    <td><?php echo $weekday; ?></td>
+                                    <td><?php echo $record ? $record['check_in'] : '-'; ?></td>
+                                    <td><?php echo $record ? $record['check_out'] : '-'; ?></td>
+                                    <td><?php echo $record ? number_format($record['total_hours'], 1) : '-'; ?></td>
+                                    <td><?php echo $record ? number_format($record['overtime_hours'], 1) : '-'; ?></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -119,69 +184,37 @@ ini_set('display_errors', 1);
                 type: 'area',
                 toolbar: {
                     show: false
-                },
-                fontFamily: 'Poppins, sans-serif'
+                }
             },
             dataLabels: {
-                enabled: true,
-                formatter: function (val) {
-                    return val > 0 ? val.toFixed(1) : '';
-                }
+                enabled: false
             },
             stroke: {
-                curve: 'smooth',
-                width: 3,
-                colors: ['#ef4444']
-            },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.7,
-                    opacityTo: 0.3,
-                    stops: [0, 90, 100]
-                }
+                curve: 'smooth'
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
                 title: {
-                    text: 'Day of Month',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
-                },
-                tickAmount: 31,
-                labels: {
-                    rotateAlways: false,
-                    rotate: -45
+                    text: 'Day of Month'
                 }
             },
             yaxis: {
                 title: {
-                    text: 'Hours Worked',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
+                    text: 'Hours'
                 },
                 min: 0,
-                max: 12,
-                tickAmount: 6
+                max: 12
             },
-            markers: {
-                size: 4,
-                colors: ['#ef4444'],
-                strokeColors: '#fff',
-                strokeWidth: 2
+            title: {
+                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
+                align: 'left'
             },
             tooltip: {
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
-                },
-                theme: 'dark'
+                }
             }
         };
 
