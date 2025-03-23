@@ -87,7 +87,7 @@ ini_set('display_errors', 1);
         </div>
 
         <!-- Attendance Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Hours</div>
@@ -109,55 +109,6 @@ ini_set('display_errors', 1);
                     <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
                     <div class="stat-desc">This Month</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Attendance Records Table -->
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title mb-4">Attendance Records</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-zebra">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Check In</th>
-                                <th>Check Out</th>
-                                <th>Work Hours</th>
-                                <th>Overtime Hours</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $records_query = "SELECT 
-                                date,
-                                TIME_FORMAT(check_in_time, '%H:%i') as check_in,
-                                TIME_FORMAT(check_out_time, '%H:%i') as check_out,
-                                total_hours,
-                                overtime_hours
-                            FROM attendance 
-                            WHERE employee_id = ? 
-                            AND DATE_FORMAT(date, '%Y-%m') = ?
-                            ORDER BY date DESC";
-                            
-                            $stmt = $conn->prepare($records_query);
-                            $stmt->bind_param("is", $employee_id, $current_month);
-                            $stmt->execute();
-                            $records_result = $stmt->get_result();
-
-                            while($record = $records_result->fetch_assoc()) {
-                                echo "<tr>";
-                                echo "<td>" . date('M d, Y', strtotime($record['date'])) . "</td>";
-                                echo "<td>" . $record['check_in'] . "</td>";
-                                echo "<td>" . $record['check_out'] . "</td>";
-                                echo "<td>" . number_format($record['total_hours'], 1) . "</td>";
-                                echo "<td>" . number_format($record['overtime_hours'], 1) . "</td>";
-                                echo "</tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
