@@ -3,7 +3,7 @@ session_start();
 include 'adminnavbar.php';
 
 // PayMongo API Credentials
-$paymongo_secret_key = "sk_live_YOUR_SECRET_KEY"; // Replace with your real secret key
+$paymongo_secret_key = "sk_test_jMpSa2FZsGG3TWQo5TEsmc3K"; // Replace with your real secret key
 
 // API request to PayMongo to get payments
 $ch = curl_init();
