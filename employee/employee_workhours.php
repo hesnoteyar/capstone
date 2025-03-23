@@ -12,6 +12,7 @@ ini_set('display_errors', 1);
     // Get attendance data for chart
     $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
+                           overtime_hours,
                            TIME_FORMAT(check_in_time, '%H:%i') as check_in,
                            TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
@@ -24,10 +25,12 @@ ini_set('display_errors', 1);
     $chart_result = $stmt->get_result();
 
     $days = [];
-    $hours = [];
+    $work_hours = [];
+    $overtime_hours = [];
     while($row = $chart_result->fetch_assoc()) {
         $days[] = $row['day'];
-        $hours[] = floatval($row['total_hours']);
+        $work_hours[] = floatval($row['total_hours']);
+        $overtime_hours[] = floatval($row['overtime_hours']);
     }
 
     // Get monthly summary
@@ -111,7 +114,12 @@ ini_set('display_errors', 1);
         var options = {
             series: [{
                 name: 'Work Hours',
-                data: <?php echo json_encode($hours); ?>
+                data: <?php echo json_encode($work_hours); ?>,
+                color: '#3b82f6' // blue
+            }, {
+                name: 'Overtime Hours',
+                data: <?php echo json_encode($overtime_hours); ?>,
+                color: '#ef4444' // red
             }],
             chart: {
                 height: 350,
@@ -121,10 +129,21 @@ ini_set('display_errors', 1);
                 }
             },
             dataLabels: {
-                enabled: false
+                enabled: true,
+                formatter: function (val) {
+                    return val > 0 ? val.toFixed(1) : '';
+                }
             },
             stroke: {
-                curve: 'smooth'
+                curve: 'smooth',
+                width: 2
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    opacityFrom: 0.6,
+                    opacityTo: 0.1
+                }
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
@@ -141,14 +160,20 @@ ini_set('display_errors', 1);
             },
             title: {
                 text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'left'
+                align: 'center'
             },
             tooltip: {
+                shared: true,
+                intersect: false,
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
                 }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right'
             }
         };
 
