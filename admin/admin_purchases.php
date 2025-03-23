@@ -18,6 +18,13 @@ curl_close($ch);
 
 // Decode the JSON response
 $payments = json_decode($response, true);
+
+// Helper function to format PayMongo date
+function formatPayMongoDate($date_string) {
+    $date = new DateTime($date_string);
+    $date->setTimezone(new DateTimeZone('Asia/Manila')); // Set to Philippine timezone
+    return $date->format('F j, Y, g:i A');
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,13 +76,13 @@ $payments = json_decode($response, true);
                                     }
                                     ?>
                                 </td>
-                                <td><?= date("F j, Y, g:i a", strtotime($payment['attributes']['created_at'])); ?></td>
+                                <td><?= formatPayMongoDate($payment['attributes']['created_at']); ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-error" onclick='viewDetails(
                                         "<?= htmlspecialchars($payment['id'], ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars('₱' . number_format($payment['attributes']['amount'] / 100, 2), ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars($payment['attributes']['status'], ENT_QUOTES); ?>",
-                                        "<?= htmlspecialchars(date("F j, Y, g:i a", strtotime($payment['attributes']['created_at'])), ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars(formatPayMongoDate($payment['attributes']['created_at']), ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars($payment['attributes']['description'] ?? 'N/A', ENT_QUOTES); ?>"
                                     )'>
                                         View Details
