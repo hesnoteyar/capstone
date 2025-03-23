@@ -72,11 +72,11 @@ $payments = json_decode($response, true);
                                 <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-error" onclick="viewDetails(
-                                        '<?= $payment['id']; ?>',
-                                        '₱<?= number_format($payment['attributes']['amount'] / 100, 2); ?>',
-                                        '<?= $payment['attributes']['status']; ?>',
-                                        '<?= $payment['attributes']['created_at']; ?>',
-                                        '<?= $payment['attributes']['description'] ?? "N/A"; ?>'
+                                        <?php echo json_encode($payment['id']); ?>,
+                                        <?php echo json_encode('₱' . number_format($payment['attributes']['amount'] / 100, 2)); ?>,
+                                        <?php echo json_encode($payment['attributes']['status']); ?>,
+                                        <?php echo json_encode(date('Y-m-d H:i:s', strtotime($payment['attributes']['created_at']))); ?>,
+                                        <?php echo json_encode($payment['attributes']['description'] ?? 'N/A'); ?>
                                     )">
                                         View Details
                                     </button>
@@ -110,23 +110,42 @@ $payments = json_decode($response, true);
 
     <script>
         function viewDetails(id, amount, status, date, description) {
-            document.getElementById("modalPaymentId").textContent = id;
-            document.getElementById("modalAmount").textContent = amount;
-            document.getElementById("modalStatus").textContent = status;
-            document.getElementById("modalDate").textContent = date;
-            document.getElementById("modalDescription").textContent = description;
-            document.getElementById("paymentModal").style.display = "flex";
+            console.log('Opening modal with:', { id, amount, status, date, description }); // Debug log
+            try {
+                document.getElementById("modalPaymentId").textContent = id;
+                document.getElementById("modalAmount").textContent = amount;
+                document.getElementById("modalStatus").textContent = status;
+                document.getElementById("modalDate").textContent = date;
+                document.getElementById("modalDescription").textContent = description;
+                document.getElementById("paymentModal").style.display = "flex";
+            } catch (error) {
+                console.error('Error in viewDetails:', error);
+            }
         }
 
         function closeModal() {
-            document.getElementById("paymentModal").style.display = "none";
+            try {
+                document.getElementById("paymentModal").style.display = "none";
+            } catch (error) {
+                console.error('Error in closeModal:', error);
+            }
         }
 
-        // Close modal when clicking outside
-        document.getElementById("paymentModal").addEventListener("click", function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+        // Initialize modal events when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Close modal when clicking outside
+            document.getElementById("paymentModal").addEventListener("click", function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+
+            // Close modal with escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
         });
     </script>
 </body>
