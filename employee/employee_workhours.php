@@ -10,21 +10,29 @@ ini_set('display_errors', 1);
     $current_month = date('Y-m');
 
     // Get attendance data for chart with explicit date range
-    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
+    $chart_query = "SELECT 
+                           DATE_FORMAT(date, '%d') as day, 
                            total_hours,
                            overtime_hours
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ? COLLATE utf8mb4_unicode_ci
+                    AND DATE(date) >= DATE(CONCAT(?, '-01'))
+                    AND DATE(date) <= LAST_DAY(DATE(CONCAT(?, '-01')))
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->bind_param("iss", $employee_id, $current_month, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Debug output
-    echo "<!-- Current Month: " . $current_month . " -->";
-    echo "<!-- Employee ID: " . $employee_id . " -->";
+    // Add debugging to see if we're getting any results
+    $debug_rows = [];
+    while($row = $chart_result->fetch_assoc()) {
+        $debug_rows[] = $row;
+    }
+    echo "<!-- Debug SQL Results: " . json_encode($debug_rows) . " -->";
+    
+    // Reset result pointer
+    $chart_result->data_seek(0);
 
     // Initialize arrays for all days of the month
     $days_in_month = date('t');
@@ -51,9 +59,10 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ? COLLATE utf8mb4_unicode_ci";
+                    AND DATE(date) >= DATE(CONCAT(?, '-01'))
+                    AND DATE(date) <= LAST_DAY(DATE(CONCAT(?, '-01')))";
     $stmt = $conn->prepare($summary_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->bind_param("iss", $employee_id, $current_month, $current_month);
     $stmt->execute();
     $summary = $stmt->get_result()->fetch_assoc();
 
@@ -111,7 +120,7 @@ ini_set('display_errors', 1);
                 </div>
             </div>
 
-            <div class="stats shadow">
+            <div class="stats shadow"> 
                 <div class="stat">
                     <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
