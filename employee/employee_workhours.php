@@ -117,7 +117,7 @@ ini_set('display_errors', 1);
         
         <!-- Download Button -->
         <div class="flex justify-end mt-4">
-            <a href="download_attendance.php" class="btn btn-primary">
+            <a href="download_attendance.php" class="btn btn-error">
                 Download Summary PDF
             </a>
         </div>
