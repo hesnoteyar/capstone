@@ -68,6 +68,7 @@
                 <li><a href="..\admin\admin_dashboard.php">Dashboard</a></li>
                 <li class="menu-title"><span style="color: red;">Product</span></li>
                 <li><a href="..\admin\admin_addproduct.php">Inventory</a></li>
+                <li><a href="..\admin\admin_purchases.php">Purchases</a></li>
                 <li class="menu-title"><span style="color: red;">Employee</span></li>
                 <li><a href="..\admin\admin_manageemployee.php">Manage Employees</a></li>
                 <li><a href="..\admin\admin_addemployee.php">Add New Employee</a></li>
