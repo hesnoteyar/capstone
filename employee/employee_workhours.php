@@ -9,48 +9,29 @@ ini_set('display_errors', 1);
     $employee_id = $_SESSION['id'];
     $current_month = date('Y-m');
 
-    // Get attendance data for chart with explicit date range
-    $chart_query = "SELECT 
-                           DATE_FORMAT(date, '%d') as day, 
+    // Get attendance data for chart
+    $chart_query = "SELECT DATE_FORMAT(date, '%d') as day, 
                            total_hours,
-                           overtime_hours
+                           overtime_hours,
+                           TIME_FORMAT(check_in_time, '%H:%i') as check_in,
+                           TIME_FORMAT(check_out_time, '%H:%i') as check_out
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE(date) >= DATE(CONCAT(?, '-01'))
-                    AND DATE(date) <= LAST_DAY(DATE(CONCAT(?, '-01')))
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("iss", $employee_id, $current_month, $current_month);
+    $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Add debugging to see if we're getting any results
-    $debug_rows = [];
+    $days = [];
+    $work_hours = [];
+    $overtime_hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $debug_rows[] = $row;
+        $days[] = $row['day'];
+        $work_hours[] = floatval($row['total_hours']);
+        $overtime_hours[] = floatval($row['overtime_hours']);
     }
-    echo "<!-- Debug SQL Results: " . json_encode($debug_rows) . " -->";
-    
-    // Reset result pointer
-    $chart_result->data_seek(0);
-
-    // Initialize arrays for all days of the month
-    $days_in_month = date('t');
-    $days = range(1, $days_in_month);
-    $work_hours = array_fill(0, $days_in_month, 0);
-    $overtime_hours = array_fill(0, $days_in_month, 0);
-
-    // Fill in actual attendance data and add debug output
-    while($row = $chart_result->fetch_assoc()) {
-        $day_index = intval($row['day']) - 1;
-        $work_hours[$day_index] = floatval($row['total_hours']);
-        $overtime_hours[$day_index] = floatval($row['overtime_hours']);
-        echo "<!-- Day: " . $row['day'] . ", Hours: " . $row['total_hours'] . ", OT: " . $row['overtime_hours'] . " -->";
-    }
-
-    // Debug output for final arrays
-    echo "<!-- Work Hours: " . json_encode($work_hours) . " -->";
-    echo "<!-- Overtime Hours: " . json_encode($overtime_hours) . " -->";
 
     // Get monthly summary
     $summary_query = "SELECT 
@@ -59,10 +40,9 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE(date) >= DATE(CONCAT(?, '-01'))
-                    AND DATE(date) <= LAST_DAY(DATE(CONCAT(?, '-01')))";
+                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
     $stmt = $conn->prepare($summary_query);
-    $stmt->bind_param("iss", $employee_id, $current_month, $current_month);
+    $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
     $summary = $stmt->get_result()->fetch_assoc();
 
@@ -120,7 +100,7 @@ ini_set('display_errors', 1);
                 </div>
             </div>
 
-            <div class="stats shadow"> 
+            <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
@@ -131,9 +111,6 @@ ini_set('display_errors', 1);
     </div>
 
     <script>
-        console.log('Work Hours:', <?php echo json_encode($work_hours); ?>);
-        console.log('Overtime Hours:', <?php echo json_encode($overtime_hours); ?>);
-        
         var options = {
             series: [{
                 name: 'Work Hours',
@@ -172,10 +149,6 @@ ini_set('display_errors', 1);
                 categories: <?php echo json_encode($days); ?>,
                 title: {
                     text: 'Day of Month'
-                },
-                tickAmount: 31,
-                labels: {
-                    rotate: 0
                 }
             },
             yaxis: {
