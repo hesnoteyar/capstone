@@ -23,15 +23,11 @@ ini_set('display_errors', 1);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    // Initialize arrays for all days of the month
-    $days_in_month = date('t');
-    $days = range(1, $days_in_month);
-    $hours = array_fill(0, $days_in_month, 0);
-
-    // Fill in actual attendance data
+    $days = [];
+    $hours = [];
     while($row = $chart_result->fetch_assoc()) {
-        $day_index = intval($row['day']) - 1;
-        $hours[$day_index] = floatval($row['total_hours']);
+        $days[] = $row['day'];
+        $hours[] = floatval($row['total_hours']);
     }
 
     // Get monthly summary
@@ -125,24 +121,15 @@ ini_set('display_errors', 1);
                 }
             },
             dataLabels: {
-                enabled: true,
-                formatter: function (val) {
-                    return val > 0 ? val.toFixed(1) : '';
-                }
+                enabled: false
             },
             stroke: {
-                curve: 'smooth',
-                width: 3,
-                colors: ['#ef4444']
+                curve: 'smooth'
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
                 title: {
                     text: 'Day of Month'
-                },
-                tickAmount: 31,
-                labels: {
-                    rotate: 0
                 }
             },
             yaxis: {
