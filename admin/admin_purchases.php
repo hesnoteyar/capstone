@@ -92,33 +92,42 @@ $payments = json_decode($response, true);
     </div>
 
     <!-- Modal -->
-    <div id="paymentModal" class="modal hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-        <div class="bg-white rounded-lg p-6 w-96">
+    <div id="paymentModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+        <div class="modal-box bg-white rounded-lg p-6 w-96 relative">
             <h2 class="text-xl font-bold mb-4">Payment Details</h2>
-            <p><strong>Payment ID:</strong> <span id="modalPaymentId"></span></p>
-            <p><strong>Amount:</strong> <span id="modalAmount"></span></p>
-            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
-            <p><strong>Created At:</strong> <span id="modalDate"></span></p>
-            <p><strong>Description:</strong> <span id="modalDescription"></span></p>
+            <div class="space-y-2">
+                <p><strong>Payment ID:</strong> <span id="modalPaymentId"></span></p>
+                <p><strong>Amount:</strong> <span id="modalAmount"></span></p>
+                <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+                <p><strong>Created At:</strong> <span id="modalDate"></span></p>
+                <p><strong>Description:</strong> <span id="modalDescription"></span></p>
+            </div>
             <div class="mt-4 text-right">
-                <button class="btn btn-error" onclick="closeModal()">Close</button>
+                <button class="btn btn-sm btn-error" onclick="closeModal()">Close</button>
             </div>
         </div>
     </div>
 
     <script>
         function viewDetails(id, amount, status, date, description) {
-            document.getElementById("modalPaymentId").innerText = id;
-            document.getElementById("modalAmount").innerText = amount;
-            document.getElementById("modalStatus").innerText = status;
-            document.getElementById("modalDate").innerText = new Date(date * 1000).toLocaleString();
-            document.getElementById("modalDescription").innerText = description;
-            document.getElementById("paymentModal").classList.remove("hidden");
+            document.getElementById("modalPaymentId").textContent = id;
+            document.getElementById("modalAmount").textContent = amount;
+            document.getElementById("modalStatus").textContent = status;
+            document.getElementById("modalDate").textContent = date;
+            document.getElementById("modalDescription").textContent = description;
+            document.getElementById("paymentModal").style.display = "flex";
         }
 
         function closeModal() {
-            document.getElementById("paymentModal").classList.add("hidden");
+            document.getElementById("paymentModal").style.display = "none";
         }
+
+        // Close modal when clicking outside
+        document.getElementById("paymentModal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 <?php include 'admin_footer.php'; ?>
