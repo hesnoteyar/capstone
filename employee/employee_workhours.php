@@ -89,7 +89,7 @@ ini_set('display_errors', 1);
         </div>
 
         <!-- Attendance Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div class="stats shadow">
                 <div class="stat">
                     <div class="stat-title">Total Hours</div>
@@ -100,7 +100,6 @@ ini_set('display_errors', 1);
 
             <div class="stats shadow">
                 <div class="stat">
-                    <div class="stat-title">Present Days</div>
                     <div class="stat-value"><?php echo $summary['present_days'] ?? 0; ?></div>
                     <div class="stat-desc">Out of <?php echo $total_working_days; ?> Days</div>
                 </div>
@@ -113,6 +112,16 @@ ini_set('display_errors', 1);
                     <div class="stat-desc">This Month</div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex justify-end mt-4 gap-2">
+            <a href="../verify_otp.php" class="btn btn-primary">
+                Verify Now
+            </a>
+            <a href="download_attendance.php" class="btn btn-error">
+                Download Attendance Report
+            </a>
         </div>
     </div>
 
