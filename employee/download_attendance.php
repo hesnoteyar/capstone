@@ -35,57 +35,105 @@ $result = $stmt->get_result();
 // Create PDF
 class PDF extends FPDF {
     function Header() {
-        $this->SetFont('Arial', 'B', 15);
-        $this->Cell(0, 10, 'Monthly Attendance Report', 0, 1, 'C');
+        // Company Logo & Name
+        $this->SetFont('Arial', 'B', 18);
+        $this->Cell(0, 10, 'ABA RACING ONLINE', 0, 1, 'C');
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(0, 5, 'Attendance Management System', 0, 1, 'C');
+        $this->Cell(0, 5, '123 Racing Street, Metro Manila', 0, 1, 'C');
+        $this->Cell(0, 5, 'Contact: (123) 456-7890', 0, 1, 'C');
+        
+        // Report Title
         $this->Ln(10);
+        $this->SetFont('Arial', 'B', 14);
+        $this->Cell(0, 10, 'MONTHLY ATTENDANCE REPORT', 0, 1, 'C');
+        $this->Line(10, $this->GetY(), 200, $this->GetY());
+        $this->Ln(10);
+    }
+    
+    function Footer() {
+        $this->SetY(-15);
+        $this->SetFont('Arial', 'I', 8);
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . '/{nb}', 0, 0, 'C');
     }
 }
 
 $pdf = new PDF();
+$pdf->AliasNbPages(); // For page numbering
 $pdf->AddPage();
 
 // Employee Info
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Employee: ' . $emp_result['firstName'] . ' ' . 
+$pdf->SetFont('Arial', 'B', 11);
+$pdf->Cell(30, 7, 'Employee:', 0);
+$pdf->SetFont('Arial', '', 11);
+$pdf->Cell(0, 7, $emp_result['firstName'] . ' ' . 
     ($emp_result['middleName'] ? $emp_result['middleName'] . ' ' : '') . 
     $emp_result['lastName'], 0, 1);
-$pdf->Cell(0, 10, 'Month: ' . date('F Y'), 0, 1);
-$pdf->Ln(10);
 
-// Table Header
+$pdf->SetFont('Arial', 'B', 11);
+$pdf->Cell(30, 7, 'Period:', 0);
+$pdf->SetFont('Arial', '', 11);
+$pdf->Cell(0, 7, date('F Y'), 0, 1);
+$pdf->Ln(5);
+
+// Table Header with improved styling
+$pdf->SetFillColor(240, 240, 240);
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(40, 10, 'Date', 1);
-$pdf->Cell(30, 10, 'Check In', 1);
-$pdf->Cell(30, 10, 'Check Out', 1);
-$pdf->Cell(45, 10, 'Regular Hours', 1);
-$pdf->Cell(45, 10, 'Overtime Hours', 1);
-$pdf->Ln();
+$pdf->Cell(45, 8, 'Date', 1, 0, 'C', true);
+$pdf->Cell(35, 8, 'Time In', 1, 0, 'C', true);
+$pdf->Cell(35, 8, 'Time Out', 1, 0, 'C', true);
+$pdf->Cell(35, 8, 'Regular Hours', 1, 0, 'C', true);
+$pdf->Cell(35, 8, 'Overtime', 1, 1, 'C', true);
 
-// Table Content
+// Table Content with improved formatting
 $pdf->SetFont('Arial', '', 10);
 $total_hours = 0;
 $total_overtime = 0;
 
 while($row = $result->fetch_assoc()) {
-    $pdf->Cell(40, 10, date('d M Y', strtotime($row['date'])), 1);
-    $pdf->Cell(30, 10, $row['check_in'], 1);
-    $pdf->Cell(30, 10, $row['check_out'], 1);
-    $pdf->Cell(45, 10, number_format($row['total_hours'], 1), 1);
-    $pdf->Cell(45, 10, number_format($row['overtime_hours'], 1), 1);
-    $pdf->Ln();
+    // Format date to standard format
+    $formatted_date = date('F d, Y', strtotime($row['date']));
+    
+    // Convert time to 12-hour format
+    $time_in = date('h:i A', strtotime($row['check_in']));
+    $time_out = date('h:i A', strtotime($row['check_out']));
+    
+    $pdf->Cell(45, 7, $formatted_date, 1, 0, 'L');
+    $pdf->Cell(35, 7, $time_in, 1, 0, 'C');
+    $pdf->Cell(35, 7, $time_out, 1, 0, 'C');
+    $pdf->Cell(35, 7, number_format($row['total_hours'], 1), 1, 0, 'C');
+    $pdf->Cell(35, 7, number_format($row['overtime_hours'], 1), 1, 1, 'C');
     
     $total_hours += $row['total_hours'];
     $total_overtime += $row['overtime_hours'];
 }
 
-// Summary
+// Summary with improved styling
 $pdf->Ln(10);
 $pdf->SetFont('Arial', 'B', 11);
-$pdf->Cell(0, 10, 'Monthly Summary:', 0, 1);
+$pdf->Cell(0, 7, 'MONTHLY SUMMARY', 0, 1, 'L');
+$pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
+$pdf->Ln(5);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(50, 7, 'Total Regular Hours:', 0);
 $pdf->SetFont('Arial', '', 10);
-$pdf->Cell(0, 10, 'Total Regular Hours: ' . number_format($total_hours, 1), 0, 1);
-$pdf->Cell(0, 10, 'Total Overtime Hours: ' . number_format($total_overtime, 1), 0, 1);
-$pdf->Cell(0, 10, 'Total Working Hours: ' . number_format($total_hours + $total_overtime, 1), 0, 1);
+$pdf->Cell(0, 7, number_format($total_hours, 1), 0, 1);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(50, 7, 'Total Overtime Hours:', 0);
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(0, 7, number_format($total_overtime, 1), 0, 1);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell(50, 7, 'Total Working Hours:', 0);
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(0, 7, number_format($total_hours + $total_overtime, 1), 0, 1);
+
+// Certification
+$pdf->Ln(15);
+$pdf->SetFont('Arial', 'I', 10);
+$pdf->Cell(0, 7, 'This is a computer-generated document. No signature is required.', 0, 1, 'C');
 
 // Output PDF
 $pdf->Output('D', 'Attendance_Summary_' . date('F_Y') . '.pdf');
