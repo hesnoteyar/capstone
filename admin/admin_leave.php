@@ -33,11 +33,11 @@ unset($_SESSION['error_message']);
         }
         main {
             flex: 1;
+            margin-bottom: 60px; /* Add space for footer */
         }
         footer {
-            position: fixed;
-            bottom: 0;
             width: 100%;
+            background-color: var(--base-100);
         }
     </style>
 
