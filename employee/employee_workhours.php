@@ -21,10 +21,11 @@ ini_set('display_errors', 1);
                            overtime_hours
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ?
+                    AND DATE(date) >= DATE(?) AND DATE(date) < DATE(?) + INTERVAL 1 MONTH
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
+    $first_day = $current_month . '-01';
+    $stmt->bind_param("iss", $employee_id, $first_day, $first_day);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
@@ -42,9 +43,9 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+                    AND DATE(date) >= DATE(?) AND DATE(date) < DATE(?) + INTERVAL 1 MONTH";
     $stmt = $conn->prepare($summary_query);
-    $stmt->bind_param("is", $employee_id, $current_month);
+    $stmt->bind_param("iss", $employee_id, $first_day, $first_day);
     $stmt->execute();
     $summary = $stmt->get_result()->fetch_assoc();
 
