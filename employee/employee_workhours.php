@@ -15,7 +15,7 @@ ini_set('display_errors', 1);
                            overtime_hours
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') = ?
+                    AND DATE_FORMAT(date, '%Y-%m') = ? COLLATE utf8mb4_unicode_ci
                     ORDER BY date ASC";
     $stmt = $conn->prepare($chart_query);
     $stmt->bind_param("is", $employee_id, $current_month);
@@ -51,7 +51,7 @@ ini_set('display_errors', 1);
                         SUM(overtime_hours) as total_overtime
                     FROM attendance 
                     WHERE employee_id = ? 
-                    AND DATE_FORMAT(date, '%Y-%m') COLLATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci";
+                    AND DATE_FORMAT(date, '%Y-%m') = ? COLLATE utf8mb4_unicode_ci";
     $stmt = $conn->prepare($summary_query);
     $stmt->bind_param("is", $employee_id, $current_month);
     $stmt->execute();
