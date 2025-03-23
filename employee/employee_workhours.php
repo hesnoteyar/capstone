@@ -24,13 +24,17 @@ ini_set('display_errors', 1);
     $stmt->execute();
     $chart_result = $stmt->get_result();
 
-    $days = [];
-    $work_hours = [];
-    $overtime_hours = [];
+    // Initialize arrays for all days of the month
+    $days_in_month = date('t');
+    $days = range(1, $days_in_month);
+    $work_hours = array_fill(0, $days_in_month, 0);
+    $overtime_hours = array_fill(0, $days_in_month, 0);
+
+    // Fill in actual attendance data
     while($row = $chart_result->fetch_assoc()) {
-        $days[] = $row['day'];
-        $work_hours[] = floatval($row['total_hours']);
-        $overtime_hours[] = floatval($row['overtime_hours']);
+        $day_index = intval($row['day']) - 1;
+        $work_hours[$day_index] = floatval($row['total_hours']);
+        $overtime_hours[$day_index] = floatval($row['overtime_hours']);
     }
 
     // Get monthly summary
@@ -149,6 +153,10 @@ ini_set('display_errors', 1);
                 categories: <?php echo json_encode($days); ?>,
                 title: {
                     text: 'Day of Month'
+                },
+                tickAmount: 31,
+                labels: {
+                    rotate: 0
                 }
             },
             yaxis: {
