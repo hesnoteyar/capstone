@@ -286,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profileImage'])) {
                                 <?php echo $isActive ? 'Verified Account' : 'Unverified Account'; ?>
                             </div>
                             <?php if (!$isActive): ?>
-                                <a href="../authentication/otp_input.php" class="btn btn-xs btn-error">Verify Now</a>
+                                <a href="../authentication/generate_otp.php" class="btn btn-xs btn-error">Verify Now</a>
                             <?php endif; ?>
                         </div>
                     </div>
