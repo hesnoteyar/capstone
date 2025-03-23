@@ -10,7 +10,7 @@ $employee_id = $_SESSION['id'];
 $current_month = date('Y-m');
 
 // Get employee details
-$emp_query = "SELECT firstName, middleName, lastName FROM employee WHERE employee_id = ?";
+$emp_query = "SELECT first_name, middle_name, last_name FROM employee WHERE id = ?";
 $stmt = $conn->prepare($emp_query);
 $stmt->bind_param("i", $employee_id);
 $stmt->execute();
@@ -25,7 +25,7 @@ $query = "SELECT
     overtime_hours
     FROM attendance 
     WHERE employee_id = ? 
-    AND DATE_FORMAT(date, '%Y-%m') = ?
+    AND DATE_FORMAT(date, '%Y-%m') = ?LATE utf8mb4_general_ci = ? COLLATE utf8mb4_general_ci
     ORDER BY date ASC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("is", $employee_id, $current_month);
@@ -46,7 +46,9 @@ $pdf->AddPage();
 
 // Employee Info
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Employee: ' . $emp_result['first_name'] . ' ' . $emp_result['last_name'], 0, 1);
+$pdf->Cell(0, 10, 'Employee: ' . $emp_result['first_name'] . ' ' . 
+    ($emp_result['middle_name'] ? $emp_result['middle_name'] . ' ' : '') . 
+    $emp_result['last_name'], 0, 1);
 $pdf->Cell(0, 10, 'Month: ' . date('F Y'), 0, 1);
 $pdf->Ln(10);
 
