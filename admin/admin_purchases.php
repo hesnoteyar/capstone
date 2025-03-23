@@ -69,13 +69,13 @@ $payments = json_decode($response, true);
                                     }
                                     ?>
                                 </td>
-                                <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
+                                <td><?= date("F j, Y, g:i a", strtotime($payment['attributes']['created_at'])); ?></td>
                                 <td>
                                     <button class="btn btn-sm btn-error" onclick='viewDetails(
                                         "<?= htmlspecialchars($payment['id'], ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars('₱' . number_format($payment['attributes']['amount'] / 100, 2), ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars($payment['attributes']['status'], ENT_QUOTES); ?>",
-                                        "<?= htmlspecialchars(date('Y-m-d H:i:s', strtotime($payment['attributes']['created_at'])), ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars(date("F j, Y, g:i a", strtotime($payment['attributes']['created_at'])), ENT_QUOTES); ?>",
                                         "<?= htmlspecialchars($payment['attributes']['description'] ?? 'N/A', ENT_QUOTES); ?>"
                                     )'>
                                         View Details
