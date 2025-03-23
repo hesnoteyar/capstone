@@ -71,7 +71,7 @@ $payments = json_decode($response, true);
                                 </td>
                                 <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-primary" onclick="viewDetails(
+                                    <button class="btn btn-sm btn-error" onclick="viewDetails(
                                         '<?= $payment['id']; ?>',
                                         '₱<?= number_format($payment['attributes']['amount'] / 100, 2); ?>',
                                         '<?= $payment['attributes']['status']; ?>',
