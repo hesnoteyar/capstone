@@ -71,13 +71,13 @@ $payments = json_decode($response, true);
                                 </td>
                                 <td><?= date("Y-m-d H:i:s", strtotime($payment['attributes']['created_at'])); ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-error" onclick="viewDetails(
-                                        <?php echo json_encode($payment['id']); ?>,
-                                        <?php echo json_encode('₱' . number_format($payment['attributes']['amount'] / 100, 2)); ?>,
-                                        <?php echo json_encode($payment['attributes']['status']); ?>,
-                                        <?php echo json_encode(date('Y-m-d H:i:s', strtotime($payment['attributes']['created_at']))); ?>,
-                                        <?php echo json_encode($payment['attributes']['description'] ?? 'N/A'); ?>
-                                    )">
+                                    <button class="btn btn-sm btn-error" onclick='viewDetails(
+                                        "<?= htmlspecialchars($payment['id'], ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars('₱' . number_format($payment['attributes']['amount'] / 100, 2), ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars($payment['attributes']['status'], ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars(date('Y-m-d H:i:s', strtotime($payment['attributes']['created_at'])), ENT_QUOTES); ?>",
+                                        "<?= htmlspecialchars($payment['attributes']['description'] ?? 'N/A', ENT_QUOTES); ?>"
+                                    )'>
                                         View Details
                                     </button>
                                 </td>
