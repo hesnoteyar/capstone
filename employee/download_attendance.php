@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
@@ -94,18 +95,22 @@ while($row = $result->fetch_assoc()) {
     // Format date to standard format
     $formatted_date = date('F d, Y', strtotime($row['date']));
     
-    // Convert time to 12-hour format
-    $time_in = date('h:i A', strtotime($row['check_in']));
-    $time_out = date('h:i A', strtotime($row['check_out']));
+    // Convert time to 12-hour format with null checks
+    $time_in = !empty($row['check_in']) ? date('h:i A', strtotime($row['check_in'])) : 'N/A';
+    $time_out = !empty($row['check_out']) ? date('h:i A', strtotime($row['check_out'])) : 'N/A';
+    
+    // Handle null values for hours
+    $total_hrs = !is_null($row['total_hours']) ? number_format($row['total_hours'], 1) : '0.0';
+    $overtime_hrs = !is_null($row['overtime_hours']) ? number_format($row['overtime_hours'], 1) : '0.0';
     
     $pdf->Cell(45, 7, $formatted_date, 1, 0, 'L');
     $pdf->Cell(35, 7, $time_in, 1, 0, 'C');
     $pdf->Cell(35, 7, $time_out, 1, 0, 'C');
-    $pdf->Cell(35, 7, number_format($row['total_hours'], 1), 1, 0, 'C');
-    $pdf->Cell(35, 7, number_format($row['overtime_hours'], 1), 1, 1, 'C');
+    $pdf->Cell(35, 7, $total_hrs, 1, 0, 'C');
+    $pdf->Cell(35, 7, $overtime_hrs, 1, 1, 'C');
     
-    $total_hours += $row['total_hours'];
-    $total_overtime += $row['overtime_hours'];
+    $total_hours += !is_null($row['total_hours']) ? $row['total_hours'] : 0;
+    $total_overtime += !is_null($row['overtime_hours']) ? $row['overtime_hours'] : 0;
 }
 
 // Summary with improved styling
@@ -135,5 +140,7 @@ $pdf->Ln(15);
 $pdf->SetFont('Arial', 'I', 10);
 $pdf->Cell(0, 7, 'This is a computer-generated document. No signature is required.', 0, 1, 'C');
 
-// Output PDF
+// Before outputting PDF
+ob_clean(); // Clean output buffer
 $pdf->Output('D', 'Attendance_Summary_' . date('F_Y') . '.pdf');
+exit(); // Ensure no additional output
