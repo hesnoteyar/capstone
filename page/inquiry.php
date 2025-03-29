@@ -260,7 +260,7 @@ $result = $stmt->get_result();
                 <div class="card bg-white shadow-xl border border-gray-100" id="form">
                     <div class="card-body">
                         <h2 class="card-title text-2xl mb-6 text-red-600">Service Inquiry</h2>
-                        <form action="submit_inquiry.php" method="POST" class="space-y-6">
+                        <form action="submit_inquiry.php" method="POST" enctype="multipart/form-data" class="space-y-6">
                             <!-- Two Column Form Layout -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="form-control">
@@ -319,44 +319,44 @@ $result = $stmt->get_result();
                             <!-- Contact Info -->
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text">Contact Details</span>
-                                </label>
+                                    <span class="label-text">Contact Details</span>l)</span>
+                                </label>n class="label-text-alt text-gray-500">Max 5MB per file</span>
                                 <input type="tel" name="contact" placeholder="Contact Number" 
                                     class="input input-bordered mb-2" required>
-                                <input type="date" name="preferred_date" 
+                                <input type="date" name="preferred_date"  file-input-error w-full" 
                                     class="input input-bordered" required>
-                            </div>
-
-                            <div class="mt-6">
+                            </div>  multiple />
+                                <label class="label">
+                            <div class="mt-6">s="label-text-alt text-gray-500">You can upload multiple photos of your motorcycle or the specific issues</span>
                                 <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
                                     Submit Service Request
                                 </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>
+                            </div>ontact Info -->
+                        </form>v class="form-control">
+                    </div>      <label class="label">
+                </div>              <span class="label-text">Contact Details</span>
+            </div>              </label>
+        </div>                  <input type="tel" name="contact" placeholder="Contact Number" 
+    </main>                         class="input input-bordered mb-2" required>
+                                <input type="date" name="preferred_date" 
+    <script>                        class="input input-bordered" required>
         // Replace existing alert banner animation with this
         const alertBanner = document.getElementById('alert-banner');
-        if (alertBanner) {
-            gsap.fromTo(alertBanner, 
-                {
-                    opacity: 0,
-                    x: 100
-                },
-                {
+        if (alertBanner) {  <div class="mt-6">
+            gsap.fromTo(alertBanner, on class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
+                {                   Submit Service Request
+                    opacity: 0, </button>
+                    x: 100  </div>
+                },      </form>
+                {   </div>
                     duration: 0.5,
                     opacity: 1,
                     x: 0,
                     ease: "back.out(1.7)"
                 }
             );
-
-            // Auto dismiss after 5 seconds
+        // Replace existing alert banner animation with this
+            // Auto dismiss after 5 secondsmentById('alert-banner');
             setTimeout(() => {
                 gsap.to(alertBanner, {
                     duration: 0.5,
@@ -364,64 +364,79 @@ $result = $stmt->get_result();
                     x: 100,
                     ease: "power2.in",
                     onComplete: () => alertBanner.remove()
-                });
-            }, 5000);
-        }
-
+                }); duration: 0.5,
+            }, 5000);pacity: 1,
+        }           x: 0,
+                    ease: "back.out(1.7)"
         // Enhanced GSAP animations
         gsap.from("#hero", {
             duration: 1.2,
-            y: -50,
-            opacity: 0,
-            ease: "power3.out"
-        });
-
+            y: -50, dismiss after 5 seconds
+            opacity: 0,() => {
+            ease: "power3.out"anner, {
+        });         duration: 0.5,
+                    opacity: 0,
         gsap.from("#services", {
-            duration: 1,
-            x: -50,
+            duration: 1,: "power2.in",
+            x: -50, onComplete: () => alertBanner.remove()
             opacity: 0,
             delay: 0.3,
             ease: "back.out(1.7)"
         });
-
+        // Enhanced GSAP animations
         gsap.from("#form", {
-            duration: 1,
-            x: 50,
+            duration: 1,2,
+            x: 50,,
             opacity: 0,
-            delay: 0.3,
+            delay: 0.3,r3.out"
             ease: "back.out(1.7)"
         });
-
+        gsap.from("#services", {
         // Hover animations for service cards
         const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             card.addEventListener('mouseenter', () => {
-                gsap.to(card, {
+                gsap.to(card, {)"
                     duration: 0.3,
                     y: -5,
                     scale: 1.02,
                     ease: "power2.out"
                 });
-            });
-
+            });city: 0,
+            delay: 0.3,
             card.addEventListener('mouseleave', () => {
                 gsap.to(card, {
                     duration: 0.3,
-                    y: 0,
-                    scale: 1,
+                    y: 0,ns for service cards
+                    scale: 1,t.querySelectorAll('.card');
                     ease: "power2.out"
-                });
-            });
-        });
-
+                });dEventListener('mouseenter', () => {
+            }); gsap.to(card, {
+        });         duration: 0.3,
+                    y: -5,
         // Add hover effect for service items
         document.querySelectorAll('.menu li a').forEach(item => {
             item.addEventListener('mouseenter', () => {
                 gsap.to(item, {
                     duration: 0.2,
-                    paddingLeft: '1.5rem',
+                    paddingLeft: '1.5rem',ave', () => {
                     ease: "power2.out"
-                });
+                }); duration: 0.3,
+            });     y: 0,
+                    scale: 1,
+            item.addEventListener('mouseleave', () => {
+                gsap.to(item, {
+                    duration: 0.2,
+                    paddingLeft: '1rem',
+                    ease: "power2.out"
+                });r effect for service items
+            });t.querySelectorAll('.menu li a').forEach(item => {
+        }); item.addEventListener('mouseenter', () => {
+    </script>   gsap.to(item, {
+                    duration: 0.2,
+    <?php include '../page/footer.php'; ?>
+</body>             ease: "power2.out"
+</html>         });
             });
             
             item.addEventListener('mouseleave', () => {
