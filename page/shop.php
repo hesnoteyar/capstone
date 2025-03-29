@@ -322,66 +322,80 @@ function loadAndRender3DModel(modelPath) {
                     requested_quantity: quantity
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (!data.available) {
-                    showBanner('error', 'Not enough stock available. Current stock: ' + data.current_stock);
-                    return;
+                    showBanner('error', `Not enough stock available. Current stock: ${data.current_stock}`);
+                    return Promise.reject('Insufficient stock');
                 }
 
-                // If quantity is available, proceed with user status check and checkout
-                fetch('check_user_status.php', {
+                return fetch('check_user_status.php', {
                     method: 'POST',
-                })
-                .then((response) => response.json())
-                .then((userData) => {
-                    if (userData.status === 'success') {
-                        // Proceed with checkout
-                        fetch('create_paymongo_link.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                amount: totalPrice,
-                                description: `${quantity} x ${productName}`,
-                                currency: 'PHP',
-                                products: [{ 
-                                    product_id: productId, 
-                                    product_name: productName, 
-                                    quantity: quantity, 
-                                    price: price 
-                                }]
-                            }),
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.checkout_url) {
-                                // Update product quantity
-                                fetch('update_quantity.php', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({
-                                        product_id: productId,
-                                        quantity: quantity
-                                    })
-                                });
-                                
-                                window.open(data.checkout_url, '_blank');
-                            } else {
-                                showBanner('error', 'Failed to create checkout link');
-                            }
-                        });
-                    } else {
-                        showBanner('error', userData.message);
-                    }
                 });
             })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(userData => {
+                if (userData.status !== 'success') {
+                    throw new Error(userData.message || 'User validation failed');
+                }
+
+                return fetch('create_paymongo_link.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: totalPrice,
+                        description: `${quantity} x ${productName}`,
+                        currency: 'PHP',
+                        products: [{ 
+                            product_id: productId, 
+                            product_name: productName, 
+                            quantity: quantity, 
+                            price: price 
+                        }]
+                    })
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.checkout_url) {
+                    throw new Error('No checkout URL received');
+                }
+
+                // Update product quantity
+                return fetch('update_quantity.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: quantity
+                    })
+                }).then(() => data.checkout_url);
+            })
+            .then(checkoutUrl => {
+                window.open(checkoutUrl, '_blank');
+            })
             .catch(error => {
-                console.error('Error:', error);
-                showBanner('error', 'An error occurred during checkout');
+                console.error('Checkout Error:', error);
+                showBanner('error', error.message || 'An error occurred during checkout');
             });
         }
 
