@@ -195,12 +195,12 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
 
-            // Update stock quantity badge with different colors and text
+            // Update stock quantity badge with different colors and text based on stock levels
             const stockBadge = document.getElementById('stock-quantity');
-            if (stockQuantity === 0) {
+            if (stockQuantity <= 5) {
                 stockBadge.className = 'badge badge-error text-white font-semibold mb-4';
-                stockBadge.textContent = '0 stocks left';
-            } else if (stockQuantity <= 5) {
+                stockBadge.textContent = `${stockQuantity} stocks left`;
+            } else if (stockQuantity >= 6 && stockQuantity <= 10) {
                 stockBadge.className = 'badge badge-warning text-white font-semibold mb-4';
                 stockBadge.textContent = `${stockQuantity} stocks left`;
             } else {
