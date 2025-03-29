@@ -194,23 +194,7 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
-
-            // Update the stock quantity badge based on stock level
-            const stockBadge = document.getElementById('stock-quantity');
-            if (stockQuantity === 0) {
-                stockBadge.className = 'badge badge-error text-white font-bold mb-4';
-                stockBadge.textContent = 'Out of Stock';
-            } else if (stockQuantity <= 5) {
-                stockBadge.className = 'badge badge-warning text-white font-bold mb-4';
-                stockBadge.textContent = `Low Stock: ${stockQuantity} left`;
-            } else if (stockQuantity <= 10) {
-                stockBadge.className = 'badge badge-info text-white font-bold mb-4';
-                stockBadge.textContent = `Stock: ${stockQuantity} units`;
-            } else {
-                stockBadge.className = 'badge badge-success text-white font-bold mb-4';
-                stockBadge.textContent = 'In Stock';
-            }
-
+            document.getElementById('stock-quantity').textContent = `Available Stock: ${stockQuantity}`; // Add stock quantity information
             document.getElementById('quantity').setAttribute('max', stockQuantity); // Update quantity input max attribute
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
@@ -669,7 +653,9 @@ function loadAndRender3DModel(modelPath) {
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
                     <p class="text-lg font-semibold mb-4">Price: <span id="modal-price"></span></p>
-                    <div id="stock-quantity" class="badge font-bold mb-4"></div>
+                    <p id="stock-quantity" class="text-lg font-semibold mb-4"></p> <!-- Add stock quantity display -->
+                    <input type="hidden" id="modal-price-hidden">
+                    <input type="hidden" id="modal-product-id"> <!-- Add this hidden input for product ID -->
                     
                     <div class="mb-6">
                         <label for="quantity" class="block text-lg mb-2 font-medium">Quantity</label>
