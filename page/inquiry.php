@@ -342,6 +342,24 @@ $result = $stmt->get_result();
                                     class="input input-bordered" required>
                             </div>
 
+                            <!-- Downpayment Screenshot Upload -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Downpayment Screenshot</span>
+                                    <span class="label-text-alt text-gray-500">Required</span>
+                                </label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                                    <input type="file" name="downpayment" 
+                                        class="file-input file-input-bordered file-input-error w-full" 
+                                        accept="image/*"
+                                        required />
+                                    <label class="label">
+                                        <span class="label-text-alt text-gray-500">Please upload a screenshot of your downpayment transaction</span>
+                                        <span class="label-text-alt text-gray-500">Max size: 5MB</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="mt-6">
                                 <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
                                     Submit Service Request
