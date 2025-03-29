@@ -75,88 +75,166 @@ ini_set('display_errors', 1);
 
 </head></head>
 <body>
-    <div class="container mx-auto p-6">iv class="container mx-auto p-6">
+    <div class="container mx-auto p-6">
         <!-- Header -->
-        <div class="text-2xl font-bold mb-6">Work Hours Overview</div>t-2xl font-bold mb-6">Work Hours Overview</div>
+        <div class="text-2xl font-bold mb-6">Work Hours Overview</div>
         
-        <!-- Table Card --><!-- Chart Card -->
-        <div class="card bg-base-100 shadow-xl mb-6 overflow-x-auto">-base-100 shadow-xl mb-6">
+        <!-- Chart Card -->
+        <div class="card bg-base-100 shadow-xl mb-6">
             <div class="card-body">
-                <h2 class="card-title mb-4">Monthly Attendance - <?php echo date("F Y"); ?></h2>le">Monthly Attendance</h2>
-                <table class="table table-zebra">
-                    <thead>
-                        <tr>
-                            <th>Day</th>
-                            <th>Regular Hours</th>        <!-- Attendance Summary -->
-                            <th>Overtime Hours</th>1 md:grid-cols-3 gap-4 mb-4">
-                            <th>Total Hours</th>
-                        </tr>
-                    </thead>at-title">Total Hours</div>
-                    <tbody>_format($summary['total_hours'] ?? 0, 1); ?></div>
-                        <?php for($i = 0; $i < count($days); $i++): ?>
-                            <tr class="hover">
-                                <td class="font-medium"><?php echo $days[$i]; ?></td>
-                                <td><?php echo $hours[$i] ? round($hours[$i]) : '-'; ?></td>
-                                <td><?php echo $overtime[$i] ? round($overtime[$i]) : '-'; ?></td>            <div class="stats shadow">
-                                <td class="font-medium">
-                                    <div class="stat-value"><?php echo $summary['present_days'] ?? 0; ?></div>
-                                        $total = $hours[$i] + $overtime[$i];>
-                                        echo $total ? round($total) : '-';
-                                    ?>
-                                </td>
-                            </tr>            <div class="stats shadow">
-                        <?php endfor; ?>
-                    </tbody>at-title">Overtime Hours</div>
-                    <tfoot>rmat($summary['total_overtime'] ?? 0, 1); ?></div>
-                        <tr class="font-bold">
-                            <td>Monthly Total</td>
-                            <td><?php echo round($summary['total_hours'] - $summary['total_overtime']); ?></td>
-                            <td><?php echo round($summary['total_overtime']); ?></td>
-                            <td><?php echo round($summary['total_hours']); ?></td>
-                        </tr><!-- Action Buttons -->
-                    </tfoot>y-end mt-4 gap-2">
-                </table>
-            </div>            <a href="download_attendance.php" class="btn btn-error">
+                <h2 class="card-title">Monthly Attendance</h2>
+                <div id="attendanceChart"></div>
+            </div>
         </div>
 
         <!-- Attendance Summary -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div class="stats shadow">
-                <div class="stat">    <script>
-                    <div class="stat-title">Total Hours</div>options = {
+                <div class="stat">
+                    <div class="stat-title">Total Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_hours'] ?? 0, 1); ?></div>
-                    <div class="stat-desc">This Month</div>'Regular Hours',
-                </div>encode(array_map(function($h, $o) {
+                    <div class="stat-desc">This Month</div>
+                </div>
             </div>
 
             <div class="stats shadow">
                 <div class="stat">
-                    <div class="stat-value"><?php echo $summary['present_days'] ?? 0; ?></div>   name: 'Overtime Hours',
-                    <div class="stat-desc">Out of <?php echo $total_working_days; ?> Days</div>ncode(array_map(function($h, $o) {
+                    <div class="stat-value"><?php echo $summary['present_days'] ?? 0; ?></div>
+                    <div class="stat-desc">Out of <?php echo $total_working_days; ?> Days</div>
                 </div>
             </div>
 
-            <div class="stats shadow">rt: {
-                <div class="stat">ht: 350,
-                    <div class="stat-title">Overtime Hours</div>ap',
+            <div class="stats shadow">
+                <div class="stat">
+                    <div class="stat-title">Overtime Hours</div>
                     <div class="stat-value"><?php echo number_format($summary['total_overtime'] ?? 0, 1); ?></div>
-                    <div class="stat-desc">This Month</div>true,
+                    <div class="stat-desc">This Month</div>
                 </div>
-            </div>load: true
+            </div>
         </div>
         
         <!-- Action Buttons -->
-        <div class="flex justify-end mt-4 gap-2">taLabels: {
-true,
-            <a href="download_attendance.php" class="btn btn-error">ction(val) {
-                Download Attendance Report + 'h';
+        <div class="flex justify-end mt-4 gap-2">
+
+            <a href="download_attendance.php" class="btn btn-error">
+                Download Attendance Report
             </a>
-        </div>yle: {
-    </div>Size: '12px',
-</body>"]
+        </div>
+    </div>
+
+    <script>
+        var options = {
+            series: [{
+                name: 'Regular Hours',
+                data: <?php echo json_encode(array_map(function($h, $o) {
+                    return ['Regular Hours', $h];
+                }, $hours, $overtime)); ?>
+            },
+            {
+                name: 'Overtime Hours',
+                data: <?php echo json_encode(array_map(function($h, $o) {
+                    return ['Overtime Hours', $o];
+                }, $hours, $overtime)); ?>
+            }],
+            chart: {
+                height: 350,
+                type: 'heatmap',
+                toolbar: {
+                    show: true,
+                    tools: {
+                        download: true
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function(val) {
+                    return Math.round(val) + 'h';
+                },
+                style: {
+                    fontSize: '12px',
+                    colors: ["#000000"]
+                }
+            },
+            colors: ["#008FFB"],
+            plotOptions: {
+                heatmap: {
+                    colorScale: {
+                        ranges: [{
+                            from: 0,
+                            to: 0,
+                            color: '#EEEEEE',
+                            name: 'No Hours'
+                        },
+                        {
+                            from: 0.1,
+                            to: 4,
+                            color: '#3b82f6',
+                            name: 'Low Hours'
+                        },
+                        {
+                            from: 4.1,
+                            to: 8,
+                            color: '#2563eb',
+                            name: 'Regular Hours'
+                        },
+                        {
+                            from: 8.1,
+                            to: 12,
+                            color: '#ef4444',
+                            name: 'High Hours'
+                        }]
+                    }
+                }
+            },
+            xaxis: {
+                categories: <?php echo json_encode($days); ?>,
+                title: {
+                    text: 'Days of Month',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
+                },
+                position: 'top'
+            },
+            yaxis: {
+                title: {
+                    text: 'Work Type',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
+                }
+            },
+            grid: {
+                padding: {
+                    right: 20
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return Math.round(val) + ' hours'
+                    }
+                }
+            },
+            title: {
+                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
+                align: 'left',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 600
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
+        chart.render();
+    </script>
+</body>
 
 <?php
     include 'employee_footer.php';
-    // JavaScript code should not be here. Move it to a proper <script> block if needed.
 ?>
 </html>
