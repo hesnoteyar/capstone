@@ -127,58 +127,65 @@ ini_set('display_errors', 1);
         var options = {
             series: [{
                 name: 'Regular Hours',
-                type: 'column',
-                data: <?php echo json_encode($hours); ?>
+                data: <?php echo json_encode(array_map(function($h, $o) {
+                    return ['Regular Hours', $h];
+                }, $hours, $overtime)); ?>
             },
             {
                 name: 'Overtime Hours',
-                type: 'line',
-                data: <?php echo json_encode($overtime); ?>
+                data: <?php echo json_encode(array_map(function($h, $o) {
+                    return ['Overtime Hours', $o];
+                }, $hours, $overtime)); ?>
             }],
             chart: {
-                height: 450,
-                type: 'line',
+                height: 350,
+                type: 'heatmap',
                 toolbar: {
                     show: true,
                     tools: {
-                        download: true,
-                        selection: false,
-                        zoom: false,
-                        zoomin: false,
-                        zoomout: false,
-                        pan: false,
+                        download: true
                     }
-                }
-            },
-            stroke: {
-                width: [0, 4],
-                curve: 'smooth'
-            },
-            plotOptions: {
-                bar: {
-                    columnWidth: '50%',
-                    borderRadius: 5
                 }
             },
             dataLabels: {
                 enabled: true,
-                enabledOnSeries: [0, 1],
-                formatter: function (val) {
-                    return Math.round(val) + "h";
+                formatter: function(val) {
+                    return Math.round(val) + 'h';
                 },
-                offsetY: -20,
                 style: {
                     fontSize: '12px',
-                    colors: ["#304758"]
+                    colors: ["#000000"]
                 }
             },
-            markers: {
-                size: 5,
-                colors: ["#ef4444"],
-                strokeColors: "#fff",
-                strokeWidth: 2,
-                hover: {
-                    size: 7,
+            colors: ["#008FFB"],
+            plotOptions: {
+                heatmap: {
+                    colorScale: {
+                        ranges: [{
+                            from: 0,
+                            to: 0,
+                            color: '#EEEEEE',
+                            name: 'No Hours'
+                        },
+                        {
+                            from: 0.1,
+                            to: 4,
+                            color: '#3b82f6',
+                            name: 'Low Hours'
+                        },
+                        {
+                            from: 4.1,
+                            to: 8,
+                            color: '#2563eb',
+                            name: 'Regular Hours'
+                        },
+                        {
+                            from: 8.1,
+                            to: 12,
+                            color: '#ef4444',
+                            name: 'High Hours'
+                        }]
+                    }
                 }
             },
             xaxis: {
@@ -189,37 +196,36 @@ ini_set('display_errors', 1);
                         fontSize: '14px',
                         fontWeight: 600
                     }
-                }
+                },
+                position: 'top'
             },
             yaxis: {
                 title: {
-                    text: 'Hours Worked',
-                },
-                min: 0,
-                max: 12,
-                tickAmount: 6,
-                labels: {
-                    formatter: function(val) {
-                        return Math.round(val) + "h"
+                    text: 'Work Type',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
                     }
                 }
             },
-            colors: ['#3b82f6', '#ef4444'],
-            fill: {
-                opacity: [0.85, 1]
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'center',
-                fontSize: '14px'
+            grid: {
+                padding: {
+                    right: 20
+                }
             },
             tooltip: {
-                shared: true,
-                intersect: false,
                 y: {
-                    formatter: function (val) {
-                        return Math.round(val) + " hours"
+                    formatter: function(val) {
+                        return Math.round(val) + ' hours'
                     }
+                }
+            },
+            title: {
+                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
+                align: 'left',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 600
                 }
             }
         };
