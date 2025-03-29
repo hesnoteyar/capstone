@@ -127,15 +127,17 @@ ini_set('display_errors', 1);
         var options = {
             series: [{
                 name: 'Regular Hours',
+                type: 'column',
                 data: <?php echo json_encode($hours); ?>
             },
             {
                 name: 'Overtime Hours',
+                type: 'line',
                 data: <?php echo json_encode($overtime); ?>
             }],
             chart: {
                 height: 450,
-                type: 'bar',
+                type: 'line',
                 toolbar: {
                     show: true,
                     tools: {
@@ -146,25 +148,21 @@ ini_set('display_errors', 1);
                         zoomout: false,
                         pan: false,
                     }
-                },
-                animations: {
-                    enabled: true,
-                    speed: 500
                 }
+            },
+            stroke: {
+                width: [0, 4],
+                curve: 'smooth'
             },
             plotOptions: {
                 bar: {
-                    horizontal: false,
-                    columnWidth: '65%',
-                    endingShape: 'rounded',
-                    borderRadius: 4,
-                    dataLabels: {
-                        position: 'top'
-                    }
-                },
+                    columnWidth: '50%',
+                    borderRadius: 5
+                }
             },
             dataLabels: {
                 enabled: true,
+                enabledOnSeries: [0, 1],
                 formatter: function (val) {
                     return Math.round(val) + "h";
                 },
@@ -174,21 +172,13 @@ ini_set('display_errors', 1);
                     colors: ["#304758"]
                 }
             },
-            grid: {
-                borderColor: '#e7e7e7',
-                row: {
-                    colors: ['#f3f3f3', 'transparent'],
-                    opacity: 0.5
-                },
-                xaxis: {
-                    lines: {
-                        show: false
-                    }
-                },
-                yaxis: {
-                    lines: {
-                        show: true
-                    }
+            markers: {
+                size: 5,
+                colors: ["#ef4444"],
+                strokeColors: "#fff",
+                strokeWidth: 2,
+                hover: {
+                    size: 7,
                 }
             },
             xaxis: {
@@ -199,57 +189,38 @@ ini_set('display_errors', 1);
                         fontSize: '14px',
                         fontWeight: 600
                     }
-                },
-                tickPlacement: 'on',
-                labels: {
-                    style: {
-                        fontSize: '12px'
-                    }
                 }
             },
             yaxis: {
                 title: {
                     text: 'Hours Worked',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
                 },
                 min: 0,
                 max: 12,
                 tickAmount: 6,
                 labels: {
                     formatter: function(val) {
-                        return Math.round(val) + "h";
+                        return Math.round(val) + "h"
                     }
                 }
             },
             colors: ['#3b82f6', '#ef4444'],
+            fill: {
+                opacity: [0.85, 1]
+            },
             legend: {
                 position: 'top',
                 horizontalAlign: 'center',
-                fontSize: '14px',
-                markers: {
-                    radius: 12
-                }
-            },
-            title: {
-                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'left',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 600
-                }
+                fontSize: '14px'
             },
             tooltip: {
                 shared: true,
                 intersect: false,
                 y: {
                     formatter: function (val) {
-                        return Math.round(val) + " hours";
+                        return Math.round(val) + " hours"
                     }
-                },
-                theme: 'dark'
+                }
             }
         };
 
