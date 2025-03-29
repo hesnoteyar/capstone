@@ -24,6 +24,15 @@ $total_pages = ceil($total_row['total'] / $items_per_page);
 // Get products with limit
 $sql .= " LIMIT $offset, $items_per_page";
 $result = $conn->query($sql);
+
+// Get stock summary
+$stock_summary_sql = "SELECT 
+    SUM(stock_quantity) as total_stock,
+    COUNT(CASE WHEN stock_quantity = 0 THEN 1 END) as out_of_stock,
+    COUNT(CASE WHEN stock_quantity <= 10 AND stock_quantity > 0 THEN 1 END) as low_stock,
+    COUNT(CASE WHEN stock_quantity > 10 THEN 1 END) as in_stock
+    FROM product";
+$stock_summary = $conn->query($stock_summary_sql)->fetch_assoc();
 ?>
 
 <!DOCTYPE html>
@@ -57,6 +66,26 @@ $result = $conn->query($sql);
     <main class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Inventory Management</h1>
 
+        <!-- Stock Summary -->
+        <div class="stats shadow mb-6 w-full">
+            <div class="stat">
+                <div class="stat-title">Total Stock</div>
+                <div class="stat-value text-primary"><?php echo $stock_summary['total_stock']; ?></div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Out of Stock</div>
+                <div class="stat-value text-error"><?php echo $stock_summary['out_of_stock']; ?></div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Low Stock</div>
+                <div class="stat-value text-warning"><?php echo $stock_summary['low_stock']; ?></div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">In Stock</div>
+                <div class="stat-value text-success"><?php echo $stock_summary['in_stock']; ?></div>
+            </div>
+        </div>
+
         <!-- Search and Add Product -->
         <div class="flex justify-between items-center mb-6">
             <form class="w-1/3">
@@ -75,7 +104,15 @@ $result = $conn->query($sql);
                 while ($row = $result->fetch_assoc()) {
                     $imageData = base64_encode($row['image']);
                     $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+                    $stockBadgeClass = $row['stock_quantity'] == 0 ? 'badge-error' : 
+                                     ($row['stock_quantity'] <= 10 ? 'badge-warning' : 'badge-success');
+                    $stockStatus = $row['stock_quantity'] == 0 ? 'Out of Stock' : 
+                                 ($row['stock_quantity'] <= 10 ? 'Low Stock' : 'In Stock');
+                    
                     echo "<div class='card bg-white shadow-md rounded-lg p-4'>
+                            <div class='flex justify-between items-start'>
+                                <div class='badge $stockBadgeClass'>$stockStatus</div>
+                            </div>
                             <img src='" . $imageSrc . "' alt='" . htmlspecialchars($row['name']) . "' class='w-full h-48 object-cover mb-4'>
                             <h2 class='text-xl font-bold mb-2'>" . htmlspecialchars($row['name']) . "</h2>
                             <p class='text-gray-700'>Description: " . htmlspecialchars($row['description']) . "</p>
