@@ -156,6 +156,7 @@ true,
 </body>"]
 
 <?php
-    include 'employee_footer.php';lors: ["#008FFB"],
+    include 'employee_footer.php';
+    // JavaScript code should not be here. Move it to a proper <script> block if needed.
 ?>
 </html>
