@@ -109,12 +109,12 @@ if ($result === false) {
         .zoom::after {
             content: '';
             display: block;
-            width: 100px; /* Adjust the size of the magnifying glass */
+            width: 100px; /* Adjust the size of the magnifying-glass */
             height: 100px;
             position: absolute;
             top: 0;
             left: 0;
-            background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying glass image */
+            background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying-glass image */
             pointer-events: none;
         }
 
@@ -194,7 +194,23 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
-            document.getElementById('stock-quantity').textContent = `Available Stock: ${stockQuantity}`; // Add stock quantity information
+
+            // Update stock quantity badge with different styles based on quantity
+            const stockBadge = document.getElementById('stock-quantity');
+            if (stockQuantity === 0) {
+                stockBadge.className = 'badge badge-error gap-2 mb-4';
+                stockBadge.textContent = 'Out of Stock';
+            } else if (stockQuantity <= 5) {
+                stockBadge.className = 'badge badge-warning gap-2 mb-4';
+                stockBadge.textContent = `Low Stock: ${stockQuantity} left`;
+            } else if (stockQuantity <= 10) {
+                stockBadge.className = 'badge badge-info gap-2 mb-4';
+                stockBadge.textContent = `${stockQuantity} units available`;
+            } else {
+                stockBadge.className = 'badge badge-success gap-2 mb-4';
+                stockBadge.textContent = 'In Stock';
+            }
+
             document.getElementById('quantity').setAttribute('max', stockQuantity); // Update quantity input max attribute
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
@@ -653,7 +669,7 @@ function loadAndRender3DModel(modelPath) {
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
                     <p class="text-lg font-semibold mb-4">Price: <span id="modal-price"></span></p>
-                    <p id="stock-quantity" class="text-lg font-semibold mb-4"></p> <!-- Add stock quantity display -->
+                    <div id="stock-quantity" class="badge gap-2 mb-4"></div>
                     <input type="hidden" id="modal-price-hidden">
                     <input type="hidden" id="modal-product-id"> <!-- Add this hidden input for product ID -->
                     
