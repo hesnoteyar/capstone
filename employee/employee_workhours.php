@@ -140,9 +140,9 @@ ini_set('display_errors', 1);
                         echo "<div class='$class'>";
                         echo "<div class='font-bold mb-1'>$day</div>";
                         if ($hours[$index] > 0 || $overtime[$index] > 0) {
-                            echo "<div class='text-xs'>Regular: " . round($hours[$index]) . "h</div>";
+                            echo "<div class='text-xs'>Regular Hours: " . round($hours[$index]) . "h</div>";
                             if ($overtime[$index] > 0) {
-                                echo "<div class='text-xs text-red-600'>OT: " . round($overtime[$index]) . "h</div>";
+                                echo "<div class='text-xs text-red-600'>Overtime Hours: " . round($overtime[$index]) . "h</div>";
                             }
                         }
                         echo "</div>";
