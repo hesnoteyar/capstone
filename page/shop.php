@@ -109,12 +109,12 @@ if ($result === false) {
         .zoom::after {
             content: '';
             display: block;
-            width: 100px; /* Adjust the size of the magnifying glass */
+            width: 100px; /* Adjust the size of the magnifying-glass */
             height: 100px;
             position: absolute;
             top: 0;
             left: 0;
-            background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying glass image */
+            background: url('path/to/magnifying-glass.png') no-repeat center; /* Add your magnifying-glass image */
             pointer-events: none;
         }
 
@@ -194,8 +194,53 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
-            document.getElementById('stock-quantity').textContent = `Available Stock: ${stockQuantity}`; // Add stock quantity information
-            document.getElementById('quantity').setAttribute('max', stockQuantity); // Update quantity input max attribute
+
+            // Update stock display
+            const stockBadge = document.getElementById('stock-badge');
+            const stockProgress = document.getElementById('stock-progress');
+            const stockText = document.getElementById('stock-quantity');
+            
+            // Calculate stock percentage (assuming max stock is 100)
+            const stockPercentage = Math.min((stockQuantity / 100) * 100, 100);
+            
+            // Update progress bar
+            stockProgress.style.width = `${stockPercentage}%`;
+            
+            // Update stock badge and color
+            if (stockQuantity <= 0) {
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-red-500';
+                stockBadge.textContent = 'Out of Stock';
+                stockProgress.className = 'bg-red-600 h-2.5 rounded-full';
+            } else if (stockQuantity <= 5) {
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-yellow-500';
+                stockBadge.textContent = 'Low Stock';
+                stockProgress.className = 'bg-yellow-600 h-2.5 rounded-full';
+            } else {
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-green-500';
+                stockBadge.textContent = 'In Stock';
+                stockProgress.className = 'bg-green-600 h-2.5 rounded-full';
+            }
+            
+            stockText.textContent = `${stockQuantity} units available`;
+            
+            // Disable checkout and cart buttons if out of stock
+            const checkoutBtn = document.querySelector('button[onclick="checkout()"]');
+            const cartBtn = document.querySelector('button[onclick="addToCart()"]');
+            if (stockQuantity <= 0) {
+                checkoutBtn.disabled = true;
+                cartBtn.disabled = true;
+                checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                cartBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                checkoutBtn.disabled = false;
+                cartBtn.disabled = false;
+                checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                cartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Set max quantity
+            document.getElementById('quantity').max = stockQuantity;
+
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
 
@@ -616,12 +661,28 @@ function loadAndRender3DModel(modelPath) {
                     </figure>
                     <div class="card-body">
                         <h2 class="card-title"><?= htmlspecialchars($productName, ENT_QUOTES) ?></h2>
-                        <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
+                            <?php
+                            $stockBadgeClass = 'badge ';
+                            $stockText = '';
+                            if ($stockQuantity <= 0) {
+                                $stockBadgeClass .= 'bg-red-500 text-white';
+                                $stockText = 'Out of Stock';
+                            } elseif ($stockQuantity <= 5) {
+                                $stockBadgeClass .= 'bg-yellow-500 text-white';
+                                $stockText = 'Low Stock';
+                            } else {
+                                $stockBadgeClass .= 'bg-green-500 text-white';
+                                $stockText = 'In Stock';
+                            }
+                            ?>
+                            <div class="<?= $stockBadgeClass ?>"><?= $stockText ?></div>
+                        </div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
-                        <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>', <?= $stockQuantity ?>)">
-
-
+                        <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300 <?= $stockQuantity <= 0 ? 'opacity-50 cursor-not-allowed' : '' ?>"
+                                onclick="<?= $stockQuantity > 0 ? "openModal('" . addslashes($productName) . "', '" . addslashes($description) . "', '" . addslashes($categoryName) . "', '" . htmlspecialchars($imageUrl, ENT_QUOTES) . "', " . $price . ", " . $productId . ", '" . htmlspecialchars($row['model']) . "', " . $stockQuantity . "')" : "showBanner('error', 'This product is currently out of stock')" ?>"
+                                <?= $stockQuantity <= 0 ? 'disabled' : '' ?>>
                             View Details
                         </button>
                     </div>
@@ -653,10 +714,18 @@ function loadAndRender3DModel(modelPath) {
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
                     <p class="text-lg font-semibold mb-4">Price: <span id="modal-price"></span></p>
-                    <p id="stock-quantity" class="text-lg font-semibold mb-4"></p> <!-- Add stock quantity display -->
-                    <input type="hidden" id="modal-price-hidden">
-                    <input type="hidden" id="modal-product-id"> <!-- Add this hidden input for product ID -->
                     
+                    <!-- Updated stock display -->
+                    <div class="mb-4">
+                        <div id="stock-badge" class="inline-block rounded-full px-3 py-1 text-sm font-semibold mr-2"></div>
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-1">
+                                <div id="stock-progress" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <p id="stock-quantity" class="text-sm text-gray-600"></p>
+                        </div>
+                    </div>
+
                     <div class="mb-6">
                         <label for="quantity" class="block text-lg mb-2 font-medium">Quantity</label>
                         <input type="number" id="quantity" name="quantity" value="1" min="1" 
