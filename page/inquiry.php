@@ -316,47 +316,62 @@ $result = $stmt->get_result();
                                     name="description" placeholder="Describe the issues..." required></textarea>
                             </div>
 
+                            <!-- File Upload -->
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Upload Photos (Optional)</span>
+                                    <span class="label-text-alt text-gray-500">Max 5MB per file</span>
+                                </label>
+                                <input type="file" name="photos[]" 
+                                    class="file-input file-input-bordered file-input-error w-full" 
+                                    accept="image/*"
+                                    multiple />
+                                <label class="label">
+                                    <span class="label-text-alt text-gray-500">You can upload multiple photos of your motorcycle or the specific issues</span>
+                                </label>
+                            </div>
+
                             <!-- Contact Info -->
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text">Contact Details</span>l)</span>
-                                </label>n class="label-text-alt text-gray-500">Max 5MB per file</span>
+                                    <span class="label-text">Contact Details</span>
+                                </label>
                                 <input type="tel" name="contact" placeholder="Contact Number" 
                                     class="input input-bordered mb-2" required>
-                                <input type="date" name="preferred_date"  file-input-error w-full" 
+                                <input type="date" name="preferred_date" 
                                     class="input input-bordered" required>
-                            </div>  multiple />
-                                <label class="label">
-                            <div class="mt-6">s="label-text-alt text-gray-500">You can upload multiple photos of your motorcycle or the specific issues</span>
+                            </div>
+
+                            <div class="mt-6">
                                 <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
                                     Submit Service Request
                                 </button>
-                            </div>ontact Info -->
-                        </form>v class="form-control">
-                    </div>      <label class="label">
-                </div>              <span class="label-text">Contact Details</span>
-            </div>              </label>
-        </div>                  <input type="tel" name="contact" placeholder="Contact Number" 
-    </main>                         class="input input-bordered mb-2" required>
-                                <input type="date" name="preferred_date" 
-    <script>                        class="input input-bordered" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
         // Replace existing alert banner animation with this
         const alertBanner = document.getElementById('alert-banner');
-        if (alertBanner) {  <div class="mt-6">
-            gsap.fromTo(alertBanner, on class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
-                {                   Submit Service Request
-                    opacity: 0, </button>
-                    x: 100  </div>
-                },      </form>
-                {   </div>
+        if (alertBanner) {
+            gsap.fromTo(alertBanner, 
+                {
+                    opacity: 0,
+                    x: 100
+                },
+                {
                     duration: 0.5,
                     opacity: 1,
                     x: 0,
                     ease: "back.out(1.7)"
                 }
             );
-        // Replace existing alert banner animation with this
-            // Auto dismiss after 5 secondsmentById('alert-banner');
+
+            // Auto dismiss after 5 seconds
             setTimeout(() => {
                 gsap.to(alertBanner, {
                     duration: 0.5,
@@ -364,79 +379,64 @@ $result = $stmt->get_result();
                     x: 100,
                     ease: "power2.in",
                     onComplete: () => alertBanner.remove()
-                }); duration: 0.5,
-            }, 5000);pacity: 1,
-        }           x: 0,
-                    ease: "back.out(1.7)"
+                });
+            }, 5000);
+        }
+
         // Enhanced GSAP animations
         gsap.from("#hero", {
             duration: 1.2,
-            y: -50, dismiss after 5 seconds
-            opacity: 0,() => {
-            ease: "power3.out"anner, {
-        });         duration: 0.5,
-                    opacity: 0,
+            y: -50,
+            opacity: 0,
+            ease: "power3.out"
+        });
+
         gsap.from("#services", {
-            duration: 1,: "power2.in",
-            x: -50, onComplete: () => alertBanner.remove()
+            duration: 1,
+            x: -50,
             opacity: 0,
             delay: 0.3,
             ease: "back.out(1.7)"
         });
-        // Enhanced GSAP animations
+
         gsap.from("#form", {
-            duration: 1,2,
-            x: 50,,
+            duration: 1,
+            x: 50,
             opacity: 0,
-            delay: 0.3,r3.out"
+            delay: 0.3,
             ease: "back.out(1.7)"
         });
-        gsap.from("#services", {
+
         // Hover animations for service cards
         const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
             card.addEventListener('mouseenter', () => {
-                gsap.to(card, {)"
+                gsap.to(card, {
                     duration: 0.3,
                     y: -5,
                     scale: 1.02,
                     ease: "power2.out"
                 });
-            });city: 0,
-            delay: 0.3,
+            });
+
             card.addEventListener('mouseleave', () => {
                 gsap.to(card, {
                     duration: 0.3,
-                    y: 0,ns for service cards
-                    scale: 1,t.querySelectorAll('.card');
+                    y: 0,
+                    scale: 1,
                     ease: "power2.out"
-                });dEventListener('mouseenter', () => {
-            }); gsap.to(card, {
-        });         duration: 0.3,
-                    y: -5,
+                });
+            });
+        });
+
         // Add hover effect for service items
         document.querySelectorAll('.menu li a').forEach(item => {
             item.addEventListener('mouseenter', () => {
                 gsap.to(item, {
                     duration: 0.2,
-                    paddingLeft: '1.5rem',ave', () => {
+                    paddingLeft: '1.5rem',
                     ease: "power2.out"
-                }); duration: 0.3,
-            });     y: 0,
-                    scale: 1,
-            item.addEventListener('mouseleave', () => {
-                gsap.to(item, {
-                    duration: 0.2,
-                    paddingLeft: '1rem',
-                    ease: "power2.out"
-                });r effect for service items
-            });t.querySelectorAll('.menu li a').forEach(item => {
-        }); item.addEventListener('mouseenter', () => {
-    </script>   gsap.to(item, {
-                    duration: 0.2,
-    <?php include '../page/footer.php'; ?>
-</body>             ease: "power2.out"
-</html>         });
+                });
             });
             
             item.addEventListener('mouseleave', () => {
