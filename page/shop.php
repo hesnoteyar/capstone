@@ -679,30 +679,27 @@ function loadAndRender3DModel(modelPath) {
                             <?php
                             $stockIndicator = '';
                             if ($stockQuantity <= 0) {
-                                $stockIndicator = '<div class="indicator"><span class="indicator-item badge badge-error"></span><div class="badge badge-outline text-error">Out of Stock</div></div>';
+                                $stockIndicator = '<div class="indicator">
+                                    <span class="indicator-item badge badge-error"></span>
+                                    <div class="badge badge-outline text-error">Out of Stock</div>
+                                </div>';
                             } elseif ($stockQuantity <= 5) {
-                                $stockIndicator = '<div class="indicator"><span class="indicator-item badge badge-warning"></span><div class="badge badge-outline text-warning">Low Stock</div></div>';
+                                $stockIndicator = '<div class="indicator">
+                                    <span class="indicator-item badge badge-warning"></span>
+                                    <div class="badge badge-outline text-warning">Low Stock</div>
+                                </div>';
                             } else {
-                                $stockIndicator = '<div class="indicator"><span class="indicator-item badge badge-success"></span><div class="badge badge-outline text-success">In Stock</div></div>';
+                                $stockIndicator = '<div class="indicator">
+                                    <span class="indicator-item badge badge-success"></span>
+                                    <div class="badge badge-outline text-success">In Stock</div>
+                                </div>';
                             }
                             echo $stockIndicator;
                             ?>
                         </div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300 <?= $stockQuantity <= 0 ? 'opacity-50 cursor-not-allowed' : '' ?>"
-                                onclick="<?= $stockQuantity > 0 ? 
-                                    "openModal('" . 
-                                    addslashes($productName) . "', '" . 
-                                    addslashes($description) . "', '" . 
-                                    addslashes($categoryName) . "', '" . 
-                                    htmlspecialchars($imageUrl, ENT_QUOTES) . "', " . 
-                                    $price . ", " . 
-                                    $productId . ", '" . 
-                                    htmlspecialchars($row['model']) . "', " . 
-                                    $stockQuantity . 
-                                    "')" : 
-                                    "showBanner('error', 'This product is currently out of stock')" 
-                                ?>"
+                                onclick="<?= $stockQuantity > 0 ? "openModal('" . addslashes($productName) . "', '" . addslashes($description) . "', '" . addslashes($categoryName) . "', '" . htmlspecialchars($imageUrl, ENT_QUOTES) . "', " . $price . ", " . $productId . ", '" . htmlspecialchars($row['model']) . "', " . $stockQuantity . "')" : "showBanner('error', 'This product is currently out of stock')" ?>"
                                 <?= $stockQuantity <= 0 ? 'disabled' : '' ?>>
                             View Details
                         </button>
