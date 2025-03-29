@@ -134,42 +134,122 @@ ini_set('display_errors', 1);
                 data: <?php echo json_encode($overtime); ?>
             }],
             chart: {
-                height: 350,
-                type: 'area',
+                height: 450,
+                type: 'bar',
                 toolbar: {
-                    show: false
+                    show: true,
+                    tools: {
+                        download: true,
+                        selection: false,
+                        zoom: false,
+                        zoomin: false,
+                        zoomout: false,
+                        pan: false,
+                    }
+                },
+                animations: {
+                    enabled: true,
+                    speed: 500
                 }
             },
-            dataLabels: {
-                enabled: false
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '65%',
+                    endingShape: 'rounded',
+                    borderRadius: 4,
+                    dataLabels: {
+                        position: 'top'
+                    }
+                },
             },
-            stroke: {
-                curve: 'smooth'
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return val.toFixed(1) + "h";
+                },
+                offsetY: -20,
+                style: {
+                    fontSize: '12px',
+                    colors: ["#304758"]
+                }
+            },
+            grid: {
+                borderColor: '#e7e7e7',
+                row: {
+                    colors: ['#f3f3f3', 'transparent'],
+                    opacity: 0.5
+                },
+                xaxis: {
+                    lines: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
                 title: {
-                    text: 'Day of Month'
+                    text: 'Days of Month',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
+                },
+                tickPlacement: 'on',
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
                 }
             },
             yaxis: {
                 title: {
-                    text: 'Hours'
+                    text: 'Hours Worked',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600
+                    }
                 },
                 min: 0,
-                max: 12
+                max: 12,
+                tickAmount: 6,
+                labels: {
+                    formatter: function(val) {
+                        return val.toFixed(1) + "h"
+                    }
+                }
             },
-            colors: ['#0284c7', '#dc2626'],
+            colors: ['#3b82f6', '#ef4444'],
+            legend: {
+                position: 'top',
+                horizontalAlign: 'center',
+                fontSize: '14px',
+                markers: {
+                    radius: 12
+                }
+            },
             title: {
                 text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'left'
+                align: 'left',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 600
+                }
             },
             tooltip: {
+                shared: true,
+                intersect: false,
                 y: {
                     formatter: function (val) {
                         return val.toFixed(1) + " hours"
                     }
-                }
+                },
+                theme: 'dark'
             }
         };
 
