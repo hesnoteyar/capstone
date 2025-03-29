@@ -66,25 +66,95 @@ ini_set('display_errors', 1);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-header {
+            text-align: center;
+            padding: 8px;
+            font-weight: 600;
+            background-color: #f3f4f6;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+        .no-attendance {
+            background-color: #f3f4f6;
+        }
+        .has-attendance {
+            background-color: #dbeafe;
+        }
+        .has-overtime {
+            background-color: #fee2e2;
+        }
     </style>
-
 </head>
 <body>
     <div class="container mx-auto p-6">
         <!-- Header -->
         <div class="text-2xl font-bold mb-6">Work Hours Overview</div>
         
-        <!-- Chart Card -->
+        <!-- Calendar Card -->
         <div class="card bg-base-100 shadow-xl mb-6">
             <div class="card-body">
-                <h2 class="card-title">Monthly Attendance</h2>
-                <div id="attendanceChart"></div>
+                <h2 class="card-title mb-4">Monthly Attendance - <?php echo date("F Y"); ?></h2>
+                
+                <!-- Calendar Headers -->
+                <div class="calendar-grid mb-2">
+                    <?php 
+                    $days_of_week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    foreach ($days_of_week as $day) {
+                        echo "<div class='calendar-header'>$day</div>";
+                    }
+                    ?>
+                </div>
+
+                <!-- Calendar Days -->
+                <div class="calendar-grid">
+                    <?php
+                    $first_day = date('w', strtotime($current_month . '-01')); // 0-6
+                    
+                    // Add empty cells for days before the 1st
+                    for ($i = 0; $i < $first_day; $i++) {
+                        echo "<div class='calendar-day no-attendance opacity-50'></div>";
+                    }
+
+                    // Add calendar days
+                    for ($day = 1; $day <= $days_in_month; $day++) {
+                        $index = $day - 1;
+                        $class = 'calendar-day ';
+                        $class .= ($hours[$index] > 0 || $overtime[$index] > 0) ? 
+                                ($overtime[$index] > 0 ? 'has-overtime' : 'has-attendance') : 
+                                'no-attendance';
+                        
+                        echo "<div class='$class'>";
+                        echo "<div class='font-bold mb-1'>$day</div>";
+                        if ($hours[$index] > 0 || $overtime[$index] > 0) {
+                            echo "<div class='text-xs'>Regular: " . round($hours[$index]) . "h</div>";
+                            if ($overtime[$index] > 0) {
+                                echo "<div class='text-xs text-red-600'>OT: " . round($overtime[$index]) . "h</div>";
+                            }
+                        }
+                        echo "</div>";
+                    }
+
+                    // Add empty cells for remaining days
+                    $remaining_cells = ceil(($days_in_month + $first_day) / 7) * 7 - ($days_in_month + $first_day);
+                    for ($i = 0; $i < $remaining_cells; $i++) {
+                        echo "<div class='calendar-day no-attendance opacity-50'></div>";
+                    }
+                    ?>
+                </div>
             </div>
         </div>
 
@@ -122,117 +192,6 @@ ini_set('display_errors', 1);
             </a>
         </div>
     </div>
-
-    <script>
-        var options = {
-            series: [{
-                name: 'Regular Hours',
-                data: <?php echo json_encode(array_map(function($h, $o) {
-                    return ['Regular Hours', $h];
-                }, $hours, $overtime)); ?>
-            },
-            {
-                name: 'Overtime Hours',
-                data: <?php echo json_encode(array_map(function($h, $o) {
-                    return ['Overtime Hours', $o];
-                }, $hours, $overtime)); ?>
-            }],
-            chart: {
-                height: 350,
-                type: 'heatmap',
-                toolbar: {
-                    show: true,
-                    tools: {
-                        download: true
-                    }
-                }
-            },
-            dataLabels: {
-                enabled: true,
-                formatter: function(val) {
-                    return Math.round(val) + 'h';
-                },
-                style: {
-                    fontSize: '12px',
-                    colors: ["#000000"]
-                }
-            },
-            colors: ["#008FFB"],
-            plotOptions: {
-                heatmap: {
-                    colorScale: {
-                        ranges: [{
-                            from: 0,
-                            to: 0,
-                            color: '#EEEEEE',
-                            name: 'No Hours'
-                        },
-                        {
-                            from: 0.1,
-                            to: 4,
-                            color: '#3b82f6',
-                            name: 'Low Hours'
-                        },
-                        {
-                            from: 4.1,
-                            to: 8,
-                            color: '#2563eb',
-                            name: 'Regular Hours'
-                        },
-                        {
-                            from: 8.1,
-                            to: 12,
-                            color: '#ef4444',
-                            name: 'High Hours'
-                        }]
-                    }
-                }
-            },
-            xaxis: {
-                categories: <?php echo json_encode($days); ?>,
-                title: {
-                    text: 'Days of Month',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
-                },
-                position: 'top'
-            },
-            yaxis: {
-                title: {
-                    text: 'Work Type',
-                    style: {
-                        fontSize: '14px',
-                        fontWeight: 600
-                    }
-                }
-            },
-            grid: {
-                padding: {
-                    right: 20
-                }
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) {
-                        return Math.round(val) + ' hours'
-                    }
-                }
-            },
-            title: {
-                text: 'Daily Work Hours for <?php echo date("F Y"); ?>',
-                align: 'left',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 600
-                }
-            }
-        };
-
-        var chart = new ApexCharts(document.querySelector("#attendanceChart"), options);
-        chart.render();
-    </script>
 </body>
 
 <?php
