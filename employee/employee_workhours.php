@@ -166,7 +166,7 @@ ini_set('display_errors', 1);
             dataLabels: {
                 enabled: true,
                 formatter: function (val) {
-                    return val.toFixed(1) + "h";
+                    return Math.round(val) + "h";
                 },
                 offsetY: -20,
                 style: {
@@ -220,7 +220,7 @@ ini_set('display_errors', 1);
                 tickAmount: 6,
                 labels: {
                     formatter: function(val) {
-                        return val.toFixed(1) + "h"
+                        return Math.round(val) + "h";
                     }
                 }
             },
@@ -246,7 +246,7 @@ ini_set('display_errors', 1);
                 intersect: false,
                 y: {
                     formatter: function (val) {
-                        return val.toFixed(1) + " hours"
+                        return Math.round(val) + " hours";
                     }
                 },
                 theme: 'dark'
