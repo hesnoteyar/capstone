@@ -135,16 +135,25 @@ ini_set('display_errors', 1);
             }],
             chart: {
                 height: 350,
-                type: 'area',
+                type: 'bar',
                 toolbar: {
                     show: false
                 }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '75%',
+                    endingShape: 'rounded'
+                },
             },
             dataLabels: {
                 enabled: false
             },
             stroke: {
-                curve: 'smooth'
+                show: true,
+                width: 2,
+                colors: ['transparent']
             },
             xaxis: {
                 categories: <?php echo json_encode($days); ?>,
@@ -170,6 +179,9 @@ ini_set('display_errors', 1);
                         return val.toFixed(1) + " hours"
                     }
                 }
+            },
+            fill: {
+                opacity: 1
             }
         };
 
