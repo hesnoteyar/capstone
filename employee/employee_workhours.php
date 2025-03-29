@@ -66,14 +66,15 @@ ini_set('display_errors', 1);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-    <style>    <style>
-        body {y {
-            font-family: 'Poppins', sans-serif;nt-family: 'Poppins', sans-serif;
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
         }
-    </style>le>
+    </style>
 
-</head></head>
+</head>
 <body>
     <div class="container mx-auto p-6">
         <!-- Header -->
