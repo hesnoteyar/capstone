@@ -199,39 +199,26 @@ function loadAndRender3DModel(modelPath) {
             const stockBadge = document.getElementById('stock-badge');
             const stockProgress = document.getElementById('stock-progress');
             const stockText = document.getElementById('stock-quantity');
-            const stockRadial = document.getElementById('stock-radial');
             
             // Calculate stock percentage (assuming max stock is 100)
             const stockPercentage = Math.min((stockQuantity / 100) * 100, 100);
             
             // Update progress bar
-            stockProgress.value = stockPercentage;
+            stockProgress.style.width = `${stockPercentage}%`;
             
-            // Update stock badge and radial progress
+            // Update stock badge and color
             if (stockQuantity <= 0) {
-                stockBadge.innerHTML = `
-                    <span class="indicator-item badge badge-error"></span>
-                    <div class="badge badge-outline text-error">Out of Stock</div>
-                `;
-                stockProgress.className = 'progress progress-error';
-                stockRadial.style.setProperty('--value', 0);
-                stockRadial.className = 'radial-progress text-error';
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-red-500';
+                stockBadge.textContent = 'Out of Stock';
+                stockProgress.className = 'bg-red-600 h-2.5 rounded-full';
             } else if (stockQuantity <= 5) {
-                stockBadge.innerHTML = `
-                    <span class="indicator-item badge badge-warning"></span>
-                    <div class="badge badge-outline text-warning">Low Stock</div>
-                `;
-                stockProgress.className = 'progress progress-warning';
-                stockRadial.style.setProperty('--value', stockPercentage);
-                stockRadial.className = 'radial-progress text-warning';
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-yellow-500';
+                stockBadge.textContent = 'Low Stock';
+                stockProgress.className = 'bg-yellow-600 h-2.5 rounded-full';
             } else {
-                stockBadge.innerHTML = `
-                    <span class="indicator-item badge badge-success"></span>
-                    <div class="badge badge-outline text-success">In Stock</div>
-                `;
-                stockProgress.className = 'progress progress-success';
-                stockRadial.style.setProperty('--value', stockPercentage);
-                stockRadial.className = 'radial-progress text-success';
+                stockBadge.className = 'inline-block rounded-full px-3 py-1 text-sm font-semibold text-white bg-green-500';
+                stockBadge.textContent = 'In Stock';
+                stockProgress.className = 'bg-green-600 h-2.5 rounded-full';
             }
             
             stockText.textContent = `${stockQuantity} units available`;
@@ -677,25 +664,20 @@ function loadAndRender3DModel(modelPath) {
                         <div class="flex justify-between items-center mb-2">
                             <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                             <?php
-                            $stockIndicator = '';
+                            $stockBadgeClass = 'badge ';
+                            $stockText = '';
                             if ($stockQuantity <= 0) {
-                                $stockIndicator = '<div class="indicator">
-                                    <span class="indicator-item badge badge-error"></span>
-                                    <div class="badge badge-outline text-error">Out of Stock</div>
-                                </div>';
+                                $stockBadgeClass .= 'bg-red-500 text-white';
+                                $stockText = 'Out of Stock';
                             } elseif ($stockQuantity <= 5) {
-                                $stockIndicator = '<div class="indicator">
-                                    <span class="indicator-item badge badge-warning"></span>
-                                    <div class="badge badge-outline text-warning">Low Stock</div>
-                                </div>';
+                                $stockBadgeClass .= 'bg-yellow-500 text-white';
+                                $stockText = 'Low Stock';
                             } else {
-                                $stockIndicator = '<div class="indicator">
-                                    <span class="indicator-item badge badge-success"></span>
-                                    <div class="badge badge-outline text-success">In Stock</div>
-                                </div>';
+                                $stockBadgeClass .= 'bg-green-500 text-white';
+                                $stockText = 'In Stock';
                             }
-                            echo $stockIndicator;
                             ?>
+                            <div class="<?= $stockBadgeClass ?>"><?= $stockText ?></div>
                         </div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300 <?= $stockQuantity <= 0 ? 'opacity-50 cursor-not-allowed' : '' ?>"
@@ -735,16 +717,12 @@ function loadAndRender3DModel(modelPath) {
                     
                     <!-- Updated stock display -->
                     <div class="mb-4">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div id="stock-badge" class="indicator">
-                                <span class="indicator-item badge"></span>
-                                <div class="badge badge-outline"></div>
+                        <div id="stock-badge" class="inline-block rounded-full px-3 py-1 text-sm font-semibold mr-2"></div>
+                        <div class="mt-2">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mb-1">
+                                <div id="stock-progress" class="bg-green-600 h-2.5 rounded-full" style="width: 0%"></div>
                             </div>
-                            <div class="radial-progress bg-gray-200" id="stock-radial" style="--value: 0; --size: 2.5rem;"></div>
-                            <span id="stock-quantity" class="text-sm"></span>
-                        </div>
-                        <div class="w-full">
-                            <progress id="stock-progress" class="progress w-full" value="0" max="100"></progress>
+                            <p id="stock-quantity" class="text-sm text-gray-600"></p>
                         </div>
                     </div>
 
