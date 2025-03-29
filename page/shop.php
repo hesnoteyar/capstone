@@ -312,89 +312,72 @@ function loadAndRender3DModel(modelPath) {
             .then((data) => {
                 if (data.status === 'success') {
                     const quantity = document.getElementById('quantity').value;
-                    const productId = document.getElementById('modal-product-id').value;
                     const productName = document.getElementById('modal-product-name').textContent;
                     const price = parseFloat(document.getElementById('modal-price-hidden').value);
                     const totalPrice = Math.round(price * quantity * 100); // PayMongo expects amount in centavos
 
-                    // First, check if there's enough quantity available
-                    fetch('check_product_quantity.php', {
+                    // Log the checkout action to the audit_logs table
+                    fetch('log_checkout.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            product_id: productId,
-                            quantity: quantity
-                        })
+                            id: data.id,  // Assuming user_id is in the response
+                            action: 'CHECKOUT',
+                            item: `${quantity} x ${productName}`,
+                            total_price: totalPrice
+                        }),
                     })
-                    .then(response => response.json())
-                    .then(stockData => {
-                        if (!stockData.available) {
-                            showBanner('error', 'Not enough stock available');
-                            return;
+                    .then((logResponse) => {
+                        if (!logResponse.ok) {
+                            console.error('Error logging checkout action:', logResponse.status, logResponse.statusText);
                         }
-
-                        // Continue with checkout process if stock is available
-                        // Log the checkout action to the audit_logs table
-                        fetch('log_checkout.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                id: data.id,
-                                action: 'CHECKOUT',
-                                item: `${quantity} x ${productName}`,
-                                total_price: totalPrice
-                            }),
-                        });
-
-                        // Update product quantity in database
-                        fetch('update_product_quantity.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                product_id: productId,
-                                quantity: quantity
-                            })
-                        });
-
-                        // Proceed with PayMongo checkout
-                        return fetch('create_paymongo_link.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                amount: totalPrice,
-                                description: `${quantity} x ${productName}`,
-                                currency: 'PHP',
-                                products: [{ product_id: productId, product_name: productName, quantity: quantity, price: price }]
-                            }),
-                        });
                     })
-                    .then(response => response.json())
-                    .then(data => {
+                    .catch((error) => {
+                        console.error('Error logging checkout action:', error.message);
+                    });
+
+                    // Proceed with the checkout
+                    fetch('create_paymongo_link.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: totalPrice,
+                            description: `${quantity} x ${productName}`,
+                            currency: 'PHP',
+                            products: [{ product_id: document.getElementById('modal-product-id').value, product_name: productName, quantity: quantity, price: price }]
+                        }),
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            console.error('HTTP Error:', response.status, response.statusText);
+                            throw new Error('HTTP error! status: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
                         if (data.checkout_url) {
+                            console.log('Opening checkout URL:', data.checkout_url);
                             window.open(data.checkout_url, '_blank');
                         } else {
-                            showBanner('error', 'Failed to create checkout link');
+                            console.error('Missing checkout URL in response:', data);
+                            showBanner('error', 'Failed to retrieve checkout URL');
                         }
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showBanner('error', 'An error occurred during checkout');
+                    .catch((error) => {
+                        console.error('Checkout Error:', error.message);
+                        showBanner('error', 'An error occurred during checkout. Please try again.');
                     });
                 } else {
-                    showBanner('error', data.message);
+                    showBanner('error', data.message); // Show error message in banner if user is not active
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showBanner('error', 'An error occurred while validating your account status');
+            .catch((error) => {
+                console.error('Validation Error:', error);
+                showBanner('error', 'An error occurred while validating your account status.');
             });
         }
 
