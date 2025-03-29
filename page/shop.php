@@ -13,7 +13,7 @@ $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 $priceRange = isset($_GET['price_range']) ? $_GET['price_range'] : 10000;
 $searchQuery = isset($_GET['search']) ? $_GET['search'] : ''; // Add this line
 
-$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, c.name AS category_name, p.model 
+$sql = "SELECT p.product_id, p.name AS product_name, p.description, p.image, p.price, p.stock_quantity, c.name AS category_name, p.model 
         FROM product p 
         JOIN category c ON p.category_id = c.category_id 
         WHERE 1=1";
@@ -185,8 +185,8 @@ function loadAndRender3DModel(modelPath) {
     });
 }
 
-    function openModal(productName, description, categoryName, imageUrl, price, productId, modelPath) {
-            console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId); // Debug log
+    function openModal(productName, description, categoryName, imageUrl, price, productId, modelPath, stockQuantity) {
+            console.log('openModal called with:', productName, description, categoryName, imageUrl, price, productId, stockQuantity); // Debug log
             document.getElementById('modal-product-name').textContent = productName;
             document.getElementById('modal-category').textContent = categoryName;
             document.getElementById('modal-description').textContent = description;
@@ -194,6 +194,8 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price').textContent = `₱${price.toFixed(2)}`;
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
+            document.getElementById('stock-quantity').textContent = `Available Stock: ${stockQuantity}`; // Add stock quantity information
+            document.getElementById('quantity').setAttribute('max', stockQuantity); // Update quantity input max attribute
             document.getElementById('product-modal').classList.remove('hidden');
             document.body.classList.add('no-scroll'); // Disable background scrolling
 
@@ -312,67 +314,91 @@ function loadAndRender3DModel(modelPath) {
             .then((data) => {
                 if (data.status === 'success') {
                     const quantity = document.getElementById('quantity').value;
+                    const productId = document.getElementById('modal-product-id').value;
                     const productName = document.getElementById('modal-product-name').textContent;
                     const price = parseFloat(document.getElementById('modal-price-hidden').value);
-                    const totalPrice = Math.round(price * quantity * 100); // PayMongo expects amount in centavos
+                    const totalPrice = Math.round(price * quantity * 100);
 
-                    // Log the checkout action to the audit_logs table
-                    fetch('log_checkout.php', {
+                    // First check and update product quantity
+                    fetch('update_product_quantity.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            id: data.id,  // Assuming user_id is in the response
-                            action: 'CHECKOUT',
-                            item: `${quantity} x ${productName}`,
-                            total_price: totalPrice
-                        }),
+                            product_id: productId,
+                            quantity: quantity
+                        })
                     })
-                    .then((logResponse) => {
-                        if (!logResponse.ok) {
-                            console.error('Error logging checkout action:', logResponse.status, logResponse.statusText);
+                    .then(response => response.json())
+                    .then(quantityData => {
+                        if (!quantityData.success) {
+                            showBanner('error', quantityData.message);
+                            throw new Error(quantityData.message);
                         }
-                    })
-                    .catch((error) => {
-                        console.error('Error logging checkout action:', error.message);
-                    });
+                        
+                        // Log the checkout action to the audit_logs table
+                        fetch('log_checkout.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                id: data.id,  // Assuming user_id is in the response
+                                action: 'CHECKOUT',
+                                item: `${quantity} x ${productName}`,
+                                total_price: totalPrice
+                            }),
+                        })
+                        .then((logResponse) => {
+                            if (!logResponse.ok) {
+                                console.error('Error logging checkout action:', logResponse.status, logResponse.statusText);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error logging checkout action:', error.message);
+                        });
 
-                    // Proceed with the checkout
-                    fetch('create_paymongo_link.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            amount: totalPrice,
-                            description: `${quantity} x ${productName}`,
-                            currency: 'PHP',
-                            products: [{ product_id: document.getElementById('modal-product-id').value, product_name: productName, quantity: quantity, price: price }]
-                        }),
+                        // Proceed with the checkout
+                        fetch('create_paymongo_link.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                amount: totalPrice,
+                                description: `${quantity} x ${productName}`,
+                                currency: 'PHP',
+                                products: [{ product_id: productId, product_name: productName, quantity: quantity, price: price }]
+                            }),
+                        })
+                        .then((response) => {
+                            if (!response.ok) {
+                                console.error('HTTP Error:', response.status, response.statusText);
+                                throw new Error('HTTP error! status: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            if (data.checkout_url) {
+                                console.log('Opening checkout URL:', data.checkout_url);
+                                window.open(data.checkout_url, '_blank');
+                            } else {
+                                console.error('Missing checkout URL in response:', data);
+                                showBanner('error', 'Failed to retrieve checkout URL');
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Checkout Error:', error.message);
+                            showBanner('error', 'An error occurred during checkout. Please try again.');
+                        });
                     })
-                    .then((response) => {
-                        if (!response.ok) {
-                            console.error('HTTP Error:', response.status, response.statusText);
-                            throw new Error('HTTP error! status: ' + response.status);
-                        }
-                        return response.json();
-                    })
-                    .then((data) => {
-                        if (data.checkout_url) {
-                            console.log('Opening checkout URL:', data.checkout_url);
-                            window.open(data.checkout_url, '_blank');
-                        } else {
-                            console.error('Missing checkout URL in response:', data);
-                            showBanner('error', 'Failed to retrieve checkout URL');
-                        }
-                    })
-                    .catch((error) => {
-                        console.error('Checkout Error:', error.message);
-                        showBanner('error', 'An error occurred during checkout. Please try again.');
+                    .catch(error => {
+                        console.error('Quantity Update Error:', error);
+                        showBanner('error', error.message);
                     });
                 } else {
-                    showBanner('error', data.message); // Show error message in banner if user is not active
+                    showBanner('error', data.message);
                 }
             })
             .catch((error) => {
@@ -581,6 +607,7 @@ function loadAndRender3DModel(modelPath) {
                     $categoryName = htmlspecialchars($row['category_name']);
                     $imageUrl = 'data:image/jpeg;base64,' . base64_encode($row['image']);
                     $price = (float)$row['price'];
+                    $stockQuantity = (int)$row['stock_quantity'];
                     ?>
                 
                 <div class="card bg-base-100 w-80 shadow-lg">
@@ -592,7 +619,7 @@ function loadAndRender3DModel(modelPath) {
                         <div class="badge badge-error text-white"><?= htmlspecialchars($categoryName, ENT_QUOTES) ?></div>
                         <p>Price: ₱<?= number_format($price, 2) ?></p>
                         <button class="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>')">
+                             onclick="openModal('<?= addslashes($productName) ?>', '<?= addslashes($description) ?>', '<?= addslashes($categoryName) ?>', '<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>', <?= $price ?>, <?= $productId ?>, '<?= htmlspecialchars($row['model']) ?>', <?= $stockQuantity ?>)">
 
 
                             View Details
@@ -626,6 +653,7 @@ function loadAndRender3DModel(modelPath) {
                     <div id="modal-category" class="badge badge-error text-white mb-4"></div>
                     <p id="modal-description" class="text-gray-700 mb-4"></p>
                     <p class="text-lg font-semibold mb-4">Price: <span id="modal-price"></span></p>
+                    <p id="stock-quantity" class="text-lg font-semibold mb-4"></p> <!-- Add stock quantity display -->
                     <input type="hidden" id="modal-price-hidden">
                     <input type="hidden" id="modal-product-id"> <!-- Add this hidden input for product ID -->
                     
