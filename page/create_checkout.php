@@ -30,7 +30,7 @@ try {
     $conn->begin_transaction();
 
     // Fetch cart items with current product stock
-    $sql = "SELECT c.*, p.quantity as stock_quantity, p.product_id 
+    $sql = "SELECT c.*, p.stock_quantity as stock_quantity, p.product_id 
             FROM cart c 
             JOIN product p ON c.product_name = p.name 
             WHERE c.user_id = ?";
@@ -56,7 +56,7 @@ try {
     // Update product quantities
     $update_sql = "UPDATE product p 
                    JOIN cart c ON p.name = c.product_name 
-                   SET p.quantity = p.quantity - c.quantity 
+                   SET p.stocks = p.stocks - c.quantity 
                    WHERE c.user_id = ?";
     $update_stmt = $conn->prepare($update_sql);
     $update_stmt->bind_param("i", $user_id);
