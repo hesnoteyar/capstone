@@ -195,20 +195,17 @@ function loadAndRender3DModel(modelPath) {
             document.getElementById('modal-price-hidden').value = price;
             document.getElementById('modal-product-id').value = productId; // Set the product ID
 
-            // Update stock quantity badge with different styles based on quantity
+            // Update stock quantity badge with different colors and text
             const stockBadge = document.getElementById('stock-quantity');
             if (stockQuantity === 0) {
-                stockBadge.className = 'badge badge-error gap-2 mb-4';
-                stockBadge.textContent = 'Out of Stock';
+                stockBadge.className = 'badge badge-error text-white font-semibold mb-4';
+                stockBadge.textContent = '0 stocks left';
             } else if (stockQuantity <= 5) {
-                stockBadge.className = 'badge badge-warning gap-2 mb-4';
-                stockBadge.textContent = `Low Stock: ${stockQuantity} left`;
-            } else if (stockQuantity <= 10) {
-                stockBadge.className = 'badge badge-info gap-2 mb-4';
-                stockBadge.textContent = `${stockQuantity} units available`;
+                stockBadge.className = 'badge badge-warning text-white font-semibold mb-4';
+                stockBadge.textContent = `${stockQuantity} stocks left`;
             } else {
-                stockBadge.className = 'badge badge-success gap-2 mb-4';
-                stockBadge.textContent = 'In Stock';
+                stockBadge.className = 'badge badge-success text-white font-semibold mb-4';
+                stockBadge.textContent = `${stockQuantity} stocks left`;
             }
 
             document.getElementById('quantity').setAttribute('max', stockQuantity); // Update quantity input max attribute
