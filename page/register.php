@@ -124,24 +124,11 @@
                             <i class="fas fa-eye toggle-password" id="togglePassword"></i>
                         </span>
                     </div>
-                    <!-- Password Requirements -->
-                    <ul class="mt-2 text-sm" id="password-requirements">
-                        <li class="flex items-center text-error">
-                            <i class="fas fa-times mr-2"></i> At least 8 characters
-                        </li>
-                        <li class="flex items-center text-error">
-                            <i class="fas fa-times mr-2"></i> At least one uppercase letter
-                        </li>
-                        <li class="flex items-center text-error">
-                            <i class="fas fa-times mr-2"></i> At least one lowercase letter
-                        </li>
-                        <li class="flex items-center text-error">
-                            <i class="fas fa-times mr-2"></i> At least one number
-                        </li>
-                        <li class="flex items-center text-error">
-                            <i class="fas fa-times mr-2"></i> At least one special character (@, $, !, %, *, #, ?, &)
-                        </li>
-                    </ul>
+                    <!-- Add password strength indicator -->
+                    <div class="mt-2">
+                        <progress class="progress w-full" id="password-strength-meter" value="0" max="100"></progress>
+                        <p class="text-xs mt-1" id="password-strength-text">Password strength: Too weak</p>
+                    </div>
                 </div>
 
                 <div class="form-control mt-4">
@@ -263,52 +250,6 @@
             const input = document.getElementById(inputId);
             input.type = input.type === 'password' ? 'text' : 'password';
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-        const password = document.getElementById('password');
-        const requirements = document.getElementById('password-requirements');
-        const requirementItems = requirements.querySelectorAll('li');
-
-        password.addEventListener('input', function() {
-            const value = password.value;
-
-            // Check each requirement
-            const checks = [
-                value.length >= 8, // At least 8 characters
-                /[A-Z]/.test(value), // At least one uppercase letter
-                /[a-z]/.test(value), // At least one lowercase letter
-                /\d/.test(value), // At least one number
-                /[@$!%*#?&]/.test(value) // At least one special character
-            ];
-
-            // Update the UI for each requirement
-            checks.forEach((check, index) => {
-                const item = requirementItems[index];
-                const icon = item.querySelector('i');
-
-                if (check) {
-                    item.classList.remove('text-error');
-                    item.classList.add('text-success');
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-check');
-                } else {
-                    item.classList.remove('text-success');
-                    item.classList.add('text-error');
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-times');
-                }
-            });
-        });
-
-        // Toggle password visibility
-        const togglePassword = document.querySelector('#togglePassword');
-        togglePassword.addEventListener('click', function () {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.classList.toggle('fa-eye');
-            this.classList.toggle('fa-eye-slash');
-        });
-    });
     </script>
 </body>
 </html>
