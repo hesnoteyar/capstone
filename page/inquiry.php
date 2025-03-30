@@ -316,21 +316,6 @@ $result = $stmt->get_result();
                                     name="description" placeholder="Describe the issues..." required></textarea>
                             </div>
 
-                            <!-- File Upload -->
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">Upload Photos (Optional)</span>
-                                    <span class="label-text-alt text-gray-500">Max 5MB per file</span>
-                                </label>
-                                <input type="file" name="photos[]" 
-                                    class="file-input file-input-bordered file-input-error w-full" 
-                                    accept="image/*"
-                                    multiple />
-                                <label class="label">
-                                    <span class="label-text-alt text-gray-500">You can upload multiple photos of your motorcycle or the specific issues</span>
-                                </label>
-                            </div>
-
                             <!-- Contact Info -->
                             <div class="form-control">
                                 <label class="label">
