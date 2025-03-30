@@ -119,8 +119,14 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                     </span>
                                 </td>
                                 <td>
+                                    <?php 
+                                    $modalData = $row;
+                                    if ($row['proof']) {
+                                        $modalData['proof'] = base64_encode($row['proof']);
+                                    }
+                                    ?>
                                     <button class="btn btn-error btn-sm" 
-                                            onclick="openInquiryModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">
+                                            onclick='openInquiryModal(<?php echo json_encode($modalData); ?>)'>
                                         View
                                     </button>
                                 </td>
@@ -201,6 +207,13 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             </div>
             
             <div class="mt-6">
+                <h5 class="text-lg font-bold mb-3">Proof of Vehicle</h5>
+                <div id="proof-container" class="p-4 bg-base-200 rounded-lg flex justify-center">
+                    <!-- Proof image will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="mt-6">
                 <h5 class="text-lg font-bold mb-3">Service Representative</h5>
                 <p id="service-rep"></p>
             </div>
@@ -234,6 +247,18 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('contact-number').textContent = inquiry.contact_number;
             document.getElementById('description').textContent = inquiry.description;
             document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
+            
+            // Set proof image
+            const proofContainer = document.getElementById('proof-container');
+            if (inquiry.proof) {
+                const img = document.createElement('img');
+                img.src = `data:image/jpeg;base64,${inquiry.proof}`;
+                img.classList.add('max-w-full', 'h-auto', 'rounded-lg');
+                proofContainer.innerHTML = '';
+                proofContainer.appendChild(img);
+            } else {
+                proofContainer.innerHTML = '<p class="text-gray-400">No proof available</p>';
+            }
             
             // Set status badge
             const statusBadge = document.getElementById('status-badge');
