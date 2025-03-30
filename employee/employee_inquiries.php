@@ -102,7 +102,6 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                 <th>Service Type</th>
                                 <th>Preferred Date</th>
                                 <th>Status</th>
-                                <th>Proof</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -120,22 +119,8 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                     </span>
                                 </td>
                                 <td>
-                                    <?php if ($row['proof']): ?>
-                                        <img src="data:image/jpeg;base64,<?php echo base64_encode($row['proof']); ?>" 
-                                             alt="Proof" class="w-20 h-20 object-cover rounded">
-                                    <?php else: ?>
-                                        <span class="text-gray-400">No proof</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php 
-                                    $modalData = $row;
-                                    if ($row['proof']) {
-                                        $modalData['proof'] = base64_encode($row['proof']);
-                                    }
-                                    ?>
                                     <button class="btn btn-error btn-sm" 
-                                            onclick='openInquiryModal(<?php echo json_encode($modalData); ?>)'>
+                                            onclick="openInquiryModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">
                                         View
                                     </button>
                                 </td>
@@ -216,13 +201,6 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             </div>
             
             <div class="mt-6">
-                <h5 class="text-lg font-bold mb-3">Proof of Vehicle</h5>
-                <div id="proof-container" class="p-4 bg-base-200 rounded-lg">
-                    <!-- Proof image will be inserted here -->
-                </div>
-            </div>
-            
-            <div class="mt-6">
                 <h5 class="text-lg font-bold mb-3">Service Representative</h5>
                 <p id="service-rep"></p>
             </div>
@@ -255,19 +233,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('preferred-date').textContent = inquiry.preferred_date;
             document.getElementById('contact-number').textContent = inquiry.contact_number;
             document.getElementById('description').textContent = inquiry.description;
-            document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';CharCode.apply(null, new Uint8Array(inquiry.proof)))}`;
-            
-            // Set proof image
-            const proofContainer = document.getElementById('proof-container');
-            if (inquiry.proof) {
-                const img = document.createElement('img');
-                img.src = `data:image/jpeg;base64,${inquiry.proof}`;
-                img.classList.add('max-w-full', 'h-auto', 'rounded-lg');
-                proofContainer.innerHTML = '';
-                proofContainer.appendChild(img);
-            } else {
-                proofContainer.innerHTML = '<p class="text-gray-400">No proof available</p>';
-            }
+            document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
             
             // Set status badge
             const statusBadge = document.getElementById('status-badge');
