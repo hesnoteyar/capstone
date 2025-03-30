@@ -334,7 +334,7 @@ $result = $stmt->get_result();
                                     <span class="label-text-alt text-gray-500">Required</span>
                                 </label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                                    <input type="file" name="downpayment" 
+                                    <input type="file" name="proof_image" 
                                         class="file-input file-input-bordered file-input-error w-full" 
                                         accept="image/*"
                                         required />
@@ -343,6 +343,14 @@ $result = $stmt->get_result();
                                         <span class="label-text-alt text-gray-500">Max size: 5MB</span>
                                     </label>
                                 </div>
+                            </div>
+
+                            <!-- Confirmation Checkbox -->
+                            <div class="form-control">
+                                <label class="label cursor-pointer">
+                                    <input type="checkbox" class="checkbox checkbox-error" name="confirm_details" required />
+                                    <span class="label-text ml-2">I confirm that all the information provided above is true and accurate</span>
+                                </label>
                             </div>
 
                             <div class="mt-6">
