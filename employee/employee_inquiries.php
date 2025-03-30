@@ -128,8 +128,14 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                     <?php endif; ?>
                                 </td>
                                 <td>
+                                    <?php 
+                                    $modalData = $row;
+                                    if ($row['proof']) {
+                                        $modalData['proof'] = base64_encode($row['proof']);
+                                    }
+                                    ?>
                                     <button class="btn btn-error btn-sm" 
-                                            onclick="openInquiryModal(<?php echo htmlspecialchars(json_encode($row)); ?>)">
+                                            onclick='openInquiryModal(<?php echo json_encode($modalData); ?>)'>
                                         View
                                     </button>
                                 </td>
@@ -249,7 +255,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('preferred-date').textContent = inquiry.preferred_date;
             document.getElementById('contact-number').textContent = inquiry.contact_number;
             document.getElementById('description').textContent = inquiry.description;
-            document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
+            document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';CharCode.apply(null, new Uint8Array(inquiry.proof)))}`;
             
             // Set proof image
             const proofContainer = document.getElementById('proof-container');
