@@ -124,10 +124,28 @@
                             <i class="fas fa-eye toggle-password" id="togglePassword"></i>
                         </span>
                     </div>
-                    <!-- Add password strength indicator -->
-                    <div class="mt-2">
-                        <progress class="progress w-full" id="password-strength-meter" value="0" max="100"></progress>
-                        <p class="text-xs mt-1" id="password-strength-text">Password strength: Too weak</p>
+                    <!-- Password complexity checklist -->
+                    <div class="mt-2 space-y-1 text-sm">
+                        <div class="flex items-center gap-2">
+                            <i id="length-check" class="fas fa-times text-red-500"></i>
+                            <span>At least 8 characters long</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i id="uppercase-check" class="fas fa-times text-red-500"></i>
+                            <span>Contains uppercase letter</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i id="lowercase-check" class="fas fa-times text-red-500"></i>
+                            <span>Contains lowercase letter</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i id="number-check" class="fas fa-times text-red-500"></i>
+                            <span>Contains number</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i id="special-check" class="fas fa-times text-red-500"></i>
+                            <span>Contains special character</span>
+                        </div>
                     </div>
                 </div>
 
@@ -196,48 +214,50 @@
                 this.classList.toggle('fa-eye-slash');
             });
 
-            // Password strength checker
-            const strengthMeter = document.getElementById('password-strength-meter');
-            const strengthText = document.getElementById('password-strength-text');
+            // Password complexity checklist
+            const lengthCheck = document.querySelector('#length-check');
+            const uppercaseCheck = document.querySelector('#uppercase-check');
+            const lowercaseCheck = document.querySelector('#lowercase-check');
+            const numberCheck = document.querySelector('#number-check');
+            const specialCheck = document.querySelector('#special-check');
 
             password.addEventListener('input', function() {
                 const val = password.value;
-                let score = 0;
                 
-                // Length check
-                if (val.length >= 8) score += 25;
+                // Check length
+                if (val.length >= 8) {
+                    lengthCheck.className = 'fas fa-check text-green-500';
+                } else {
+                    lengthCheck.className = 'fas fa-times text-red-500';
+                }
                 
-                // Uppercase check
-                if (/[A-Z]/.test(val)) score += 25;
+                // Check uppercase
+                if (/[A-Z]/.test(val)) {
+                    uppercaseCheck.className = 'fas fa-check text-green-500';
+                } else {
+                    uppercaseCheck.className = 'fas fa-times text-red-500';
+                }
                 
-                // Lowercase check
-                if (/[a-z]/.test(val)) score += 25;
+                // Check lowercase
+                if (/[a-z]/.test(val)) {
+                    lowercaseCheck.className = 'fas fa-check text-green-500';
+                } else {
+                    lowercaseCheck.className = 'fas fa-times text-red-500';
+                }
                 
-                // Special character check
-                if (/[^A-Za-z0-9]/.test(val)) score += 25;
-
-                // Update progress bar
-                strengthMeter.value = score;
-
-                // Update progress bar color using daisyUI classes
-                strengthMeter.className = 'progress w-full ' + 
-                    (score <= 25 ? 'progress-error' : 
-                     score <= 50 ? 'progress-warning' : 
-                     score <= 75 ? 'progress-info' : 
-                     'progress-success');
-
-                // Update strength text
-                strengthText.textContent = 'Password strength: ' + 
-                    (score <= 25 ? 'Too weak' : 
-                     score <= 50 ? 'Weak' : 
-                     score <= 75 ? 'Medium' : 
-                     'Strong');
-
-                strengthText.className = 'text-xs mt-1 ' + 
-                    (score <= 25 ? 'text-error' : 
-                     score <= 50 ? 'text-warning' : 
-                     score <= 75 ? 'text-info' : 
-                     'text-success');
+                // Check numbers
+                if (/[0-9]/.test(val)) {
+                    numberCheck.className = 'fas fa-check text-green-500';
+                } else {
+                    numberCheck.className = 'fas fa-times text-red-500';
+                }
+                
+                // Check special characters
+                if (/[^A-Za-z0-9]/.test(val)) {
+                    specialCheck.className = 'fas fa-check text-green-500';
+                } else {
+                    specialCheck.className = 'fas fa-times text-red-500';
+                }
             });
 
             // Prevent non-numeric input in postal code
