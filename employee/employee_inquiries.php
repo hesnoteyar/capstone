@@ -207,7 +207,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             </div>
             
             <div class="mt-6">
-                <h5 class="text-lg font-bold mb-3">Proof of Vehicle</h5>
+                <h5 class="text-lg font-bold mb-3">Proof of Downpayment</h5>
                 <div id="proof-container" class="p-4 bg-base-200 rounded-lg flex justify-center">
                     <!-- Proof image will be inserted here -->
                 </div>
