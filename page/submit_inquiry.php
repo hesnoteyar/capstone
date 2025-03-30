@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Prepare the statement with image blob
     $stmt = $conn->prepare("INSERT INTO service_inquiries (
         user_id, reference_number, brand, model, year_model, 
-        service_type, description, contact_number, preferred_date, status, proof_image
+        service_type, description, contact_number, preferred_date, status, proof
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
 
     $stmt->bind_param("isssssssss", 

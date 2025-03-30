@@ -334,7 +334,7 @@ $result = $stmt->get_result();
                                     <span class="label-text-alt text-gray-500">Required</span>
                                 </label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                                    <input type="file" name="proof_image" 
+                                    <input type="file" name="proof" 
                                         class="file-input file-input-bordered file-input-error w-full" 
                                         accept="image/*"
                                         required />
