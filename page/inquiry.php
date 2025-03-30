@@ -350,6 +350,7 @@ $result = $stmt->get_result();
                                 <label class="label cursor-pointer">
                                     <input type="checkbox" class="checkbox checkbox-error" name="confirm_details" required />
                                     <span class="label-text ml-2">I confirm that all the information provided above is true and accurate</span>
+                                    <input type="checkbox" class="checkbox checkbox-error" name="confirm_details" required />
                                 </label>
                             </div>
 
