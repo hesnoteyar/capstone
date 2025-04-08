@@ -13,7 +13,7 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
 }
 
 // Fetch inquiries from the database
-$query = "SELECT *, COALESCE(proof, '') as proof FROM service_inquiries";
+$query = "SELECT *, COALESCE(proof, '') as proof_data FROM service_inquiries";
 $result = mysqli_query($conn, $query);
 
 // Error handling
