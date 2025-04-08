@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contact = mysqli_real_escape_string($conn, $_POST['contact']);
     $preferred_date = mysqli_real_escape_string($conn, $_POST['preferred_date']);
     
-    // Read image file
+    // Read image file for blob storage
     $proof_image = file_get_contents($_FILES['proof_image']['tmp_name']);
     
     // Generate reference number
@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         service_type, description, contact_number, preferred_date, status, proof
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
 
-    $stmt->bind_param("isssssssss", 
+    $stmt->bind_param("issssssssb", 
         $user_id, $reference, $brand, $model, $year,
         $service_type, $description, $contact, $preferred_date, $proof_image
     );
