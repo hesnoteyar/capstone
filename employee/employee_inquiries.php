@@ -12,8 +12,10 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
     exit;
 }
 
-// Fetch inquiries from the database
-$query = "SELECT *, COALESCE(proof, '') as proof_data FROM service_inquiries";
+// Fetch inquiries from the database - Update the query to properly handle the BLOB data
+$query = "SELECT id, reference_number, brand, model, year_model, service_type, 
+          preferred_date, contact_number, description, status, service_representative,
+          proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
 $result = mysqli_query($conn, $query);
 
 // Error handling
@@ -121,8 +123,8 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                 <td>
                                     <?php 
                                     $modalData = $row;
-                                    if (!empty($row['proof_data'])) {
-                                        $modalData['proof'] = 'data:image/jpeg;base64,' . base64_encode($row['proof_data']);
+                                    if (!empty($row['proof'])) {
+                                        $modalData['proof'] = 'data:image/jpeg;base64,' . $row['proof_base64'];
                                     } else {
                                         $modalData['proof'] = null;
                                     }
@@ -250,14 +252,19 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('description').textContent = inquiry.description;
             document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
             
-            // Update the proof image handling in the modal JavaScript
+            // Update the proof image handling
             const proofContainer = document.getElementById('proof-container');
-            if (inquiry.proof && inquiry.proof.startsWith('data:image')) {
+            proofContainer.innerHTML = ''; // Clear previous content
+            
+            if (inquiry.proof) {
                 const img = document.createElement('img');
                 img.src = inquiry.proof;
-                img.style.maxHeight = '400px'; // Add max height for better display
-                img.classList.add('max-w-full', 'h-auto', 'rounded-lg', 'object-contain');
-                proofContainer.innerHTML = '';
+                img.style.maxHeight = '400px';
+                img.style.maxWidth = '100%';
+                img.classList.add('rounded-lg', 'object-contain');
+                img.onerror = function() {
+                    proofContainer.innerHTML = '<p class="text-gray-400">Error loading image</p>';
+                };
                 proofContainer.appendChild(img);
             } else {
                 proofContainer.innerHTML = '<p class="text-gray-400">No proof available</p>';
