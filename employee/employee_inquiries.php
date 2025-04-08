@@ -122,7 +122,8 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                     <?php 
                                     $modalData = $row;
                                     if ($row['proof']) {
-                                        $modalData['proof'] = base64_encode($row['proof']);
+                                        // Convert BLOB to base64 string for image display
+                                        $modalData['proof'] = 'data:image/jpeg;base64,' . base64_encode($row['proof']);
                                     }
                                     ?>
                                     <button class="btn btn-error btn-sm" 
@@ -252,7 +253,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             const proofContainer = document.getElementById('proof-container');
             if (inquiry.proof) {
                 const img = document.createElement('img');
-                img.src = `data:image/jpeg;base64,${inquiry.proof}`;
+                img.src = inquiry.proof; // Now using the complete data URL
                 img.classList.add('max-w-full', 'h-auto', 'rounded-lg');
                 proofContainer.innerHTML = '';
                 proofContainer.appendChild(img);
