@@ -23,9 +23,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Handle file upload
-    if (!isset($_FILES['proof_image']) || $_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
-        $_SESSION['message'] = "Please upload a proof of payment image.";
+    // Enhanced file upload debugging
+    if (!isset($_FILES['proof_image'])) {
+        $_SESSION['message'] = "No file was uploaded. Please try again.";
+        $_SESSION['message_type'] = "error";
+        header("Location: inquiry.php");
+        exit();
+    }
+
+    // Check specific upload errors
+    switch ($_FILES['proof_image']['error']) {
+        case UPLOAD_ERR_OK:
+            break;
+        case UPLOAD_ERR_INI_SIZE:
+            $_SESSION['message'] = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
+            break;
+        case UPLOAD_ERR_FORM_SIZE:
+            $_SESSION['message'] = "The uploaded file exceeds the MAX_FILE_SIZE directive in the HTML form";
+            break;
+        case UPLOAD_ERR_PARTIAL:
+            $_SESSION['message'] = "The uploaded file was only partially uploaded";
+            break;
+        case UPLOAD_ERR_NO_FILE:
+            $_SESSION['message'] = "No file was uploaded";
+            break;
+        default:
+            $_SESSION['message'] = "Unknown upload error occurred (Code: " . $_FILES['proof_image']['error'] . ")";
+    }
+
+    if ($_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
         $_SESSION['message_type'] = "error";
         header("Location: inquiry.php");
         exit();
