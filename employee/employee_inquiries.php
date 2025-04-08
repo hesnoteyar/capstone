@@ -13,7 +13,7 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
 }
 
 // Fetch inquiries from the database
-$query = "SELECT * FROM service_inquiries";
+$query = "SELECT *, COALESCE(proof, '') as proof_data FROM service_inquiries";
 $result = mysqli_query($conn, $query);
 
 // Error handling
@@ -121,9 +121,10 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                                 <td>
                                     <?php 
                                     $modalData = $row;
-                                    if ($row['proof']) {
-                                        // Convert BLOB to base64 string for image display
-                                        $modalData['proof'] = 'data:image/jpeg;base64,' . base64_encode($row['proof']);
+                                    if (!empty($row['proof_data'])) {
+                                        $modalData['proof'] = 'data:image/jpeg;base64,' . base64_encode($row['proof_data']);
+                                    } else {
+                                        $modalData['proof'] = null;
                                     }
                                     ?>
                                     <button class="btn btn-error btn-sm" 
@@ -249,12 +250,13 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('description').textContent = inquiry.description;
             document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
             
-            // Set proof image
+            // Update the proof image handling in the modal JavaScript
             const proofContainer = document.getElementById('proof-container');
-            if (inquiry.proof) {
+            if (inquiry.proof && inquiry.proof.startsWith('data:image')) {
                 const img = document.createElement('img');
-                img.src = inquiry.proof; // Now using the complete data URL
-                img.classList.add('max-w-full', 'h-auto', 'rounded-lg');
+                img.src = inquiry.proof;
+                img.style.maxHeight = '400px'; // Add max height for better display
+                img.classList.add('max-w-full', 'h-auto', 'rounded-lg', 'object-contain');
                 proofContainer.innerHTML = '';
                 proofContainer.appendChild(img);
             } else {
