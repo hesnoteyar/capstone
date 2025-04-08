@@ -15,34 +15,6 @@ if (mysqli_num_rows($table_exists) == 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Debug logging
-    error_log("POST request received");
-    error_log("FILES array content: " . print_r($_FILES, true));
-    
-    // Check if the form has the correct enctype
-    if (empty($_SERVER['CONTENT_TYPE']) || strpos($_SERVER['CONTENT_TYPE'], 'multipart/form-data') === false) {
-        $_SESSION['message'] = "Form must have enctype='multipart/form-data'";
-        $_SESSION['message_type'] = "error";
-        header("Location: inquiry.php");
-        exit();
-    }
-
-    // Check if files array is completely empty
-    if (empty($_FILES)) {
-        $_SESSION['message'] = "No files were submitted. Please check your form.";
-        $_SESSION['message_type'] = "error";
-        header("Location: inquiry.php");
-        exit();
-    }
-
-    // Check if proof_image exists in FILES array
-    if (!isset($_FILES['proof_image']) || empty($_FILES['proof_image']['name'])) {
-        $_SESSION['message'] = "Please select a file before submitting.";
-        $_SESSION['message_type'] = "error";
-        header("Location: inquiry.php");
-        exit();
-    }
-
     // Verify confirmation checkbox
     if (!isset($_POST['confirm_details'])) {
         $_SESSION['message'] = "Please confirm that all details are accurate.";
@@ -51,19 +23,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Enhanced upload error checking
-    if ($_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
-        $error_message = match($_FILES['proof_image']['error']) {
-            UPLOAD_ERR_INI_SIZE => "File exceeds PHP's upload_max_filesize",
-            UPLOAD_ERR_FORM_SIZE => "File exceeds form's MAX_FILE_SIZE",
-            UPLOAD_ERR_PARTIAL => "File was only partially uploaded",
-            UPLOAD_ERR_NO_FILE => "No file was selected",
-            UPLOAD_ERR_NO_TMP_DIR => "Missing temporary folder",
-            UPLOAD_ERR_CANT_WRITE => "Failed to write file to disk",
-            UPLOAD_ERR_EXTENSION => "A PHP extension stopped the upload",
-            default => "Unknown upload error"
-        };
-        $_SESSION['message'] = $error_message;
+    // Handle file upload
+    if (!isset($_FILES['proof_image']) || $_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
+        $_SESSION['message'] = "Please upload a proof of payment image.";
         $_SESSION['message_type'] = "error";
         header("Location: inquiry.php");
         exit();
@@ -96,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contact = mysqli_real_escape_string($conn, $_POST['contact']);
     $preferred_date = mysqli_real_escape_string($conn, $_POST['preferred_date']);
     
-    // Read image file for blob storage
+    // Read image file
     $proof_image = file_get_contents($_FILES['proof_image']['tmp_name']);
     
     // Generate reference number
@@ -108,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         service_type, description, contact_number, preferred_date, status, proof
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
 
-    $stmt->bind_param("issssssssb", 
+    $stmt->bind_param("isssssssss", 
         $user_id, $reference, $brand, $model, $year,
         $service_type, $description, $contact, $preferred_date, $proof_image
     );
