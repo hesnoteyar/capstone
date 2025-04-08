@@ -23,19 +23,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Handle file upload
-    if (!isset($_FILES['proof_image']) || $_FILES['proof_image']['error'] !== UPLOAD_ERR_OK) {
+    // Handle file upload with better error checking
+    if (!isset($_FILES['proof_image']) || empty($_FILES['proof_image']['tmp_name'])) {
         $_SESSION['message'] = "Please upload a proof of payment image.";
         $_SESSION['message_type'] = "error";
         header("Location: inquiry.php");
         exit();
     }
 
-    // Validate file type and size
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
     $max_size = 5 * 1024 * 1024; // 5MB
+    $file_type = mime_content_type($_FILES['proof_image']['tmp_name']);
 
-    if (!in_array($_FILES['proof_image']['type'], $allowed_types)) {
+    if (!in_array($file_type, $allowed_types)) {
         $_SESSION['message'] = "Invalid file type. Please upload a JPEG, PNG, or GIF image.";
         $_SESSION['message_type'] = "error";
         header("Location: inquiry.php");
@@ -58,28 +58,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $contact = mysqli_real_escape_string($conn, $_POST['contact']);
     $preferred_date = mysqli_real_escape_string($conn, $_POST['preferred_date']);
     
-    // Read image file
-    $proof_image = file_get_contents($_FILES['proof_image']['tmp_name']);
+    // Read image file and convert to base64
+    $proof_image = base64_encode(file_get_contents($_FILES['proof_image']['tmp_name']));
     
     // Generate reference number
     $reference = 'SRV-' . date('Ymd') . '-' . rand(1000, 9999);
     
-    // Prepare the statement with image blob
-    $stmt = $conn->prepare("INSERT INTO service_inquiries (
-        user_id, reference_number, brand, model, year_model, 
-        service_type, description, contact_number, preferred_date, status, proof
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
+    // Add error reporting
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    
+    try {
+        // Prepare the statement with image blob
+        $stmt = $conn->prepare("INSERT INTO service_inquiries (
+            user_id, reference_number, brand, model, year_model, 
+            service_type, description, contact_number, preferred_date, status, proof
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', ?)");
 
-    $stmt->bind_param("isssssssss", 
-        $user_id, $reference, $brand, $model, $year,
-        $service_type, $description, $contact, $preferred_date, $proof_image
-    );
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
 
-    if ($stmt->execute()) {
+        $stmt->bind_param("isssssssss", 
+            $user_id, $reference, $brand, $model, $year,
+            $service_type, $description, $contact, $preferred_date, $proof_image
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception("Execute failed: " . $stmt->error);
+        }
+
         $_SESSION['message'] = "Service request submitted successfully! Reference Number: " . $reference;
         $_SESSION['message_type'] = "success";
-    } else {
-        $_SESSION['message'] = "Error: " . $stmt->error;
+        
+    } catch (Exception $e) {
+        $_SESSION['message'] = "Error: " . $e->getMessage();
         $_SESSION['message_type'] = "error";
     }
 
