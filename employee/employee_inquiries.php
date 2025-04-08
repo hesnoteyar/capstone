@@ -227,6 +227,18 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             </div>
         </div>
     </dialog>
+
+    <!-- Add this new modal for zoomed image after the inquiry modal -->
+    <dialog id="imageZoomModal" class="modal">
+        <div class="modal-box max-w-5xl h-auto relative">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10">✕</button>
+            </form>
+            <div class="flex justify-center items-center">
+                <img id="zoomedImage" class="max-w-full max-h-[80vh] object-contain" src="" alt="Zoomed proof" />
+            </div>
+        </div>
+    </dialog>
     
     <script>
         // Filter functionality
@@ -261,7 +273,13 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 img.src = inquiry.proof;
                 img.style.maxHeight = '400px';
                 img.style.maxWidth = '100%';
-                img.classList.add('rounded-lg', 'object-contain');
+                img.classList.add('rounded-lg', 'object-contain', 'cursor-pointer', 'hover:opacity-90', 'transition-opacity');
+                img.onclick = function() {
+                    const zoomModal = document.getElementById('imageZoomModal');
+                    const zoomedImage = document.getElementById('zoomedImage');
+                    zoomedImage.src = inquiry.proof;
+                    zoomModal.showModal();
+                };
                 img.onerror = function() {
                     proofContainer.innerHTML = '<p class="text-gray-400">Error loading image</p>';
                 };
