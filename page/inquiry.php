@@ -336,11 +336,10 @@ $result = $stmt->get_result();
                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
                                     <input type="file" name="proof" 
                                         class="file-input file-input-bordered file-input-error w-full" 
-                                        accept="image/*"
+                                        accept=".jpg,.jpeg,.png,.gif"
                                         required />
                                     <label class="label">
-                                        <span class="label-text-alt text-gray-500">Please upload a screenshot of your downpayment transaction</span>
-                                        <span class="label-text-alt text-gray-500">Max size: 5MB</span>
+                                        <span class="label-text-alt text-gray-500">Accepted formats: JPG, JPEG, PNG, GIF (Max size: 5MB)</span>
                                     </label>
                                 </div>
                             </div>
