@@ -15,9 +15,12 @@ if (mysqli_num_rows($table_exists) == 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Verify confirmation checkbox
-    if (!isset($_POST['confirm_details'])) {
-        $_SESSION['message'] = "Please confirm that all details are accurate.";
+    // Debug output
+    error_log("POST data: " . print_r($_POST, true));
+    
+    // Verify confirmation checkbox - modified check
+    if (!isset($_POST['confirm_details']) || $_POST['confirm_details'] != 'on') {
+        $_SESSION['message'] = "Please confirm that all details are accurate by checking the checkbox.";
         $_SESSION['message_type'] = "error";
         header("Location: inquiry.php");
         exit();

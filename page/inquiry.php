@@ -344,6 +344,13 @@ $result = $stmt->get_result();
                                 </div>
                             </div>
 
+                            <!-- Confirmation Checkbox -->
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="confirm_details" name="confirm_details" required>
+                                <label class="form-check-label" for="confirm_details">
+                                    I confirm that all details provided are accurate
+                                </label>
+                            </div>
 
                             <div class="mt-6">
                                 <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
