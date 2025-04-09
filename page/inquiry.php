@@ -345,16 +345,11 @@ $result = $stmt->get_result();
                             </div>
 
                             <!-- Confirmation Checkbox -->
-                            <div class="form-check flex items-center gap-3 border p-3 rounded-lg bg-gray-50">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-shield-check text-red-500 text-2xl"></i>
-                                </div>
-                                <div class="flex items-start">
-                                    <input type="checkbox" class="form-check-input checkbox checkbox-error mt-1" id="confirm_details" name="confirm_details" required>
-                                    <label class="form-check-label ml-2" for="confirm_details">
-                                        I confirm that all details provided are accurate
-                                    </label>
-                                </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="confirm_details" name="confirm_details" required>
+                                <label class="form-check-label" for="confirm_details">
+                                    I confirm that all details provided are accurate
+                                </label>
                             </div>
 
                             <div class="mt-6">
