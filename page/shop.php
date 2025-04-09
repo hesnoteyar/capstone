@@ -224,6 +224,10 @@ function loadAndRender3DModel(modelPath) {
 
             // Fetch and display reviews
             fetchReviews(productId);
+            
+            // Check if user has purchased this product to enable review section
+            verifyPurchase(productId);
+            
             // Add event listener for zoom effect
             const zoomElement = document.querySelector('.zoom');
             const zoomImage = document.querySelector('.zoom img');
@@ -481,7 +485,7 @@ function loadAndRender3DModel(modelPath) {
         }
 
         function submitReview() {
-            const productName = document.getElementById('modal-product-name').textContent;
+            const productId = document.getElementById('modal-product-id').value;
             const ratingInput = document.querySelector('input[name="rating"]:checked');
             const reviewText = document.getElementById('review-text').value;
 
@@ -492,29 +496,47 @@ function loadAndRender3DModel(modelPath) {
 
             const rating = ratingInput.value;
 
-            fetch('submit_review.php', {
+            // First verify if user has purchased this product
+            fetch('verify_purchase.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    product_name: productName,
-                    rating: rating,
-                    review_text: reviewText
+                    product_id: productId
                 })
             })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                return response.text(); // Read the response as text for debugging
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.has_purchased) {
+                    // User has purchased this product, proceed with submitting review
+                    return fetch('submit_review.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            product_id: productId,
+                            rating: rating,
+                            review_text: reviewText
+                        })
+                    });
+                } else {
+                    // User hasn't purchased this product, show error
+                    throw new Error(data.message || 'You need to purchase this product before leaving a review.');
+                }
             })
+            .then(response => response.text())
             .then(text => {
-                console.log('Response text:', text);
                 try {
-                    const data = JSON.parse(text); // Parse the response as JSON
+                    const data = JSON.parse(text);
                     if (data.status === 'success') {
                         showBanner('success', 'Review submitted successfully!');
-                        closeModal();
+                        fetchReviews(productId); // Refresh reviews
+                        
+                        // Clear form
+                        document.querySelectorAll('input[name="rating"]').forEach(input => input.checked = false);
+                        document.getElementById('review-text').value = '';
                     } else {
                         showBanner('error', 'Failed to submit review: ' + data.message);
                     }
@@ -525,7 +547,7 @@ function loadAndRender3DModel(modelPath) {
             })
             .catch(error => {
                 console.error('Error:', error);
-                showBanner('error', 'An error occurred while submitting your review.');
+                showBanner('error', error.message || 'An error occurred while submitting your review.');
             });
         }
 
@@ -557,6 +579,50 @@ function loadAndRender3DModel(modelPath) {
             .catch(error => {
                 console.error('Error:', error);
                 showBanner('error', 'An error occurred while adding to favorites.');
+            });
+        }
+
+        function verifyPurchase(productId) {
+            fetch('verify_purchase.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: productId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const reviewForm = document.getElementById('review-form');
+                const reviewMessage = document.getElementById('review-message');
+                
+                if (data.status === 'success') {
+                    if (data.has_purchased) {
+                        // User has purchased this product, enable review form
+                        reviewForm.classList.remove('hidden');
+                        reviewMessage.classList.add('hidden');
+                    } else {
+                        // User hasn't purchased this product, disable review form
+                        reviewForm.classList.add('hidden');
+                        reviewMessage.classList.remove('hidden');
+                        reviewMessage.textContent = 'You need to purchase this product before you can leave a review.';
+                    }
+                } else {
+                    // Error occurred
+                    reviewForm.classList.add('hidden');
+                    reviewMessage.classList.remove('hidden');
+                    reviewMessage.textContent = 'Error verifying purchase history: ' + data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error verifying purchase:', error);
+                const reviewForm = document.getElementById('review-form');
+                const reviewMessage = document.getElementById('review-message');
+                
+                reviewForm.classList.add('hidden');
+                reviewMessage.classList.remove('hidden');
+                reviewMessage.textContent = 'Error verifying purchase history. Please try again later.';
             });
         }
 
@@ -705,26 +771,32 @@ function loadAndRender3DModel(modelPath) {
                 <br>
                 <h3 class="text-xl font-bold mb-4">Leave a Review</h3>
                 
-                <!-- Star Rating -->
-                <div class="flex items-center mb-4">
-                    <span class="text-gray-600 mr-3">Your Rating:</span>
-                    <div class="rating">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4">
-                        <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5">
-                    </div>
-                </div>
-
-                <!-- Review Text Field -->
-                <textarea id="review-text" class="textarea textarea-bordered w-full mb-4" 
-                          rows="4" placeholder="Write your review here..."></textarea>
+                <!-- Message for users who haven't purchased the product -->
+                <p id="review-message" class="text-yellow-600 mb-4 hidden">You need to purchase this product before you can leave a review.</p>
                 
-                <!-- Submit Button -->
-                <button class="bg-red-700 text-white px-6 py-2 rounded-md hover:bg-red-800 transition duration-300"
-                        onclick="submitReview()">Submit Review
-                </button>
+                <!-- Review form that will be shown/hidden based on purchase verification -->
+                <div id="review-form">
+                    <!-- Star Rating -->
+                    <div class="flex items-center mb-4">
+                        <span class="text-gray-600 mr-3">Your Rating:</span>
+                        <div class="rating">
+                            <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="1">
+                            <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="2">
+                            <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="3">
+                            <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="4">
+                            <input type="radio" name="rating" class="mask mask-star-2 bg-orange-400" value="5">
+                        </div>
+                    </div>
+
+                    <!-- Review Text Field -->
+                    <textarea id="review-text" class="textarea textarea-bordered w-full mb-4" 
+                              rows="4" placeholder="Write your review here..."></textarea>
+                    
+                    <!-- Submit Button -->
+                    <button class="bg-red-700 text-white px-6 py-2 rounded-md hover:bg-red-800 transition duration-300"
+                            onclick="submitReview()">Submit Review
+                    </button>
+                </div>
             </div>
 
             <div class="review-section">
