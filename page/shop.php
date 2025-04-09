@@ -511,15 +511,17 @@ function loadAndRender3DModel(modelPath) {
             .then(data => {
                 if (data.status === 'success' && data.has_purchased) {
                     // User has purchased this product, proceed with submitting review
-                    // Create FormData instead of JSON to match PHP's $_POST expectation
-                    const formData = new FormData();
-                    formData.append('product_name', productName);
-                    formData.append('rating', rating);
-                    formData.append('review_text', reviewText);
-                    
+                    // Use JSON format instead of FormData
                     return fetch('submit_review.php', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            product_name: productName,
+                            rating: rating,
+                            review_text: reviewText
+                        })
                     });
                 } else {
                     // User hasn't purchased this product, show error
