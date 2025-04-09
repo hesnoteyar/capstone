@@ -345,129 +345,124 @@ $result = $stmt->get_result();
                             </div>
 
                             <!-- Confirmation Checkbox -->
-                            <div class="form-check flex items-center gap-3 border p-3 rounded-lg bg-gray-50">lex items-center gap-3 border p-3 rounded-lg bg-gray-50">
+                            <div class="form-check flex items-center gap-3 border p-3 rounded-lg bg-gray-50">
                                 <div class="flex-shrink-0">
-                                    <img src="../assets/images/verify-icon.png" alt="Verification" class="w-8 h-8">l"></i>
+                                    <i class="fas fa-shield-check text-red-500 text-2xl"></i>
                                 </div>
-                                <div class="flex items-start">ss="flex items-start">
-                                    <input type="checkbox" class="form-check-input checkbox checkbox-error mt-1" id="confirm_details" name="confirm_details" required>  <input type="checkbox" class="form-check-input checkbox checkbox-error mt-1" id="confirm_details" name="confirm_details" required>
-                                    <label class="form-check-label ml-2" for="confirm_details">                                    <label class="form-check-label ml-2" for="confirm_details">
-                                        I confirm that all details provided are accurateirm that all details provided are accurate
+                                <div class="flex items-start">
+                                    <input type="checkbox" class="form-check-input checkbox checkbox-error mt-1" id="confirm_details" name="confirm_details" required>
+                                    <label class="form-check-label ml-2" for="confirm_details">
+                                        I confirm that all details provided are accurate
                                     </label>
                                 </div>
                             </div>
 
-                            <div class="mt-6">v class="mt-6">
-                                <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">      <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
-                                    Submit Service Request              Submit Service Request
-                                </button>              </button>
-                            </div>              </div>
-                        </form>             </form>
-                    </div>                    </div>
-                </div>    </div>
+                            <div class="mt-6">
+                                <button class="btn btn-error w-full btn-lg bg-red-600 hover:bg-red-700 border-0 text-white">
+                                    Submit Service Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        // Replace existing alert banner animation with thisrt banner animation with this
-        const alertBanner = document.getElementById('alert-banner');= document.getElementById('alert-banner');
-        if (alertBanner) {anner) {
-            gsap.fromTo(alertBanner, fromTo(alertBanner, 
+        // Replace existing alert banner animation with this
+        const alertBanner = document.getElementById('alert-banner');
+        if (alertBanner) {
+            gsap.fromTo(alertBanner, 
                 {
                     opacity: 0,
-                    x: 1000
+                    x: 100
                 },
                 {
-                    duration: 0.5,      duration: 0.5,
-                    opacity: 1,                    opacity: 1,
+                    duration: 0.5,
+                    opacity: 1,
                     x: 0,
-                    ease: "back.out(1.7)"k.out(1.7)"
+                    ease: "back.out(1.7)"
                 }
             );
 
-            // Auto dismiss after 5 seconds after 5 seconds
+            // Auto dismiss after 5 seconds
             setTimeout(() => {
                 gsap.to(alertBanner, {
-                    duration: 0.5, duration: 0.5,
-                    opacity: 0,pacity: 0,
-                    x: 100,           x: 100,
-                    ease: "power2.in",                    ease: "power2.in",
-                    onComplete: () => alertBanner.remove()=> alertBanner.remove()
+                    duration: 0.5,
+                    opacity: 0,
+                    x: 100,
+                    ease: "power2.in",
+                    onComplete: () => alertBanner.remove()
                 });
             }, 5000);
         }
 
-        // Enhanced GSAP animationstions
-        gsap.from("#hero", {p.from("#hero", {
-            duration: 1.2,            duration: 1.2,
+        // Enhanced GSAP animations
+        gsap.from("#hero", {
+            duration: 1.2,
             y: -50,
             opacity: 0,
-            ease: "power3.out"power3.out"
+            ease: "power3.out"
         });
 
         gsap.from("#services", {
-            duration: 1, duration: 1,
-            x: -50,            x: -50,
+            duration: 1,
+            x: -50,
             opacity: 0,
             delay: 0.3,
-            ease: "back.out(1.7)""back.out(1.7)"
+            ease: "back.out(1.7)"
         });
 
         gsap.from("#form", {
-            duration: 1, duration: 1,
-            x: 50,            x: 50,
+            duration: 1,
+            x: 50,
             opacity: 0,
             delay: 0.3,
-            ease: "back.out(1.7)")"
+            ease: "back.out(1.7)"
         });
 
-        // Hover animations for service cardsrvice cards
-        const cards = document.querySelectorAll('.card');ment.querySelectorAll('.card');
+        // Hover animations for service cards
+        const cards = document.querySelectorAll('.card');
         cards.forEach(card => {
-            card.addEventListener('mouseenter', () => {seenter', () => {
-                gsap.to(card, {p.to(card, {
-                    duration: 0.3,     duration: 0.3,
-                    y: -5,                    y: -5,
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    y: -5,
                     scale: 1.02,
-                    ease: "power2.out"r2.out"
+                    ease: "power2.out"
                 });
             });
 
-            card.addEventListener('mouseleave', () => {seleave', () => {
-                gsap.to(card, {p.to(card, {
-                    duration: 0.3,     duration: 0.3,
-                    y: 0,         y: 0,
-                    scale: 1,                    scale: 1,
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    y: 0,
+                    scale: 1,
                     ease: "power2.out"
                 });
             });
         });
 
-        // Add hover effect for service itemsems
-        document.querySelectorAll('.menu li a').forEach(item => {nu li a').forEach(item => {
-            item.addEventListener('mouseenter', () => {dEventListener('mouseenter', () => {
-                gsap.to(item, { gsap.to(item, {
-                    duration: 0.2,        duration: 0.2,
+        // Add hover effect for service items
+        document.querySelectorAll('.menu li a').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                gsap.to(item, {
+                    duration: 0.2,
                     paddingLeft: '1.5rem',
-                    ease: "power2.out"r2.out"
+                    ease: "power2.out"
                 });
             });
             
-            item.addEventListener('mouseleave', () => {dEventListener('mouseleave', () => {
-                gsap.to(item, { gsap.to(item, {
-                    duration: 0.2,         duration: 0.2,
-                    paddingLeft: '1rem',       paddingLeft: '1rem',
-                    ease: "power2.out"                    ease: "power2.out"
+            item.addEventListener('mouseleave', () => {
+                gsap.to(item, {
+                    duration: 0.2,
+                    paddingLeft: '1rem',
+                    ease: "power2.out"
                 });
-            });     });
-        }); });
-
-
-
-
-
-</html></body>    <?php include '../page/footer.php'; ?>    </script>    </script>
+            });
+        });
+    </script>
 
     <?php include '../page/footer.php'; ?>
 </body>
