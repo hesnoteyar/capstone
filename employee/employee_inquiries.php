@@ -1,7 +1,5 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 include '../employee/employee_topnavbar.php';
 include '../authentication/db.php'; 
@@ -12,14 +10,6 @@ $role = $_SESSION['role'];
 if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
     echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>You are not a Mechanic</div>";
     exit;
-}
-
-// Fetch mechanics from the employee table for the dropdown
-$mechanicsQuery = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as fullName FROM employee WHERE role = 'Mechanic'";
-$mechanicsResult = mysqli_query($conn, $mechanicsQuery);
-$mechanics = [];
-while($mechanic = mysqli_fetch_assoc($mechanicsResult)) {
-    $mechanics[] = $mechanic;
 }
 
 // Fetch inquiries from the database - Update the query to properly handle the BLOB data
@@ -320,58 +310,10 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 const buttonGroup = document.createElement('div');
                 buttonGroup.className = 'flex gap-3';
                 
-                <?php if($role === 'Head Mechanic'): ?>
-                    // Add mechanic selection dropdown for head mechanic
-                    const mechanicSelectionDiv = document.createElement('div');
-                    mechanicSelectionDiv.className = 'mb-3 w-full';
-                    
-                    const selectLabel = document.createElement('label');
-                    selectLabel.className = 'block text-sm font-medium mb-1';
-                    selectLabel.textContent = 'Assign to Mechanic:';
-                    
-                    const mechanicSelect = document.createElement('select');
-                    mechanicSelect.className = 'select select-bordered w-full';
-                    mechanicSelect.name = 'assigned_mechanic';
-                    mechanicSelect.required = true;
-                    
-                    // Default option
-                    const defaultOption = document.createElement('option');
-                    defaultOption.value = '';
-                    defaultOption.textContent = 'Select a mechanic';
-                    defaultOption.selected = true;
-                    defaultOption.disabled = true;
-                    mechanicSelect.appendChild(defaultOption);
-                    
-                    // Add self-assignment option
-                    const selfOption = document.createElement('option');
-                    selfOption.value = '<?php echo $employee_id; ?>';
-                    selfOption.textContent = 'Assign to myself';
-                    mechanicSelect.appendChild(selfOption);
-                    
-                    // Add mechanics from database
-                    <?php foreach($mechanics as $mechanic): ?>
-                    const option<?php echo $mechanic['id']; ?> = document.createElement('option');
-                    option<?php echo $mechanic['id']; ?>.value = '<?php echo $mechanic['id']; ?>';
-                    option<?php echo $mechanic['id']; ?>.textContent = '<?php echo $mechanic['fullName']; ?>';
-                    mechanicSelect.appendChild(option<?php echo $mechanic['id']; ?>);
-                    <?php endforeach; ?>
-                    
-                    mechanicSelectionDiv.appendChild(selectLabel);
-                    mechanicSelectionDiv.appendChild(mechanicSelect);
-                    form.appendChild(mechanicSelectionDiv);
-                    
-                    const assignButton = document.createElement('button');
-                    assignButton.type = 'submit';
-                    assignButton.className = 'btn btn-primary';
-                    assignButton.textContent = 'Assign';
-                    buttonGroup.appendChild(assignButton);
-                <?php else: ?>
-                    const claimButton = document.createElement('button');
-                    claimButton.type = 'submit';
-                    claimButton.className = 'btn btn-primary';
-                    claimButton.textContent = 'Claim';
-                    buttonGroup.appendChild(claimButton);
-                <?php endif; ?>
+                const claimButton = document.createElement('button');
+                claimButton.type = 'submit';
+                claimButton.className = 'btn btn-primary';
+                claimButton.textContent = 'Claim';
                 
                 const closeButton = document.createElement('button');
                 closeButton.type = 'button';
@@ -379,6 +321,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 closeButton.textContent = 'Close';
                 closeButton.onclick = function() { modal.close(); };
                 
+                buttonGroup.appendChild(claimButton);
                 buttonGroup.appendChild(closeButton);
                 form.appendChild(inquiryIdInput);
                 form.appendChild(buttonGroup);
