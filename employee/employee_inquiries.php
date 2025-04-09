@@ -70,7 +70,7 @@ if ($role === 'Head Mechanic') {
     
     // If still no mechanics, try with case-insensitive comparison
     if (empty($mechanics)) {
-        $mechanic_query = "SELECT id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE LOWER(role) = LOWER('Mechanic')";
+        $mechanic_query = "SELECT employee_id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE LOWER(role) = LOWER('Mechanic')";
         $mechanic_result = mysqli_query($conn, $mechanic_query);
         if ($mechanic_result) {
             while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
