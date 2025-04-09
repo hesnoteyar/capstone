@@ -297,7 +297,7 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             const actionsContainer = document.getElementById('modal-actions');
             actionsContainer.innerHTML = '';
             
-            if (inquiry.status == 'Pending') {
+            if (inquiry.status == 'Pending' && !inquiry.service_representative) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = 'claim_inquiry.php';
@@ -310,68 +310,19 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 const buttonGroup = document.createElement('div');
                 buttonGroup.className = 'flex gap-3';
                 
-                // Only show assignment options for Head Mechanic
-                if ('<?php echo $role; ?>' === 'Head Mechanic') {
-                    // Add representative dropdown
-                    const representativeDiv = document.createElement('div');
-                    representativeDiv.className = 'form-control w-full max-w-xs mr-3';
-                    
-                    const representativeLabel = document.createElement('label');
-                    representativeLabel.className = 'label';
-                    representativeLabel.innerHTML = '<span class="label-text">Assign Representative:</span>';
-                    
-                    const representativeSelect = document.createElement('select');
-                    representativeSelect.className = 'select select-bordered';
-                    representativeSelect.name = 'representative';
-                    representativeSelect.required = true;
-                    
-                    // Default option
-                    const defaultOption = document.createElement('option');
-                    defaultOption.value = '';
-                    defaultOption.textContent = 'Select Mechanic';
-                    defaultOption.selected = true;
-                    defaultOption.disabled = true;
-                    representativeSelect.appendChild(defaultOption);
-                    
-                    // Self-assign option
-                    const selfOption = document.createElement('option');
-                    selfOption.value = '<?php echo $employee_name; ?>';
-                    selfOption.textContent = '<?php echo $employee_name; ?> (Self)';
-                    representativeSelect.appendChild(selfOption);
-                    
-                    // Get all mechanics from server
-                    // You'll need to add a PHP endpoint to fetch mechanics
-                    // For now, we'll just use the self option
-                    
-                    representativeDiv.appendChild(representativeLabel);
-                    representativeDiv.appendChild(representativeSelect);
-                    
-                    form.appendChild(representativeDiv);
-                    
-                    const claimButton = document.createElement('button');
-                    claimButton.type = 'submit';
-                    claimButton.className = 'btn btn-primary';
-                    claimButton.textContent = 'Assign & Claim';
-                    
-                    const closeButton = document.createElement('button');
-                    closeButton.type = 'button';
-                    closeButton.className = 'btn';
-                    closeButton.textContent = 'Close';
-                    closeButton.onclick = function() { modal.close(); };
-                    
-                    buttonGroup.appendChild(claimButton);
-                    buttonGroup.appendChild(closeButton);
-                } else {
-                    // For regular mechanics, just show Close button
-                    const closeButton = document.createElement('button');
-                    closeButton.type = 'button';
-                    closeButton.className = 'btn';
-                    closeButton.textContent = 'Close';
-                    closeButton.onclick = function() { modal.close(); };
-                    
-                    buttonGroup.appendChild(closeButton);
-                }
+                const claimButton = document.createElement('button');
+                claimButton.type = 'submit';
+                claimButton.className = 'btn btn-primary';
+                claimButton.textContent = 'Claim';
                 
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn';
+                closeButton.textContent = 'Close';
+                closeButton.onclick = function() { modal.close(); };
+                
+                buttonGroup.appendChild(claimButton);
+                buttonGroup.appendChild(closeButton);
                 form.appendChild(inquiryIdInput);
                 form.appendChild(buttonGroup);
                 actionsContainer.appendChild(form);
