@@ -50,11 +50,32 @@ if (isset($_GET['success'])) {
 // Get all mechanics for the dropdown (for Head Mechanic)
 $mechanics = array();
 if ($role === 'Head Mechanic') {
-    $mechanic_query = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE role = 'Mechanic'";
+    // Updated query to match correct column names in the employee table
+    $mechanic_query = "SELECT id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE role = 'Mechanic'";
     $mechanic_result = mysqli_query($conn, $mechanic_query);
-    if ($mechanic_result) {
+    
+    if (!$mechanic_result) {
+        // Debug: Show error if query fails
+        echo "<div style='display:none;'>Query failed: " . mysqli_error($conn) . "</div>";
+    } else {
+        if (mysqli_num_rows($mechanic_result) == 0) {
+            // Debug: No mechanics found
+            echo "<div style='display:none;'>No mechanics found with query: $mechanic_query</div>";
+        }
+        
         while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
             $mechanics[] = $mechanic;
+        }
+    }
+    
+    // If still no mechanics, try with case-insensitive comparison
+    if (empty($mechanics)) {
+        $mechanic_query = "SELECT id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE LOWER(role) = LOWER('Mechanic')";
+        $mechanic_result = mysqli_query($conn, $mechanic_query);
+        if ($mechanic_result) {
+            while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
+                $mechanics[] = $mechanic;
+            }
         }
     }
 }
