@@ -1,7 +1,5 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 include '../employee/employee_topnavbar.php';
 include '../authentication/db.php'; 
@@ -14,20 +12,10 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
     exit;
 }
 
-// Different queries based on role
-if ($role === 'Head Mechanic') {
-    // Head Mechanic sees all inquiries
-    $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
-              preferred_date, contact_number, description, status, service_representative,
-              proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
-} else {
-    // Regular Mechanic only sees inquiries assigned to them
-    $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
-              preferred_date, contact_number, description, status, service_representative,
-              proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries 
-              WHERE service_representative = '$employee_name'";
-}
-
+// Fetch inquiries from the database - Update the query to properly handle the BLOB data
+$query = "SELECT id, reference_number, brand, model, year_model, service_type, 
+          preferred_date, contact_number, description, status, service_representative,
+          proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
 $result = mysqli_query($conn, $query);
 
 // Error handling
@@ -35,49 +23,10 @@ if (!$result) {
     $error_message = "Failed to fetch inquiries: " . mysqli_error($conn);
 }
 
-// Check for success messages
+// Check for claim success message
 $success_message = "";
-if (isset($_GET['success'])) {
-    if ($_GET['success'] == 'claimed') {
-        $success_message = "You have successfully claimed this inquiry!";
-    } elseif ($_GET['success'] == 'assigned') {
-        $success_message = "You have successfully assigned a mechanic to this inquiry!";
-    } elseif ($_GET['success'] == 'updated') {
-        $success_message = "Inquiry status has been successfully updated!";
-    }
-}
-
-// Get all mechanics for the dropdown (for Head Mechanic)
-$mechanics = array();
-if ($role === 'Head Mechanic') {
-    // Updated query to match correct column names in the employee table
-    $mechanic_query = "SELECT employee_id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE role = 'Mechanic'";
-    $mechanic_result = mysqli_query($conn, $mechanic_query);
-    
-    if (!$mechanic_result) {
-        // Debug: Show error if query fails
-        echo "<div style='display:none;'>Query failed: " . mysqli_error($conn) . "</div>";
-    } else {
-        if (mysqli_num_rows($mechanic_result) == 0) {
-            // Debug: No mechanics found
-            echo "<div style='display:none;'>No mechanics found with query: $mechanic_query</div>";
-        }
-        
-        while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
-            $mechanics[] = $mechanic;
-        }
-    }
-    
-    // If still no mechanics, try with case-insensitive comparison
-    if (empty($mechanics)) {
-        $mechanic_query = "SELECT employee_id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE LOWER(role) = LOWER('Mechanic')";
-        $mechanic_result = mysqli_query($conn, $mechanic_query);
-        if ($mechanic_result) {
-            while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
-                $mechanics[] = $mechanic;
-            }
-        }
-    }
+if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
+    $success_message = "You have successfully claimed this inquiry!";
 }
 ?>
 
@@ -114,9 +63,7 @@ if ($role === 'Head Mechanic') {
     <div class="min-h-screen flex flex-col">
         <div class="flex-grow">
             <div class="container mx-auto p-6">
-                <h1 class="text-3xl font-bold mb-6">
-                    <?php echo $role === 'Head Mechanic' ? 'All Service Inquiries' : 'My Assigned Inquiries'; ?>
-                </h1>
+                <h1 class="text-3xl font-bold mb-6">Service Inquiries</h1>
                 
                 <?php if (isset($error_message)): ?>
                 <div id="errorBanner" class="alert alert-error banner">
@@ -144,10 +91,6 @@ if ($role === 'Head Mechanic') {
                         <option value="all">All</option>
                         <option value="Pending">Pending</option>
                         <option value="Claimed">Claimed</option>
-                        <?php if ($role === 'Mechanic'): ?>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <?php endif; ?>
                     </select>
                 </div>
                 
@@ -161,9 +104,6 @@ if ($role === 'Head Mechanic') {
                                 <th>Service Type</th>
                                 <th>Preferred Date</th>
                                 <th>Status</th>
-                                <?php if ($role === 'Head Mechanic'): ?>
-                                <th>Assigned To</th>
-                                <?php endif; ?>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -176,20 +116,10 @@ if ($role === 'Head Mechanic') {
                                 <td><?php echo $row['service_type']; ?></td>
                                 <td><?php echo $row['preferred_date']; ?></td>
                                 <td>
-                                    <span class="badge <?php 
-                                        if ($row['status'] == 'Pending') echo 'badge-warning';
-                                        elseif ($row['status'] == 'In Progress') echo 'badge-info';
-                                        elseif ($row['status'] == 'Completed') echo 'badge-success';
-                                        else echo 'badge-primary';
-                                    ?>">
+                                    <span class="badge <?php echo $row['status'] == 'Pending' ? 'badge-warning' : 'badge-success'; ?>">
                                         <?php echo $row['status']; ?>
                                     </span>
                                 </td>
-                                <?php if ($role === 'Head Mechanic'): ?>
-                                <td>
-                                    <?php echo $row['service_representative'] ? $row['service_representative'] : 'Unassigned'; ?>
-                                </td>
-                                <?php endif; ?>
                                 <td>
                                     <?php 
                                     $modalData = $row;
@@ -200,7 +130,7 @@ if ($role === 'Head Mechanic') {
                                     }
                                     ?>
                                     <button class="btn btn-error btn-sm" 
-                                            onclick='openInquiryModal(<?php echo json_encode($modalData); ?>, "<?php echo $role; ?>")'>
+                                            onclick='openInquiryModal(<?php echo json_encode($modalData); ?>)'>
                                         View
                                     </button>
                                 </td>
@@ -298,62 +228,7 @@ if ($role === 'Head Mechanic') {
         </div>
     </dialog>
 
-    <!-- Add this new modal for assigning mechanics -->
-    <dialog id="assignMechanicModal" class="modal">
-        <div class="modal-box">
-            <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
-            <h3 class="font-bold text-lg mb-4">Assign Mechanic</h3>
-            <form id="assignMechanicForm" method="POST" action="assign_mechanic.php">
-                <input type="hidden" name="inquiry_id" id="assign_inquiry_id" value="">
-                <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text">Select Mechanic:</span>
-                    </label>
-                    <select name="mechanic" class="select select-bordered w-full" required>
-                        <option value="" disabled selected>Choose a mechanic</option>
-                        <?php foreach ($mechanics as $mechanic): ?>
-                        <option value="<?php echo $mechanic['mechanic_name']; ?>"><?php echo $mechanic['mechanic_name']; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="modal-action">
-                    <button type="submit" class="btn btn-primary">Assign</button>
-                    <button type="button" class="btn" onclick="document.getElementById('assignMechanicModal').close()">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </dialog>
-
-    <!-- Add this new modal for updating inquiry status -->
-    <dialog id="updateStatusModal" class="modal">
-        <div class="modal-box">
-            <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
-            <h3 class="font-bold text-lg mb-4">Update Inquiry Status</h3>
-            <form id="updateStatusForm" method="POST" action="update_inquiry_status.php">
-                <input type="hidden" name="inquiry_id" id="update_inquiry_id" value="">
-                <div class="form-control w-full">
-                    <label class="label">
-                        <span class="label-text">New Status:</span>
-                    </label>
-                    <select name="status" class="select select-bordered w-full" required>
-                        <option value="" disabled selected>Select status</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-                <div class="modal-action">
-                    <button type="submit" class="btn btn-primary">Update</button>
-                    <button type="button" class="btn" onclick="document.getElementById('updateStatusModal').close()">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </dialog>
-
-    <!-- Add the image zoom modal -->
+    <!-- Add this new modal for zoomed image after the inquiry modal -->
     <dialog id="imageZoomModal" class="modal">
         <div class="modal-box max-w-5xl h-auto relative">
             <form method="dialog">
@@ -375,7 +250,7 @@ if ($role === 'Head Mechanic') {
         });
         
         // Modal functionality
-        function openInquiryModal(inquiry, role) {
+        function openInquiryModal(inquiry) {
             const modal = document.getElementById('inquiryModal');
             
             // Set all the values
@@ -416,51 +291,49 @@ if ($role === 'Head Mechanic') {
             // Set status badge
             const statusBadge = document.getElementById('status-badge');
             statusBadge.textContent = inquiry.status;
-            statusBadge.className = `badge ${inquiry.status == 'Pending' ? 'badge-warning' : 
-                                    inquiry.status == 'In Progress' ? 'badge-info' : 
-                                    inquiry.status == 'Completed' ? 'badge-success' : 'badge-primary'} text-lg p-3`;
+            statusBadge.className = `badge ${inquiry.status == 'Pending' ? 'badge-warning' : 'badge-success'} text-lg p-3`;
             
-            // Set action buttons based on role
+            // Set action buttons
             const actionsContainer = document.getElementById('modal-actions');
             actionsContainer.innerHTML = '';
             
-            if (role === 'Head Mechanic') {
-                // Head Mechanic actions - can assign mechanics to inquiries
-                if (inquiry.status !== 'Completed') {
-                    const assignButton = document.createElement('button');
-                    assignButton.type = 'button';
-                    assignButton.className = 'btn btn-primary';
-                    assignButton.textContent = inquiry.service_representative ? 'Reassign Mechanic' : 'Assign Mechanic';
-                    assignButton.onclick = function() {
-                        document.getElementById('assign_inquiry_id').value = inquiry.id;
-                        document.getElementById('assignMechanicModal').showModal();
-                        modal.close();
-                    };
-                    actionsContainer.appendChild(assignButton);
-                }
-            } else if (role === 'Mechanic') {
-                // Mechanic actions - can update status of assigned inquiries
-                if (inquiry.status !== 'Completed' && inquiry.service_representative) {
-                    const updateStatusButton = document.createElement('button');
-                    updateStatusButton.type = 'button';
-                    updateStatusButton.className = 'btn btn-primary';
-                    updateStatusButton.textContent = 'Update Status';
-                    updateStatusButton.onclick = function() {
-                        document.getElementById('update_inquiry_id').value = inquiry.id;
-                        document.getElementById('updateStatusModal').showModal();
-                        modal.close();
-                    };
-                    actionsContainer.appendChild(updateStatusButton);
-                }
+            if (inquiry.status == 'Pending' && !inquiry.service_representative) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'claim_inquiry.php';
+                
+                const inquiryIdInput = document.createElement('input');
+                inquiryIdInput.type = 'hidden';
+                inquiryIdInput.name = 'inquiry_id';
+                inquiryIdInput.value = inquiry.id;
+                
+                const buttonGroup = document.createElement('div');
+                buttonGroup.className = 'flex gap-3';
+                
+                const claimButton = document.createElement('button');
+                claimButton.type = 'submit';
+                claimButton.className = 'btn btn-primary';
+                claimButton.textContent = 'Claim';
+                
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn';
+                closeButton.textContent = 'Close';
+                closeButton.onclick = function() { modal.close(); };
+                
+                buttonGroup.appendChild(claimButton);
+                buttonGroup.appendChild(closeButton);
+                form.appendChild(inquiryIdInput);
+                form.appendChild(buttonGroup);
+                actionsContainer.appendChild(form);
+            } else {
+                const closeButton = document.createElement('button');
+                closeButton.type = 'button';
+                closeButton.className = 'btn';
+                closeButton.textContent = 'Close';
+                closeButton.onclick = function() { modal.close(); };
+                actionsContainer.appendChild(closeButton);
             }
-            
-            // Close button for all roles
-            const closeButton = document.createElement('button');
-            closeButton.type = 'button';
-            closeButton.className = 'btn';
-            closeButton.textContent = 'Close';
-            closeButton.onclick = function() { modal.close(); };
-            actionsContainer.appendChild(closeButton);
             
             // Open the modal
             modal.showModal();
