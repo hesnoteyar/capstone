@@ -486,6 +486,7 @@ function loadAndRender3DModel(modelPath) {
 
         function submitReview() {
             const productId = document.getElementById('modal-product-id').value;
+            const productName = document.getElementById('modal-product-name').textContent;
             const ratingInput = document.querySelector('input[name="rating"]:checked');
             const reviewText = document.getElementById('review-text').value;
 
@@ -510,16 +511,15 @@ function loadAndRender3DModel(modelPath) {
             .then(data => {
                 if (data.status === 'success' && data.has_purchased) {
                     // User has purchased this product, proceed with submitting review
+                    // Create FormData instead of JSON to match PHP's $_POST expectation
+                    const formData = new FormData();
+                    formData.append('product_name', productName);
+                    formData.append('rating', rating);
+                    formData.append('review_text', reviewText);
+                    
                     return fetch('submit_review.php', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            product_id: productId,
-                            rating: rating,
-                            review_text: reviewText
-                        })
+                        body: formData
                     });
                 } else {
                     // User hasn't purchased this product, show error
@@ -528,6 +528,7 @@ function loadAndRender3DModel(modelPath) {
             })
             .then(response => response.text())
             .then(text => {
+                console.log('Raw response:', text); // Debug response
                 try {
                     const data = JSON.parse(text);
                     if (data.status === 'success') {
