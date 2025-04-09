@@ -51,7 +51,7 @@ if (isset($_GET['success'])) {
 $mechanics = array();
 if ($role === 'Head Mechanic') {
     // Updated query to match correct column names in the employee table
-    $mechanic_query = "SELECT id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE role = 'Mechanic'";
+    $mechanic_query = "SELECT employee_id AS employee_id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM employee WHERE role = 'Mechanic'";
     $mechanic_result = mysqli_query($conn, $mechanic_query);
     
     if (!$mechanic_result) {
