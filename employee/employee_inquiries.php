@@ -15,7 +15,7 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
 }
 
 // Fetch mechanics from the employee table for the dropdown
-$mechanicsQuery = "SELECT id, CONCAT(firstName, ' ', lastName) as fullName FROM employee WHERE role = 'Mechanic'";
+$mechanicsQuery = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as fullName FROM employee WHERE role = 'Mechanic'";
 $mechanicsResult = mysqli_query($conn, $mechanicsQuery);
 $mechanics = [];
 while($mechanic = mysqli_fetch_assoc($mechanicsResult)) {
