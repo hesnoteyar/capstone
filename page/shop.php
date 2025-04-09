@@ -528,6 +528,7 @@ function loadAndRender3DModel(modelPath) {
                     throw new Error(data.message || 'You need to purchase this product before leaving a review.');
                 }
             })
+            
             .then(response => response.text())
             .then(text => {
                 console.log('Raw response:', text); // Debug response
