@@ -50,7 +50,7 @@ if (isset($_GET['success'])) {
 // Get all mechanics for the dropdown (for Head Mechanic)
 $mechanics = array();
 if ($role === 'Head Mechanic') {
-    $mechanic_query = "SELECT id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM users WHERE role = 'Mechanic'";
+    $mechanic_query = "SELECT id, CONCAT(firstName, ' ', lastName) as mechanic_name FROM emoloyee WHERE role = 'Mechanic'";
     $mechanic_result = mysqli_query($conn, $mechanic_query);
     if ($mechanic_result) {
         while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
