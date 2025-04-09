@@ -12,41 +12,21 @@ if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
     exit;
 }
 
-// Fetch inquiries from the database - different queries based on role
+// Fetch inquiries from the database - Update the query to properly handle the BLOB data
 $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
           preferred_date, contact_number, description, status, service_representative,
           proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
-
-// Filter inquiries for regular mechanics - only show assigned inquiries
-if ($role === 'Mechanic') {
-    $query .= " WHERE service_representative = '$employee_name'";
-}
-
 $result = mysqli_query($conn, $query);
-
-// Fetch all mechanics for the assignment dropdown (for Head Mechanic)
-$mechanics = [];
-if ($role === 'Head Mechanic') {
-    $mechanic_query = "SELECT id, CONCAT(firstName, ' ', lastName) as fullName FROM users WHERE role = 'Mechanic'";
-    $mechanic_result = mysqli_query($conn, $mechanic_query);
-    while ($mechanic = mysqli_fetch_assoc($mechanic_result)) {
-        $mechanics[] = $mechanic;
-    }
-}
 
 // Error handling
 if (!$result) {
     $error_message = "Failed to fetch inquiries: " . mysqli_error($conn);
 }
 
-// Check for success messages
+// Check for claim success message
 $success_message = "";
-if (isset($_GET['success'])) {
-    if ($_GET['success'] == 'claimed') {
-        $success_message = "You have successfully claimed this inquiry!";
-    } else if ($_GET['success'] == 'assigned') {
-        $success_message = "You have successfully assigned this inquiry!";
-    }
+if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
+    $success_message = "You have successfully claimed this inquiry!";
 }
 ?>
 
@@ -317,65 +297,23 @@ if (isset($_GET['success'])) {
             const actionsContainer = document.getElementById('modal-actions');
             actionsContainer.innerHTML = '';
             
-            <?php if ($role === 'Head Mechanic'): ?>
             if (inquiry.status == 'Pending' && !inquiry.service_representative) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = 'assign_inquiry.php';
+                form.action = 'claim_inquiry.php';
                 
                 const inquiryIdInput = document.createElement('input');
                 inquiryIdInput.type = 'hidden';
                 inquiryIdInput.name = 'inquiry_id';
                 inquiryIdInput.value = inquiry.id;
                 
-                const formGroup = document.createElement('div');
-                formGroup.className = 'form-control mb-4';
-                
-                const label = document.createElement('label');
-                label.className = 'label';
-                label.innerHTML = '<span class="label-text">Assign to Mechanic:</span>';
-                
-                const selectGroup = document.createElement('div');
-                selectGroup.className = 'flex gap-3';
-                
-                const select = document.createElement('select');
-                select.name = 'mechanic';
-                select.className = 'select select-bordered w-full';
-                select.required = true;
-                
-                // Add default option
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = 'Select a Mechanic';
-                defaultOption.selected = true;
-                defaultOption.disabled = true;
-                select.appendChild(defaultOption);
-                
-                // Add mechanic options from PHP
-                <?php foreach ($mechanics as $mechanic): ?>
-                const option<?php echo $mechanic['id']; ?> = document.createElement('option');
-                option<?php echo $mechanic['id']; ?>.value = "<?php echo $mechanic['fullName']; ?>";
-                option<?php echo $mechanic['id']; ?>.textContent = "<?php echo $mechanic['fullName']; ?>";
-                select.appendChild(option<?php echo $mechanic['id']; ?>);
-                <?php endforeach; ?>
-                
-                // Add self-assignment option
-                const selfOption = document.createElement('option');
-                selfOption.value = "<?php echo $employee_name; ?>";
-                selfOption.textContent = "Assign to myself";
-                select.appendChild(selfOption);
-                
-                selectGroup.appendChild(select);
-                formGroup.appendChild(label);
-                formGroup.appendChild(selectGroup);
-                
                 const buttonGroup = document.createElement('div');
-                buttonGroup.className = 'flex gap-3 mt-4';
+                buttonGroup.className = 'flex gap-3';
                 
-                const assignButton = document.createElement('button');
-                assignButton.type = 'submit';
-                assignButton.className = 'btn btn-primary';
-                assignButton.textContent = 'Assign';
+                const claimButton = document.createElement('button');
+                claimButton.type = 'submit';
+                claimButton.className = 'btn btn-primary';
+                claimButton.textContent = 'Claim';
                 
                 const closeButton = document.createElement('button');
                 closeButton.type = 'button';
@@ -383,11 +321,9 @@ if (isset($_GET['success'])) {
                 closeButton.textContent = 'Close';
                 closeButton.onclick = function() { modal.close(); };
                 
-                buttonGroup.appendChild(assignButton);
+                buttonGroup.appendChild(claimButton);
                 buttonGroup.appendChild(closeButton);
-                
                 form.appendChild(inquiryIdInput);
-                form.appendChild(formGroup);
                 form.appendChild(buttonGroup);
                 actionsContainer.appendChild(form);
             } else {
@@ -398,15 +334,6 @@ if (isset($_GET['success'])) {
                 closeButton.onclick = function() { modal.close(); };
                 actionsContainer.appendChild(closeButton);
             }
-            <?php else: ?>
-            // For regular mechanic, just show close button
-            const closeButton = document.createElement('button');
-            closeButton.type = 'button';
-            closeButton.className = 'btn';
-            closeButton.textContent = 'Close';
-            closeButton.onclick = function() { modal.close(); };
-            actionsContainer.appendChild(closeButton);
-            <?php endif; ?>
             
             // Open the modal
             modal.showModal();
