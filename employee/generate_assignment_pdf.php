@@ -62,47 +62,67 @@ if ($row = mysqli_fetch_assoc($result)) {
     $pdf->Cell(0, 10, 'Reference Number: ' . $row['reference_number'], 0, 1);
     $pdf->Ln(5);
     
+    // Define consistent styling for section headers
+    $pdf->SetFillColor(240, 240, 240);
+    $pdf->SetDrawColor(120, 120, 120);
+    
     // Vehicle details section
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Vehicle Details', 0, 1);
-    $pdf->SetDrawColor(200, 200, 200);
+    $pdf->Cell(0, 10, 'VEHICLE DETAILS', 0, 1, 'L', true);
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
-    $pdf->Ln(2);
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(50, 10, 'Brand:', 0, 0);
-    $pdf->Cell(0, 10, $row['brand'], 0, 1);
-    $pdf->Cell(50, 10, 'Model:', 0, 0);
-    $pdf->Cell(0, 10, $row['model'], 0, 1);
-    $pdf->Cell(50, 10, 'Year Model:', 0, 0);
-    $pdf->Cell(0, 10, $row['year_model'], 0, 1);
-    $pdf->Ln(5);
+    $pdf->Ln(3);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Brand:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['brand'], 0, 1);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Model:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['model'], 0, 1);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Year Model:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['year_model'], 0, 1);
+    $pdf->Ln(6);
     
     // Service details section
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Service Details', 0, 1);
+    $pdf->Cell(0, 10, 'SERVICE DETAILS', 0, 1, 'L', true);
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
-    $pdf->Ln(2);
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(50, 10, 'Service Type:', 0, 0);
-    $pdf->Cell(0, 10, $row['service_type'], 0, 1);
-    $pdf->Cell(50, 10, 'Preferred Date:', 0, 0);
-    $pdf->Cell(0, 10, $row['preferred_date'], 0, 1);
-    $pdf->Cell(50, 10, 'Contact Number:', 0, 0);
-    $pdf->Cell(0, 10, $row['contact_number'], 0, 1);
-    $pdf->Ln(5);
+    $pdf->Ln(3);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Service Type:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['service_type'], 0, 1);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Preferred Date:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['preferred_date'], 0, 1);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(50, 8, 'Contact Number:', 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell(0, 8, $row['contact_number'], 0, 1);
+    $pdf->Ln(6);
     
     // Description section
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Service Description', 0, 1);
+    $pdf->Cell(0, 10, 'SERVICE DESCRIPTION', 0, 1, 'L', true);
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
-    $pdf->Ln(2);
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->MultiCell(0, 10, $row['description']);
-    $pdf->Ln(5);
+    $pdf->Ln(3);
+    
+    // Add a bordered box for the description
+    $pdf->SetFillColor(252, 252, 252);
+    $pdf->SetFont('Arial', '', 10);
+    $startY = $pdf->GetY();
+    $pdf->MultiCell(0, 8, $row['description'], 0, 'L', true);
+    $endY = $pdf->GetY();
+    $pdf->Rect(10, $startY, 190, $endY - $startY);
+    $pdf->Ln(6);
     
     // Assignment section
+    $pdf->SetFillColor(240, 240, 240);
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Assignment Details', 0, 1);
+    $pdf->Cell(0, 10, 'ASSIGNMENT DETAILS', 0, 1, 'L', true);
     $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
     $pdf->Ln(2);
     $pdf->SetFont('Arial', '', 12);
