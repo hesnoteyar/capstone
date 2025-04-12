@@ -87,18 +87,6 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
     }
     .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
     .inquiry-row:hover { background-color: #f9fafb; }
-    .progress-bar {
-      height: 20px;
-      background-color: #e2e8f0;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background-color: #10b981;
-      border-radius: 10px;
-      transition: width 0.5s ease-in-out;
-    }
   </style>
 </head>
 <body class="bg-base-200">
@@ -153,9 +141,6 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                                 <th>Service Type</th>
                                 <th>Preferred Date</th>
                                 <th>Status</th>
-                                <?php if ($role === 'Mechanic'): ?>
-                                <th>Progress</th>
-                                <?php endif; ?>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -179,17 +164,6 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                                         <?php echo $row['status']; ?>
                                     </span>
                                 </td>
-                                <?php if ($role === 'Mechanic'): ?>
-                                <td>
-                                    <?php 
-                                    $progress = isset($row['progress']) ? intval($row['progress']) : 0;
-                                    ?>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: <?php echo $progress; ?>%"></div>
-                                    </div>
-                                    <div class="text-xs text-right mt-1"><?php echo $progress; ?>%</div>
-                                </td>
-                                <?php endif; ?>
                                 <td>
                                     <?php 
                                     $modalData = $row;
@@ -292,19 +266,11 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                 <p id="service-rep"></p>
             </div>
             
-            <!-- Progress tracking section for mechanics -->
-            <div class="mt-6" id="progress-update-section" style="display: none;">
-                <h5 class="text-lg font-bold mb-3">Update Progress</h5>
-                <form id="update-progress-form" method="POST" action="update_progress.php">
-                    <input type="hidden" id="progress-inquiry-id" name="inquiry_id" value="">
-                    
-                    <div class="mt-3">
-                        <label class="block mb-2">Current Progress:</label>
-                        <div class="flex items-center gap-4">
-                            <input type="range" id="progress-slider" name="progress" min="0" max="100" value="0" class="range range-primary" />
-                            <span id="progress-value" class="text-lg font-bold">0%</span>
-                        </div>
-                    </div>
+            <!-- Status update section for mechanics -->
+            <div class="mt-6" id="status-update-section" style="display: none;">
+                <h5 class="text-lg font-bold mb-3">Update Service Status</h5>
+                <form id="update-status-form" method="POST" action="update_status.php">
+                    <input type="hidden" id="status-inquiry-id" name="inquiry_id" value="">
                     
                     <div class="mt-3">
                         <label class="block mb-2">Status:</label>
@@ -316,7 +282,7 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                     </div>
                     
                     <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">Update Progress</button>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
                     </div>
                 </form>
             </div>
@@ -370,13 +336,6 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
             });
         });
         
-        // Progress slider functionality
-        if (document.getElementById('progress-slider')) {
-            document.getElementById('progress-slider').addEventListener('input', function() {
-                document.getElementById('progress-value').textContent = this.value + '%';
-            });
-        }
-        
         // Modal functionality
         function openInquiryModal(inquiry) {
             const modal = document.getElementById('inquiryModal');
@@ -413,20 +372,15 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
             
             // Show/hide sections based on role
             const mechanicAssignmentSection = document.getElementById('mechanic-assignment-section');
-            const progressUpdateSection = document.getElementById('progress-update-section');
+            const statusUpdateSection = document.getElementById('status-update-section');
             
             // Handle mechanics view
             if (userRole === 'Mechanic') {
                 mechanicAssignmentSection.style.display = 'none';
                 
                 if (inquiry.service_representative === "<?php echo $employee_name; ?>") {
-                    progressUpdateSection.style.display = 'block';
-                    document.getElementById('progress-inquiry-id').value = inquiry.id;
-                    
-                    // Set current progress
-                    const currentProgress = inquiry.progress ? parseInt(inquiry.progress) : 0;
-                    document.getElementById('progress-slider').value = currentProgress;
-                    document.getElementById('progress-value').textContent = currentProgress + '%';
+                    statusUpdateSection.style.display = 'block';
+                    document.getElementById('status-inquiry-id').value = inquiry.id;
                     
                     // Set current status in dropdown
                     const statusSelect = document.getElementById('status-select');
@@ -437,12 +391,12 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                         }
                     }
                 } else {
-                    progressUpdateSection.style.display = 'none';
+                    statusUpdateSection.style.display = 'none';
                 }
             } 
             // Handle head mechanic view
             else if (userRole === 'Head Mechanic') {
-                progressUpdateSection.style.display = 'none';
+                statusUpdateSection.style.display = 'none';
                 
                 if (inquiry.status == 'Pending' && !inquiry.service_representative) {
                     mechanicAssignmentSection.style.display = 'block';
