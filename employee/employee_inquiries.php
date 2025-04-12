@@ -9,25 +9,34 @@ $employee_id = $_SESSION['id'];
 $employee_name = $_SESSION['firstName'] . " " . $_SESSION['lastName'];
 $role = $_SESSION['role'];
 
-// Restrict access to Head Mechanics only
-if ($role !== 'Head Mechanic') {
-    echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>Only Head Mechanics can access this page</div>";
+// Check if user is either Head Mechanic or Mechanic
+if ($role !== 'Head Mechanic' && $role !== 'Mechanic') {
+    echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>Only Head Mechanics and Mechanics can access this page</div>";
     exit;
 }
 
-// Fetch all mechanics from the employee table
-$mechanics_query = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as full_name FROM employee WHERE role = 'Mechanic'";
-$mechanics_result = mysqli_query($conn, $mechanics_query);
+// Fetch all mechanics from the employee table (for Head Mechanic)
+if ($role === 'Head Mechanic') {
+    $mechanics_query = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as full_name FROM employee WHERE role = 'Mechanic'";
+    $mechanics_result = mysqli_query($conn, $mechanics_query);
 
-$mechanics = [];
-while ($mechanic = mysqli_fetch_assoc($mechanics_result)) {
-    $mechanics[] = $mechanic;
+    $mechanics = [];
+    while ($mechanic = mysqli_fetch_assoc($mechanics_result)) {
+        $mechanics[] = $mechanic;
+    }
 }
 
 // Fetch inquiries from the database
+// For Head Mechanics - all inquiries, For Mechanics - only assigned to them
 $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
           preferred_date, contact_number, description, status, service_representative,
-          proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
+          proof, CONVERT(proof USING utf8) as proof_base64, progress FROM service_inquiries";
+
+// Add condition for mechanics to only see their assigned inquiries
+if ($role === 'Mechanic') {
+    $query .= " WHERE service_representative = '$employee_name'";
+}
+
 $result = mysqli_query($conn, $query);
 
 // Error handling
@@ -42,11 +51,13 @@ if (isset($_GET['success'])) {
         $success_message = "You have successfully claimed this inquiry!";
     } else if ($_GET['success'] == 'assigned') {
         $success_message = "Mechanic has been successfully assigned to this inquiry!";
+    } else if ($_GET['success'] == 'progress_updated') {
+        $success_message = "Progress has been successfully updated!";
     }
 }
 
 if (isset($_GET['error']) && $_GET['error'] == 'failed') {
-    $error_message = "Failed to assign mechanic. Please try again.";
+    $error_message = "Operation failed. Please try again.";
 }
 ?>
 
@@ -76,6 +87,18 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
     }
     .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
     .inquiry-row:hover { background-color: #f9fafb; }
+    .progress-bar {
+      height: 20px;
+      background-color: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background-color: #10b981;
+      border-radius: 10px;
+      transition: width 0.5s ease-in-out;
+    }
   </style>
 </head>
 <body class="bg-base-200">
@@ -83,7 +106,9 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
     <div class="min-h-screen flex flex-col">
         <div class="flex-grow">
             <div class="container mx-auto p-6">
-                <h1 class="text-3xl font-bold mb-6">Service Inquiries</h1>
+                <h1 class="text-3xl font-bold mb-6">
+                    <?php echo ($role === 'Head Mechanic') ? 'Service Inquiries' : 'My Assigned Inquiries'; ?>
+                </h1>
                 
                 <?php if (isset($error_message)): ?>
                 <div id="errorBanner" class="alert alert-error banner">
@@ -111,6 +136,10 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                         <option value="all">All</option>
                         <option value="Pending">Pending</option>
                         <option value="Claimed">Claimed</option>
+                        <?php if ($role === 'Mechanic'): ?>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <?php endif; ?>
                     </select>
                 </div>
                 
@@ -124,6 +153,9 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                                 <th>Service Type</th>
                                 <th>Preferred Date</th>
                                 <th>Status</th>
+                                <?php if ($role === 'Mechanic'): ?>
+                                <th>Progress</th>
+                                <?php endif; ?>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -136,10 +168,28 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                                 <td><?php echo $row['service_type']; ?></td>
                                 <td><?php echo $row['preferred_date']; ?></td>
                                 <td>
-                                    <span class="badge <?php echo $row['status'] == 'Pending' ? 'badge-warning' : 'badge-success'; ?>">
+                                    <span class="badge 
+                                        <?php 
+                                        if ($row['status'] == 'Pending') echo 'badge-warning';
+                                        elseif ($row['status'] == 'Claimed') echo 'badge-info';
+                                        elseif ($row['status'] == 'In Progress') echo 'badge-primary';
+                                        elseif ($row['status'] == 'Completed') echo 'badge-success';
+                                        else echo 'badge-secondary';
+                                        ?>">
                                         <?php echo $row['status']; ?>
                                     </span>
                                 </td>
+                                <?php if ($role === 'Mechanic'): ?>
+                                <td>
+                                    <?php 
+                                    $progress = isset($row['progress']) ? intval($row['progress']) : 0;
+                                    ?>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: <?php echo $progress; ?>%"></div>
+                                    </div>
+                                    <div class="text-xs text-right mt-1"><?php echo $progress; ?>%</div>
+                                </td>
+                                <?php endif; ?>
                                 <td>
                                     <?php 
                                     $modalData = $row;
@@ -242,16 +292,47 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                 <p id="service-rep"></p>
             </div>
             
+            <!-- Progress tracking section for mechanics -->
+            <div class="mt-6" id="progress-update-section" style="display: none;">
+                <h5 class="text-lg font-bold mb-3">Update Progress</h5>
+                <form id="update-progress-form" method="POST" action="update_progress.php">
+                    <input type="hidden" id="progress-inquiry-id" name="inquiry_id" value="">
+                    
+                    <div class="mt-3">
+                        <label class="block mb-2">Current Progress:</label>
+                        <div class="flex items-center gap-4">
+                            <input type="range" id="progress-slider" name="progress" min="0" max="100" value="0" class="range range-primary" />
+                            <span id="progress-value" class="text-lg font-bold">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <label class="block mb-2">Status:</label>
+                        <select name="status" id="status-select" class="select select-bordered w-full">
+                            <option value="Claimed">Claimed</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Update Progress</button>
+                    </div>
+                </form>
+            </div>
+            
             <!-- Add mechanic assignment section -->
-            <div class="mt-6" id="mechanic-assignment-section">
+            <div class="mt-6" id="mechanic-assignment-section" style="display: none;">
                 <h5 class="text-lg font-bold mb-3">Assign Mechanic</h5>
                 <form id="assign-mechanic-form" method="POST" action="assign_mechanic.php">
                     <input type="hidden" id="inquiry-id" name="inquiry_id" value="">
                     <select id="mechanic-select" name="mechanic_name" class="select select-bordered w-full">
                         <option value="">Select a Mechanic</option>
-                        <?php foreach ($mechanics as $mechanic): ?>
-                            <option value="<?= $mechanic['full_name'] ?>"><?= $mechanic['full_name'] ?></option>
-                        <?php endforeach; ?>
+                        <?php if ($role === 'Head Mechanic'): ?>
+                            <?php foreach ($mechanics as $mechanic): ?>
+                                <option value="<?= $mechanic['full_name'] ?>"><?= $mechanic['full_name'] ?></option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Assign Mechanic</button>
@@ -285,9 +366,16 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
         document.getElementById('statusFilter').addEventListener('change', function() {
             const selectedStatus = this.value.toLowerCase();
             document.querySelectorAll('.inquiry-row').forEach(row => {
-                row.style.display = (selectedStatus === 'all' || row.dataset.status.toLowerCase() === selectedStatus) ? '' : 'none';
+                row.style.display = (selectedStatus === 'all' || row.dataset.status.toLowerCase() === selectedStatus.toLowerCase()) ? '' : 'none';
             });
         });
+        
+        // Progress slider functionality
+        if (document.getElementById('progress-slider')) {
+            document.getElementById('progress-slider').addEventListener('input', function() {
+                document.getElementById('progress-value').textContent = this.value + '%';
+            });
+        }
         
         // Modal functionality
         function openInquiryModal(inquiry) {
@@ -304,16 +392,72 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
             document.getElementById('description').textContent = inquiry.description;
             document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
             
-            // Set the inquiry ID for the mechanic assignment form
+            // Set status badge
+            const statusBadge = document.getElementById('status-badge');
+            statusBadge.textContent = inquiry.status;
+            
+            if (inquiry.status == 'Pending') {
+                statusBadge.className = 'badge badge-warning text-lg p-3';
+            } else if (inquiry.status == 'Claimed') {
+                statusBadge.className = 'badge badge-info text-lg p-3';
+            } else if (inquiry.status == 'In Progress') {
+                statusBadge.className = 'badge badge-primary text-lg p-3';
+            } else if (inquiry.status == 'Completed') {
+                statusBadge.className = 'badge badge-success text-lg p-3';
+            } else {
+                statusBadge.className = 'badge badge-secondary text-lg p-3';
+            }
+            
+            // Set the inquiry ID
             document.getElementById('inquiry-id').value = inquiry.id;
             
-            // Pre-select the current mechanic in the dropdown if one is assigned
-            if (inquiry.service_representative) {
-                const selectElement = document.getElementById('mechanic-select');
-                for (let i = 0; i < selectElement.options.length; i++) {
-                    if (selectElement.options[i].value === inquiry.service_representative) {
-                        selectElement.selectedIndex = i;
-                        break;
+            // Show/hide sections based on role
+            const mechanicAssignmentSection = document.getElementById('mechanic-assignment-section');
+            const progressUpdateSection = document.getElementById('progress-update-section');
+            
+            // Handle mechanics view
+            if (userRole === 'Mechanic') {
+                mechanicAssignmentSection.style.display = 'none';
+                
+                if (inquiry.service_representative === "<?php echo $employee_name; ?>") {
+                    progressUpdateSection.style.display = 'block';
+                    document.getElementById('progress-inquiry-id').value = inquiry.id;
+                    
+                    // Set current progress
+                    const currentProgress = inquiry.progress ? parseInt(inquiry.progress) : 0;
+                    document.getElementById('progress-slider').value = currentProgress;
+                    document.getElementById('progress-value').textContent = currentProgress + '%';
+                    
+                    // Set current status in dropdown
+                    const statusSelect = document.getElementById('status-select');
+                    for (let i = 0; i < statusSelect.options.length; i++) {
+                        if (statusSelect.options[i].value === inquiry.status) {
+                            statusSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                } else {
+                    progressUpdateSection.style.display = 'none';
+                }
+            } 
+            // Handle head mechanic view
+            else if (userRole === 'Head Mechanic') {
+                progressUpdateSection.style.display = 'none';
+                
+                if (inquiry.status == 'Pending' && !inquiry.service_representative) {
+                    mechanicAssignmentSection.style.display = 'block';
+                } else {
+                    mechanicAssignmentSection.style.display = 'none';
+                }
+                
+                // Pre-select the current mechanic in the dropdown if one is assigned
+                if (inquiry.service_representative) {
+                    const selectElement = document.getElementById('mechanic-select');
+                    for (let i = 0; i < selectElement.options.length; i++) {
+                        if (selectElement.options[i].value === inquiry.service_representative) {
+                            selectElement.selectedIndex = i;
+                            break;
+                        }
                     }
                 }
             }
@@ -342,16 +486,11 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                 proofContainer.innerHTML = '<p class="text-gray-400">No proof available</p>';
             }
             
-            // Set status badge
-            const statusBadge = document.getElementById('status-badge');
-            statusBadge.textContent = inquiry.status;
-            statusBadge.className = `badge ${inquiry.status == 'Pending' ? 'badge-warning' : 'badge-success'} text-lg p-3`;
-            
             // Set action buttons
             const actionsContainer = document.getElementById('modal-actions');
             actionsContainer.innerHTML = '';
             
-            if (inquiry.status == 'Pending' && !inquiry.service_representative) {
+            if (userRole === 'Head Mechanic' && inquiry.status == 'Pending' && !inquiry.service_representative) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = 'claim_inquiry.php';
