@@ -16,7 +16,7 @@ if ($role !== 'Head Mechanic') {
 }
 
 // Fetch all mechanics from the employee table
-$mechanics_query = "SELECT id, CONCAT(firstName, ' ', lastName) as full_name FROM employee WHERE role = 'Mechanic'";
+$mechanics_query = "SELECT employee_id, CONCAT(firstName, ' ', lastName) as full_name FROM employee WHERE role = 'Mechanic'";
 $mechanics_result = mysqli_query($conn, $mechanics_query);
 
 $mechanics = [];
