@@ -259,6 +259,17 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
                 </form>
             </div>
             
+            <!-- Add PDF download button section -->
+            <div class="mt-6" id="pdf-download-section" style="display: none;">
+                <h5 class="text-lg font-bold mb-3">Assignment Document</h5>
+                <a id="download-pdf-btn" href="#" class="btn btn-outline btn-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Download Assignment PDF
+                </a>
+            </div>
+            
             <div class="modal-action" id="modal-actions">
                 <!-- Action buttons will be added here by JavaScript -->
             </div>
@@ -346,6 +357,18 @@ if (isset($_GET['error']) && $_GET['error'] == 'failed') {
             const statusBadge = document.getElementById('status-badge');
             statusBadge.textContent = inquiry.status;
             statusBadge.className = `badge ${inquiry.status == 'Pending' ? 'badge-warning' : 'badge-success'} text-lg p-3`;
+            
+            // Show/hide PDF download button based on whether a mechanic is assigned
+            const pdfDownloadSection = document.getElementById('pdf-download-section');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            
+            if (inquiry.service_representative) {
+                pdfDownloadSection.style.display = 'block';
+                const pdfUrl = `generate_assignment_pdf.php?inquiry_id=${inquiry.id}&mechanic=${encodeURIComponent(inquiry.service_representative)}&head_mechanic=${encodeURIComponent("<?php echo $employee_name; ?>")}`;
+                downloadPdfBtn.href = pdfUrl;
+            } else {
+                pdfDownloadSection.style.display = 'none';
+            }
             
             // Set action buttons
             const actionsContainer = document.getElementById('modal-actions');

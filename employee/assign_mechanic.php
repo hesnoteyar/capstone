@@ -18,9 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = mysqli_stmt_execute($stmt);
     
     if ($result) {
-        // If assignment was successful, redirect to the PDF generation
-        $head_mechanic_name = $_SESSION['firstName'] . " " . $_SESSION['lastName'];
-        header("Location: generate_assignment_pdf.php?inquiry_id=" . $inquiry_id . "&mechanic=" . urlencode($mechanic_name) . "&head_mechanic=" . urlencode($head_mechanic_name));
+        // Redirect back with success message
+        header("Location: employee_inquiries.php?success=assigned");
         exit;
     } else {
         header("Location: employee_inquiries.php?error=failed");
