@@ -30,7 +30,7 @@ if ($role === 'Head Mechanic') {
 // For Head Mechanics - all inquiries, For Mechanics - only assigned to them
 $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
           preferred_date, contact_number, description, status, service_representative,
-          proof, CONVERT(proof USING utf8) as proof_base64, progress FROM service_inquiries";
+          proof, CONVERT(proof USING utf8) as proof_base64, FROM service_inquiries";
 
 // Add condition for mechanics to only see their assigned inquiries
 if ($role === 'Mechanic') {
