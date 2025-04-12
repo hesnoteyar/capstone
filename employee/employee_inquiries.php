@@ -7,12 +7,22 @@ $employee_id = $_SESSION['id'];
 $employee_name = $_SESSION['firstName'] . " " . $_SESSION['lastName'];
 $role = $_SESSION['role'];
 
-if ($role !== 'Mechanic' && $role !== 'Head Mechanic') {
-    echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>You are not a Mechanic</div>";
+// Restrict access to Head Mechanics only
+if ($role !== 'Head Mechanic') {
+    echo "<div class='container mx-auto p-4 text-center text-xl text-red-600 font-bold'>Only Head Mechanics can access this page</div>";
     exit;
 }
 
-// Fetch inquiries from the database - Update the query to properly handle the BLOB data
+// Fetch all mechanics from the employee table
+$mechanics_query = "SELECT id, CONCAT(firstName, ' ', lastName) as full_name FROM employee WHERE role = 'Mechanic'";
+$mechanics_result = mysqli_query($conn, $mechanics_query);
+
+$mechanics = [];
+while ($mechanic = mysqli_fetch_assoc($mechanics_result)) {
+    $mechanics[] = $mechanic;
+}
+
+// Fetch inquiries from the database
 $query = "SELECT id, reference_number, brand, model, year_model, service_type, 
           preferred_date, contact_number, description, status, service_representative,
           proof, CONVERT(proof USING utf8) as proof_base64 FROM service_inquiries";
@@ -23,10 +33,18 @@ if (!$result) {
     $error_message = "Failed to fetch inquiries: " . mysqli_error($conn);
 }
 
-// Check for claim success message
+// Check for messages
 $success_message = "";
-if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
-    $success_message = "You have successfully claimed this inquiry!";
+if (isset($_GET['success'])) {
+    if ($_GET['success'] == 'claimed') {
+        $success_message = "You have successfully claimed this inquiry!";
+    } else if ($_GET['success'] == 'assigned') {
+        $success_message = "Mechanic has been successfully assigned to this inquiry!";
+    }
+}
+
+if (isset($_GET['error']) && $_GET['error'] == 'failed') {
+    $error_message = "Failed to assign mechanic. Please try again.";
 }
 ?>
 
@@ -222,6 +240,23 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
                 <p id="service-rep"></p>
             </div>
             
+            <!-- Add mechanic assignment section -->
+            <div class="mt-6" id="mechanic-assignment-section">
+                <h5 class="text-lg font-bold mb-3">Assign Mechanic</h5>
+                <form id="assign-mechanic-form" method="POST" action="assign_mechanic.php">
+                    <input type="hidden" id="inquiry-id" name="inquiry_id" value="">
+                    <select id="mechanic-select" name="mechanic_name" class="select select-bordered w-full">
+                        <option value="">Select a Mechanic</option>
+                        <?php foreach ($mechanics as $mechanic): ?>
+                            <option value="<?= $mechanic['full_name'] ?>"><?= $mechanic['full_name'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Assign Mechanic</button>
+                    </div>
+                </form>
+            </div>
+            
             <div class="modal-action" id="modal-actions">
                 <!-- Action buttons will be added here by JavaScript -->
             </div>
@@ -241,6 +276,9 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
     </dialog>
     
     <script>
+        // Add user role for JavaScript
+        const userRole = "<?php echo $role; ?>";
+        
         // Filter functionality
         document.getElementById('statusFilter').addEventListener('change', function() {
             const selectedStatus = this.value.toLowerCase();
@@ -263,6 +301,20 @@ if (isset($_GET['success']) && $_GET['success'] == 'claimed') {
             document.getElementById('contact-number').textContent = inquiry.contact_number;
             document.getElementById('description').textContent = inquiry.description;
             document.getElementById('service-rep').textContent = inquiry.service_representative ? inquiry.service_representative : 'Unassigned';
+            
+            // Set the inquiry ID for the mechanic assignment form
+            document.getElementById('inquiry-id').value = inquiry.id;
+            
+            // Pre-select the current mechanic in the dropdown if one is assigned
+            if (inquiry.service_representative) {
+                const selectElement = document.getElementById('mechanic-select');
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    if (selectElement.options[i].value === inquiry.service_representative) {
+                        selectElement.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
             
             // Update the proof image handling
             const proofContainer = document.getElementById('proof-container');
